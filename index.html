@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Ger-Nor-dle (Hard Mode)</title>
+<title>GerNordle</title>
 <style>
   body {
-    font-family: Helvetica, Arial, sans-serif;
+    font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
     text-align: center;
-    background-color: #003548;
+    background-color: #01222e;
     color: white;
+    margin:0 auto;
   }
   #game {
     display: none;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
   }
   .board {
     display: grid;
     grid-template-rows: repeat(6, 1fr);
     gap: 5px;
-    margin-bottom: 20px;
+    margin: 20px;
   }
   .row {
     display: grid;
@@ -29,9 +29,10 @@
     gap: 5px;
   }
   .tile {
+    box-shadow: 2px 2px 2px #732b2b;
     width: 60px;
     height: 60px;
-    border: 2px solid #041c47;
+    border: 3px solid #041c47;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -41,21 +42,18 @@
     background-color: #121213;
     color: white;
     border-radius:5px;
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
   }
-  .correct {
-    background-color: #538d4e !important;
-  }
-  .present {
-    background-color: #b59f3b !important;
-  }
-  .absent {
-    background-color: #3a3a3c !important;
-  }
+  .correct { background-color: #538d4e !important; }
+  .present { background-color: #b59f3b !important; }
+  .absent { background-color: #3a3a3c !important; }
   .keyboard {
     display: flex;
     flex-direction: column;
     gap: 5px;
     max-width: 600px;
+    margin-top:20px;
+    margin-bottom:20px;
   }
   .key-row {
     display: flex;
@@ -73,101 +71,314 @@
     color: white;
     user-select: none;
   }
-  #hintBtn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  margin-top: 10px;
-  display: none;
-  color: #c9b458; /* lightbulb color */
-  font-size: 1.5em;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.3s ease;
-}
-#hintBtn:hover {
-  color: #f9d342; /* brighter yellow on hover */
-}
-
-  #newRoundBtn, #copyBtn {
- background-color: #e4e4e4;
- border: none;
- padding: 10px;
- font-weight: bold;
- font-size: 10pt;
- width: 10em;
- border-radius: 1rem;
- color: rgb(35, 35, 35);
- box-shadow: 0 0.4rem #1d1d1d;
- border: 2px solid #1d1d1d;
- cursor: pointer;
-}
-  #newRoundBtn:hover, #copyBtn:hover {
- background-color: #444444;
- color: #e9e9e9;
- transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
-}
-
-  #hintText {
+  #hintBtn1, #hintBtn2, #hintBtn3, #hintBtn4 {
+    background: rgb(3, 39, 93);
+    border: 2px solid rgb(14, 12, 43);
+    border-radius:5px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    padding:0px 15px 0px 15px;
     display: none;
-    margin-top: 5px;
-    font-style: italic;
-  }
-  /* Fade-in styles for message */
-  #message {
-  font-size: 20pt;
-  opacity: 0;
-  }
-  #message.show {
-    opacity: 1;
+    color: #c7d1d5;
+    font-size: 10pt;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
   }
 
+.hint-button {
+  display: none;
+}
+    
+  #hintButtons button {
+    align-items: center;
+    justify-content: center; /* Center content horizontally */
+    gap: 10px;
+    padding: 0 15px; /* Use horizontal padding to control width */
+    letter-spacing: 1pt;
+    font-weight: bold;
+    background: rgb(3, 39, 93);
+    border: 2px solid rgb(14, 12, 43);
+    border-left: 4px solid rgb(14, 12, 43);
+    box-shadow: 0 0.2rem rgb(14, 12, 43);
+    border-radius: 10px;
+    margin: 4px 2px 4px 2px;
+    cursor: pointer;
+    color: #c7d1d5;
+    font-size: 10pt;
+    transition: max-width 0.5s ease-in-out, background-color 0.3s ease;
+    max-width: 250px; /* Start with a generous initial max-width */
+    overflow: hidden;
+    height: 50px;
+    white-space: nowrap; /* Prevent text from wrapping */
+  }
+
+  #hintButtons button.expanded {
+    max-width: 9999px; /* A very large value to allow expansion */
+    justify-content: flex-start; /* Align content to the left when expanded */
+    padding-right: 15px;
+  }
+  #hintButtons button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+  .hint-label {
+    flex-shrink: 0;
+    transition: margin-right 0.5s ease-in-out;
+  }
+  
+  .hint-label.hidden {
+      margin-right: 10px;
+  }
+
+  .hint-text {
+    font-style: italic;
+    font-weight: normal;
+    white-space: normal;
+    opacity: 0;
+    max-width: 0;
+    transition: opacity 0.5s ease 0.3s, max-width 0.5s ease 0.3s;
+    flex-grow: 1;
+    margin-left: auto;
+  }
+
+  .hint-text.visible {
+    opacity: 1;
+    max-width: 250px;
+  }
+
+#hintBtn1:hover, #hintBtn2:hover, #hintBtn3:hover, #hintBtn4:hover,
+#hintBtn1.clicked-hint, #hintBtn2.clicked-hint, #hintBtn3.clicked-hint, #hintBtn4.clicked-hint {
+  background-color: #070a23;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+  
+  #modalNewRoundBtn, #modalCopyBtn, #showStatsBtn {
+    background-color: #e4e4e4;
+    border: none;
+    padding: 10px;
+    font-weight: bold;
+    font-size: 10pt;
+    width: 10em;
+    border-radius: 1rem;
+    color: rgb(35, 35, 35);
+    box-shadow: 0 0.4rem #1d1d1d;
+    border: 2px solid #1d1d1d;
+    cursor: pointer;
+    margin: auto;
+  }
+  #modalNewRoundBtn:hover, #modalCopyBtn:hover, #showStatsBtn:hover {
+    background-color: #e97251;
+    color: #e9e9e9;
+    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+  }
+  #modal-stats-display {
+    text-align: center;
+  }
+  h1 { 
+    letter-spacing: 1pt; 
+    text-shadow: 2px 2px #780e53; 
+    border-bottom:1px solid rgb(34, 65, 78);
+    padding:1.4rem;
+    margin:0;
+    background-color:rgb(3, 22, 27);
+    font-family: monospace;
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    align-items: center;
+    justify-content: center;
+  }
+  #modal-message { font-size: 16pt; width:250px; font-family:monospace; }
+  .modal.show { display: flex; }
+  .modal-content {
+    width:250px;
+    background-color: #e1dbd9;
+    border:1px solid rgb(49, 49, 49);
+    background-image: linear-gradient(to top, rgb(206, 86, 17) 20px, transparent 20px); /* Blue stripe 5px high at the top */
+    background-repeat: no-repeat;
+    background-position: top;
+    background-size: 100% 20px; /* Ensures the stripe spans the full width and is 5px high */
+    border-radius:10px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    color: rgb(33, 33, 33);
+  }
+  #modal-summary {
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 1.2em;
+    margin: 10px 0;
+    color: rgb(33, 33, 33);
+    letter-spacing: 2pt;
+  }
+  #hintButtonsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+    margin-top: 5px;
+  }
+  #secretWordColor {
+  color: #cd1616; /* Example: a bright orange color */
+}
+.host-input {
+  background: #021a24;
+  color: #c7d1d5;
+  border: none;
+  padding: 8px;
+  border-radius: 6px;
+  width: 200px;
+  display: block;
+  margin: auto;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: center;
+  transition: background 0.2s ease; /* Smooth color change */
+}
+
+.host-input::placeholder {
+  color: #6f8a94;
+}
+.host-input:not(:placeholder-shown) {
+  background: #010f15;
+}
+#hintInput4Container {
+  margin: auto;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  display: block;
+  text-align: left;
+  background: #021a24;
+  padding: 8px;
+  width: 200px;
+  border-radius: 6px;
+  text-align:center;
+  transition: background 0.2s ease; /* Smooth color change */
+}
+
+#hintInput4Container.darkened {
+  background: #010f15;
+}
+#secretInput {
+  text-transform: uppercase;
+}
 
 </style>
 </head>
 <body>
 
-<h1>Ger-Nor-dle (Hard Mode)</h1>
-<button id="hintBtn" onclick="showHint()" aria-label="Show Hint" title="Show Hint" style="border:none; border-radius:5px; cursor:pointer; display:none; color:black; display: inline-flex; align-items: center; justify-content: center;">
-  <svg xmlns="http://www.w3.org/2000/svg" height="40" width="40" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
-    <defs>
-      <radialGradient id="bulbGlowSimple" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#fff8b8" />
-        <stop offset="100%" stop-color="#ffd93b" />
-      </radialGradient>
-    </defs>
-    <!-- Simplified bulb glass -->
-    <ellipse cx="32" cy="24" rx="14" ry="20" fill="url(#bulbGlowSimple)" stroke="#bfa839" stroke-width="2"/>
-    <!-- Simplified filament -->
-    <line x1="24" y1="25" x2="40" y2="25" stroke="#b38600" stroke-width="2" />
-    <line x1="32" y1="25" x2="32" y2="38" stroke="#b38600" stroke-width="2" />
-    <!-- Simplified base -->
-    <rect x="24" y="44" width="16" height="10" fill="#7a6a2a" stroke="#5c4f1f" rx="2" ry="2"/>
-  </svg>
-</button>
-<p id="hintText"></p>
-
+<h1>Ger<span style="color:rgb(243, 202, 186);">Nor</span>dle &#x1f1e9;&#x1f1ea;&#10084;&#65039;&#x1f1f3;&#x1f1f4;</h1>
+<div id="topStatsDisplay" style="text-align: center; margin-top: 10px; font-size: 0.9em; display: none;"></div>
 <div id="setup">
-  <p>Player 1: Enter a secret word and optional hint</p>
-  <input type="password" id="secretInput" maxlength="5" placeholder="Secret word" />
-  <input type="text" id="hintInput" placeholder="Enter a hint (optional)" style="margin:auto; margin-top:5px; margin-bottom:5px; display:block; width:200px;" />
+  <p style="margin-bottom:20px;">Host: Enter a secret word and optional hints for the user to reveal</p>
+  <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" class="host-input"/>
+  <input type="text" id="hintInput" placeholder="Language" class="host-input"/>
+  <input type="text" id="hintInput2" placeholder="Part of speech" class="host-input"/>
+  <input type="text" id="hintInput3" placeholder="Context" class="host-input"/>
+<div id="hintInput4Container">
+  <p style="margin:0 0 5px 0; font-size:0.9em; color:#c7d1d5;">Special character(s)</p>
+  <label style="display:block; margin-bottom:4px; cursor:pointer;">
+    <input type="checkbox" value="Ä" class="specialCharCheckbox"> Ä
+  </label>
+  <label style="display:block; margin-bottom:4px; cursor:pointer;">
+    <input type="checkbox" value="Ö" class="specialCharCheckbox"> Ö
+  </label>
+  <label style="display:block; margin-bottom:4px; cursor:pointer;">
+    <input type="checkbox" value="Ü" class="specialCharCheckbox"> Ü
+  </label>
+  <label style="display:block; margin-bottom:4px; cursor:pointer;">
+    <input type="checkbox" value="ẞ" class="specialCharCheckbox"> ẞ
+  </label>
+  <label style="display:block; margin-bottom:4px; cursor:pointer;">
+    <input type="checkbox" value="Æ" class="specialCharCheckbox"> Æ
+  </label>
+  <label style="display:block; margin-bottom:4px; cursor:pointer;">
+    <input type="checkbox" value="Ø" class="specialCharCheckbox"> Ø
+  </label>
+  <label style="display:block; margin-bottom:4px; cursor:pointer;">
+    <input type="checkbox" value="Å" class="specialCharCheckbox"> Å
+  </label>
+</div>
   <button onclick="startGame()">Start Game</button>
   <p id="urlShare"></p>
 </div>
 
+<div id="username-setup" style="display:none; text-align:center; margin-top:20px;">
+  <div style="margin-bottom:8px; display:flex; gap:8px; align-items:center; justify-content:center; width:100%;">
+    <input type="text" id="usernameInputGame" placeholder="Enter username" style="padding:6px; border-radius:6px; width:180px;" />
+    <button id="setUsernameBtn" onclick="beginGameAfterUsername()" style="padding:8px 12px; border-radius:6px;">Set Username</button>
+  </div>
+  <div id="statsDisplay" style="margin-top:10px; font-size:0.9em; text-align:left; display:none; color:#dbe7ea; max-width:360px;"></div>
+</div>
+
 <div id="game">
   <p id="message"></p>
-  <button id="newRoundBtn" style="display:none; margin:5px;" onclick="location.reload()"><span class="button_top">New Round</span></button>
+  <button id="newRoundBtn" style="display:none; margin:5px;" onclick="location.reload()">Start Again</button>
   <button id="copyBtn" style="display:none; margin:5px;" onclick="copyResult()">Copy Result</button>
   <div id="board" class="board"></div>
+
+<div id="hintButtons" style="width:80%; gap:10px; justify-content:center; margin-top:5px; display: none;">
+  <div id="hintTitle" style="display: none; text-align: center; font-weight: bold; margin-bottom: 10px; font-size: 1em; letter-spacing: 1pt;">Need a hint?</div>
+  <div id="hintButtonsContainer">
+    <button id="hintBtn1" class="hint-button" onclick="showHint(1)" aria-label="Show Hint 1" title="Show Hint 1" style="display: none;">
+      <span class="hint-label">Language</span>
+      <span class="hint-text"></span>
+    </button>
+    <button id="hintBtn2" class="hint-button" onclick="showHint(2)" aria-label="Show Hint 2" title="Show Hint 2" style="display: none;">
+      <span class="hint-label">Part Of Speech</span>
+      <span class="hint-text"></span>
+    </button>
+    <button id="hintBtn3" class="hint-button" onclick="showHint(3)" aria-label="Show Hint 3" title="Show Hint 3" style="display: none;">
+      <span class="hint-label">Context</span>
+      <span class="hint-text"></span>
+    </button>
+    <button id="hintBtn4" class="hint-button" onclick="showHint(4)" aria-label="Show Hint 4" title="Show Hint 4" style="display: none;">
+        <span class="hint-label">Reveal Special Character(s)</span>
+        <span class="hint-text"></span>
+    </button>
+  </div>
+</div>
+
   <div id="keyboard" class="keyboard"></div>
+</div>
+
+<div id="game-over-modal" class="modal">
+  <div class="modal-content">
+    <p id="modal-message"></p>
+    <div id="modal-summary"></div>
+    <button id="showStatsBtn">Show My Stats</button>
+    <div id="modal-stats-container" style="display:none; text-align: center; max-width:250px;">
+        <p id="modal-stats-display"></p>
+    </div>
+    <button id="modalNewRoundBtn" onclick="location.reload()">Start Again</button>
+    <button id="modalCopyBtn" onclick="copyResult()">Copy Result</button>
+  </div>
 </div>
 
 <script>
 let secret = "";
-let customHint = "";
+let customHint1 = "";
+let customHint2 = "";
+let customHint3 = "";
+let customHint4 = "";
+let hintUsed1 = false;
+let hintUsed2 = false;
+let hintUsed3 = false;
+let hintUsed4 = false;
 let currentRow = 0;
 let currentCol = 0;
 const rows = 6;
@@ -176,80 +387,465 @@ let grid = [];
 let keyColors = {};
 let guessHistory = [];
 let colorHistory = [];
+let usernameSet = false; // New flag to track if username is set
 
 // Base64 helpers
-function base64Encode(str) {
-  return btoa(unescape(encodeURIComponent(str)));
-}
-function base64Decode(str) {
-  try {
-    return decodeURIComponent(escape(atob(str)));
-  } catch {
-    return null;
-  }
-}
+function base64Encode(str) { return btoa(unescape(encodeURIComponent(str))); }
+function base64Decode(str) { try { return decodeURIComponent(escape(atob(str))); } catch { return null; } }
 
 function getSecretFromURL() {
   const params = new URLSearchParams(window.location.search);
   const encodedWord = params.get("w");
-  const encodedHint = params.get("h");
+  const encodedHint1 = params.get("h1");
+  const encodedHint2 = params.get("h2");
+  const encodedHint3 = params.get("h3");
+  const encodedHint4 = params.get("h4");
   if (!encodedWord) return null;
   const decodedWord = base64Decode(encodedWord);
-  const decodedHint = encodedHint ? base64Decode(encodedHint) : "";
-  if (decodedWord && /^[A-ZÆØÅ]{5}$/.test(decodedWord)) {
-    customHint = decodedHint || "";
+
+  // Set hint variables to an empty string if the URL parameter is not present.
+  customHint1 = encodedHint1 ? base64Decode(encodedHint1) : "";
+  customHint2 = encodedHint2 ? base64Decode(encodedHint2) : "";
+  customHint3 = encodedHint3 ? base64Decode(encodedHint3) : "";
+  customHint4 = encodedHint4 ? base64Decode(encodedHint4) : "";
+
+  if (decodedWord && /^[A-ZÆØÅÄÖÜẞ]{5}$/.test(decodedWord)) {
     return decodedWord.toUpperCase();
   }
   return null;
 }
 
-function updateURLWithWord(word, hint) {
+// Get container and all special character checkboxes
+const hintContainer = document.getElementById("hintInput4Container");
+const specialCharBoxes = document.querySelectorAll(".specialCharCheckbox");
+
+// Function to update container color
+function updateHintContainerBackground() {
+  const anyChecked = Array.from(specialCharBoxes).some(cb => cb.checked);
+  hintContainer.classList.toggle("darkened", anyChecked);
+}
+
+// Listen for changes on each checkbox
+specialCharBoxes.forEach(cb => {
+  cb.addEventListener("change", updateHintContainerBackground);
+});
+
+
+function updateURLWithWord(word, hint1, hint2, hint3, hint4) {
   const url = new URL(window.location);
-  const encodedWord = base64Encode(word);
-  const encodedHint = base64Encode(hint || "");
-  url.searchParams.set("w", encodedWord);
-  if (hint) url.searchParams.set("h", encodedHint);
+  url.searchParams.set("w", base64Encode(word));
+  if (hint1) url.searchParams.set("h1", base64Encode(hint1));
+  if (hint2) url.searchParams.set("h2", base64Encode(hint2));
+  if (hint3) url.searchParams.set("h3", base64Encode(hint3));
+  if (hint4) url.searchParams.set("h4", base64Encode(hint4));
   window.history.replaceState({}, "", url);
   document.getElementById("urlShare").textContent = `Share this link to play: ${url.href}`;
 }
 
-function startGame() {
-  const inputWord = document.getElementById("secretInput").value.trim().toUpperCase();
-  const inputHint = document.getElementById("hintInput").value.trim();
-  if (!inputWord) {
-    alert("Please enter a secret word.");
-    return;
-  }
-  if (inputWord.length !== 5 || !/^[A-ZÆØÅ]+$/.test(inputWord)) {
-    alert("Secret word must be exactly 5 letters and can include Æ, Ø, Å.");
-    return;
-  }
-  secret = inputWord;
-  customHint = inputHint;
-  updateURLWithWord(secret, customHint);
-  beginGame();
+function getStats(username) {
+  const stats = JSON.parse(localStorage.getItem("gerNordleStats") || "{}");
+  return stats[username] || { gamesPlayed: 0, wins: 0, totalGuesses: 0 };
 }
 
-function beginGame() {
+function saveStats(username, stats) {
+  const allStats = JSON.parse(localStorage.getItem("gerNordleStats") || "{}");
+  allStats[username] = stats;
+  localStorage.setItem("gerNordleStats", JSON.stringify(allStats));
+}
+
+function updateStats(username, won, guesses) {
+  const user = username || "Player"; // fallback in case no username set
+  const stats = getStats(user);
+  stats.gamesPlayed++;
+  if (won) {
+    stats.wins++;
+    stats.totalGuesses += guesses;
+  }
+  saveStats(user, stats);
+}
+
+function displayStats(username) {
+  const user = username || "Player";
+  const stats = getStats(user);
+  let avgGuesses = stats.wins > 0 ? (stats.totalGuesses / stats.wins).toFixed(2) : "-";
+  let winPct = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
+  return `Stats for ${user}:\nGames Played: ${stats.gamesPlayed}\nWins: ${stats.wins}\nWin %: ${winPct}%\nAverage Guesses: ${avgGuesses}`;
+}
+
+function startGame() {
+  // Host starts the game by providing the secret and optional hints.
+  const inputWord = document.getElementById("secretInput").value.trim().toUpperCase();
+  const inputHint1 = document.getElementById("hintInput").value.trim();
+  const inputHint2 = document.getElementById("hintInput2").value.trim();
+  const inputHint3 = document.getElementById("hintInput3").value.trim();
+  const inputHint4 = Array.from(document.querySelectorAll(".specialCharCheckbox:checked"))
+                        .map(cb => cb.value)
+                        .join(", ");
+  if (!inputWord) { alert("Please enter a secret word."); return; }
+  if (inputWord.length !== 5 || !/^[A-ZÄÖÜäöüßẞÆØÅæøå]+$/i.test(inputWord)) {
+    alert("Secret word must be exactly 5 letters and can include Ä, Ö, Ü, ß, ẞ, Æ, Ø, Å.");
+    return;
+  }
+  
+  secret = inputWord;
+  // Use the trimmed values directly
+  customHint1 = inputHint1;
+  customHint2 = inputHint2;
+  customHint3 = inputHint3;
+  customHint4 = inputHint4;
+  updateURLWithWord(secret, customHint1, customHint2, customHint3, customHint4);
+  
+  // Hide setup and show username input
   document.getElementById("setup").style.display = "none";
+  document.getElementById("username-setup").style.display = "block";
+  
+  // Pre-fill username if saved
+  const savedUsername = localStorage.getItem("gerNordleUsername");
+  if (savedUsername) {
+    document.getElementById("usernameInputGame").value = savedUsername;
+  }
+}
+
+function beginGameAfterUsername() {
+  const username = document.getElementById("usernameInputGame").value.trim();
+  if (!username) { alert("Please enter a username."); return; }
+
+  // Save the username to local storage
+  localStorage.setItem("gerNordleUsername", username);
+
+  window.currentUsername = username;
+  usernameSet = true;
+
+  document.getElementById("username-setup").style.display = "none";
   document.getElementById("game").style.display = "flex";
-  document.getElementById("hintBtn").style.display = customHint ? "inline-block" : "none";
-  const msgEl = document.getElementById("message");
-  msgEl.textContent = "";
-  msgEl.classList.remove("show");
+
+  // Update and display stats at the top of the page
+  const topStatsDisplay = document.getElementById("topStatsDisplay");
+  topStatsDisplay.textContent = displayStats(username).replace(/\n/g, " | ");
+  topStatsDisplay.style.display = "block";
+
+  const statsText = displayStats(username);
+  document.getElementById("statsDisplay").textContent = statsText.replace(/\n/g, " | ");
+  document.getElementById("statsDisplay").style.display = "block";
+
+  const hintButtonsContainer = document.getElementById("hintButtonsContainer");
+  const hintTitle = document.getElementById("hintTitle");
+  const hintBtn1 = document.getElementById("hintBtn1");
+  const hintBtn2 = document.getElementById("hintBtn2");
+  const hintBtn3 = document.getElementById("hintBtn3");
+  const hintBtn4 = document.getElementById("hintBtn4");
+
+  // Show individual hint buttons only if a hint was provided.
+  if (customHint1 && customHint1.trim() !== "") {
+    hintBtn1.style.display = "inline-flex";
+  }
+  if (customHint2 && customHint2.trim() !== "") {
+    hintBtn2.style.display = "inline-flex";
+  }
+  if (customHint3 && customHint3.trim() !== "") {
+    hintBtn3.style.display = "inline-flex";
+  }
+  if (customHint4 && customHint4.trim() !== "") {
+    hintBtn4.style.display = "inline-flex";
+  }
+
+  // Show the hint title and the buttons container if any of the individual buttons are visible.
+  if (hintBtn1.style.display !== "none" || hintBtn2.style.display !== "none" || hintBtn3.style.display !== "none" || hintBtn4.style.display !== "none") {
+    document.getElementById("hintButtons").style.display = "block";
+    hintButtonsContainer.style.display = "flex";
+    hintTitle.style.display = "block";
+  }
+
+  hintUsed1 = false;
+  hintUsed2 = false;
+  hintUsed3 = false;
+  hintUsed4 = false;
+  document.getElementById("message").textContent = "";
   document.getElementById("newRoundBtn").style.display = "none";
   document.getElementById("copyBtn").style.display = "none";
-  document.getElementById("hintText").style.display = "none";
-
   grid = Array(rows).fill(null).map(() => Array(cols).fill(""));
   guessHistory = [];
   colorHistory = [];
   keyColors = {};
   currentRow = 0;
   currentCol = 0;
-
   initBoard();
   initKeyboard();
+}
+
+function updateBoard() {
+  const board = document.getElementById("board");
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      board.children[r].children[c].textContent = grid[r][c];
+    }
+  }
+}
+
+function handleKeyPress(key) {
+  // Added check here
+  if (!usernameSet) return;
+  
+  const msgEl = document.getElementById("message");
+  if (msgEl.textContent.trim() === "You win!" || msgEl.textContent.trim() === "Game over!") return;
+
+  const keyButton = document.querySelector(`.key[data-key="${key.toUpperCase()}"]`);
+  if (keyButton) {
+    keyButton.classList.add("key-pop");
+    setTimeout(() => {
+      keyButton.classList.remove("key-pop");
+    }, 100);
+  }
+
+  if (/^[a-zA-ZÄÖÜäöüßẞÆØÅæøå]$/.test(key) && currentCol < cols) {
+    let letter = key;
+    if (key === "ß") letter = "ẞ"; // uppercase ß
+    else letter = key.toUpperCase();
+
+    grid[currentRow][currentCol] = letter;
+    currentCol++;
+    updateBoard();
+  } else if (key === "Backspace" && currentCol > 0) {
+    currentCol--; grid[currentRow][currentCol] = ""; updateBoard();
+  } else if (key === "Enter" && currentCol === cols) {
+    submitGuess();
+  }
+}
+
+window.addEventListener("keydown", (e) => {
+  // Added check here
+  if (!usernameSet) return;
+  
+  if (document.getElementById("game").style.display !== "flex") return;
+  const key = e.key.toUpperCase();
+  if (key === "BACKSPACE") {
+    handleKeyPress("Backspace");
+  } else if (key === "ENTER") {
+    handleKeyPress("Enter");
+  } else if (/^[A-ZÄÖÜßẞÆØÅ]$/.test(key)) {
+    const keyToPass = key === 'ß' ? 'ẞ' : key;
+    handleKeyPress(keyToPass);
+  }
+});
+
+function validateHardMode(guess) {
+  // Check all previous guesses
+  for (let i = 0; i < guessHistory.length; i++) {
+    const prevGuess = guessHistory[i];
+    const colors = colorHistory[i];
+    
+    // Check correct letters (green) positions must match
+    for (let j = 0; j < cols; j++) {
+      if (colors[j] === "correct" && guess[j] !== prevGuess[j]) {
+        document.getElementById("message").textContent = `Hard mode violation: Letter '${prevGuess[j]}' must be in position ${j+1}`;
+        return false;
+      }
+    }
+
+    // Check present letters (yellow) must be included somewhere
+    // Count how many times a letter was present in prevGuess with "present" color
+    const presentLetters = {};
+    for (let j = 0; j < cols; j++) {
+      if (colors[j] === "present") {
+        presentLetters[prevGuess[j]] = (presentLetters[prevGuess[j]] || 0) + 1;
+      }
+    }
+    for (const letter in presentLetters) {
+      // Count letter occurrences in new guess
+      const countInGuess = [...guess].filter(l => l === letter).length;
+      if (countInGuess < presentLetters[letter]) {
+        document.getElementById("message").textContent = `Hard mode violation: Guess must include letter '${letter}' at least ${presentLetters[letter]} time(s)`;
+        return false;
+      }
+    }
+
+    // Check absent letters (gray) should not appear, unless they appear in prev guess as present/correct
+    for (let j = 0; j < cols; j++) {
+      if (colors[j] === "absent") {
+        const absentLetter = prevGuess[j];
+        // Check if this letter is anywhere else marked present or correct in the same guess
+        const isElsewherePresentOrCorrect = colors.some((color, idx) => 
+          (color === "correct" || color === "present") && prevGuess[idx] === absentLetter);
+        if (!isElsewherePresentOrCorrect) {
+          // This letter must not appear in new guess
+          if (guess.includes(absentLetter)) {
+            document.getElementById("message").textContent = `Hard mode violation: Letter '${absentLetter}' cannot be used`;
+            return false;
+          }
+        }
+      }
+    }
+  }
+  // If all checks pass, clear message and accept guess
+  document.getElementById("message").textContent = "";
+  return true;
+}
+
+
+function submitGuess() {
+  const guess = grid[currentRow].join("");
+  if (guess.length !== cols) return;
+  if (!validateHardMode(guess)) {
+    // Reject guess without advancing row
+    return;
+  }  
+  guessHistory.push(guess);
+  const colors = Array(cols).fill("absent");
+  const secretLetters = secret.split("");
+  for (let i = 0; i < cols; i++) {
+    if (guess[i] === secret[i]) { colors[i] = "correct"; secretLetters[i] = null; }
+  }
+  for (let i = 0; i < cols; i++) {
+    if (colors[i] === "correct") continue;
+    const index = secretLetters.indexOf(guess[i]);
+    if (index !== -1) { colors[i] = "present"; secretLetters[index] = null; }
+  }
+    for (let i = 0; i < cols; i++) {
+    const letter = guess[i];
+    const color = colors[i];
+    // Only upgrade color if better (correct > present > absent)
+    if (!keyColors[letter] || 
+        (color === "correct") ||
+        (color === "present" && keyColors[letter] === "absent")) {
+      keyColors[letter] = color;
+    }
+  }
+
+  updateKeyboardColors();
+  
+  colorHistory.push(colors);
+  const board = document.getElementById("board");
+  for (let i = 0; i < cols; i++) {
+    const tile = board.children[currentRow].children[i];
+    setTimeout(() => {
+      tile.classList.add("flip");
+      setTimeout(() => {
+        tile.classList.remove("flip");
+        tile.classList.add(colors[i]);
+        tile.classList.add("flipped");
+      }, 150);
+    }, i * 150);
+  }
+  setTimeout(() => {
+    const modal = document.getElementById("game-over-modal");
+    document.getElementById("modal-summary").textContent = generateResultText();
+
+    let gameIsOver = false;
+    
+    // Update stats for the player and check if the game is over
+    if (guess === secret) {
+      document.getElementById("modal-message").textContent = "You win!";
+      updateStats(window.currentUsername, true, guessHistory.length);
+      gameIsOver = true;
+    } else if (currentRow === rows - 1) {
+      document.getElementById("modal-message").innerHTML = `Game over! The secret word was <span id="secretWordColor">${secret}</span>.`;
+      updateStats(window.currentUsername, false, guessHistory.length);
+      gameIsOver = true;
+    }
+    
+    if (gameIsOver) {
+      // Populate stats in the hidden modal container
+      document.getElementById("modal-stats-display").textContent = displayStats(window.currentUsername);
+      modal.classList.add("show");
+    
+      // Add event listener for the "Show my stats" button
+      document.getElementById("showStatsBtn").addEventListener("click", function() {
+        const statsContainer = document.getElementById("modal-stats-container");
+        if (statsContainer.style.display === "none") {
+            statsContainer.style.display = "block";
+            this.textContent = "Hide My Stats";
+        } else {
+            statsContainer.style.display = "none";
+            this.textContent = "Show My Stats";
+        }
+      });
+    } else {
+      // If game is not over, proceed to the next row
+      currentRow++;
+      currentCol = 0;
+    }
+
+  }, (cols * 150) + 200);
+}
+
+function copyResult() {
+  const resultText = generateResultText(false);
+  navigator.clipboard.writeText(resultText);
+  alert("Result copied to clipboard!");
+}
+
+function generateResultText(includeGuess = true) {
+  let attempts = guessHistory.length;
+  // Get the current date in a human-readable format, e.g., "August 9, 2025"
+  const currentDate = new Date().toLocaleDateString('en-GB', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+  let statusLine = `GerNordle (${attempts}/${rows})\n${currentDate}`;
+  let lines = guessHistory.map((guess, idx) => {
+    let colors = colorHistory[idx].map((color) => {
+      if (color === "correct") return "🟩";
+      if (color === "present") return "🟨";
+      return "⬛";
+    }).join("");
+    return includeGuess ? `${guess} ${colors}` : colors;
+  });
+  let hintLine = "";
+  if (hintUsed1) hintLine += "\nHint 1 was used";
+  if (hintUsed2) hintLine += "\nHint 2 was used";
+  if (hintUsed3) hintLine += "\nHint 3 was used";
+  if (hintUsed4) hintLine += "\nHint 4 was used";
+  return statusLine + "\n" + lines.join("\n") + hintLine;
+}
+
+function showHint(hintNumber) {
+    if (!usernameSet) {
+        alert("Please enter a username before using hints.");
+        return;
+    }
+    let btn, hintTextValue;
+    if (hintNumber === 1) {
+        btn = document.getElementById("hintBtn1");
+        hintTextValue = customHint1;
+        hintUsed1 = true;
+    } else if (hintNumber === 2) {
+        btn = document.getElementById("hintBtn2");
+        hintTextValue = customHint2;
+        hintUsed2 = true;
+    } else if (hintNumber === 3) {
+        btn = document.getElementById("hintBtn3");
+        hintTextValue = customHint3;
+        hintUsed3 = true;
+    } else if (hintNumber === 4) {
+        btn = document.getElementById("hintBtn4");
+        hintTextValue = customHint4;
+        hintUsed4 = true;
+    }
+
+    if (btn) {
+        // Only proceed if the button is not already expanded
+        if (!btn.classList.contains('expanded')) {
+            const hintLabelSpan = btn.querySelector(".hint-label");
+            const hintTextSpan = btn.querySelector(".hint-text");
+
+            // Add the new class to keep the hover color
+            btn.classList.add("clicked-hint");
+
+            // Add the disabled attribute to the button
+            btn.disabled = true;
+
+            // Expand button
+            hintTextSpan.textContent = hintTextValue;
+            btn.offsetWidth;
+            btn.classList.add("expanded");
+            hintLabelSpan.classList.add('hidden');
+
+            setTimeout(() => {
+                hintTextSpan.classList.add('visible');
+            }, 300);
+        }
+    }
 }
 
 function initBoard() {
@@ -271,147 +867,30 @@ function initKeyboard() {
   const keyboard = document.getElementById("keyboard");
   keyboard.innerHTML = "";
   const layout = [
-    ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
-    ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Æ"],
-    ["Enter", "Z", "X", "C", "V", "B", "N", "M", "Ø", "Å", "Backspace"],
+    ["Q", "W", "E", "R", "T", "Z", "U", "I", "O", "P", "Ü", "Ö", "Ä", "ß"],  // German letters + ß
+    ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Æ", "Ø", "Å"],            // Norwegian letters
+    ["Enter", "Y", "X", "C", "V", "B", "N", "M", "Backspace"]
   ];
-  layout.forEach((row) => {
+
+  layout.forEach(row => {
     const rowDiv = document.createElement("div");
     rowDiv.classList.add("key-row");
-    row.forEach((key) => {
-      const keyBtn = document.createElement("button");
-      keyBtn.textContent = key;
-      keyBtn.classList.add("key");
-      keyBtn.onclick = () => handleKeyPress(key);
-      rowDiv.appendChild(keyBtn);
+    row.forEach(key => {
+      const keyButton = document.createElement("button");
+      keyButton.textContent = key;
+      keyButton.classList.add("key");
+      keyButton.setAttribute("data-key", key);
+      keyButton.addEventListener("click", () => {
+        if (key === "Backspace") handleKeyPress("Backspace");
+        else if (key === "Enter") handleKeyPress("Enter");
+        else handleKeyPress(key);
+      });
+      rowDiv.appendChild(keyButton);
     });
     keyboard.appendChild(rowDiv);
   });
 }
 
-function updateBoard() {
-  const board = document.getElementById("board");
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const tile = board.children[r].children[c];
-      tile.textContent = grid[r][c];
-    }
-  }
-}
-
-function handleKeyPress(key) {
-  const msgEl = document.getElementById("message");
-  if (msgEl.textContent.trim() === "You win!" || msgEl.textContent.trim() === "Game over!") return;
-
-  if (/^[a-zA-ZÆØÅæøå]$/.test(key) && currentCol < cols) {
-    grid[currentRow][currentCol] = key.toUpperCase();
-    currentCol++;
-    updateBoard();
-  } else if (key === "Backspace" && currentCol > 0) {
-    currentCol--;
-    grid[currentRow][currentCol] = "";
-    updateBoard();
-  } else if (key === "Enter" && currentCol === cols) {
-    submitGuess();
-  }
-}
-
-window.addEventListener("keydown", (e) => {
-  if (document.getElementById("game").style.display !== "flex") return;
-  const key = e.key.toUpperCase();
-  if (key === "BACKSPACE") {
-    handleKeyPress("Backspace");
-  } else if (key === "ENTER") {
-    handleKeyPress("Enter");
-  } else if (/^[A-ZÆØÅ]$/.test(key)) {
-    handleKeyPress(key);
-  }
-});
-
-function submitGuess() {
-  const guess = grid[currentRow].join("");
-  if (guess.length !== cols) return;
-
-  // Hard mode check
-  if (guessHistory.length > 0) {
-    const lastColors = colorHistory[colorHistory.length - 1];
-    const lastGuess = guessHistory[guessHistory.length - 1];
-
-    // Greens stay in same position
-    for (let i = 0; i < cols; i++) {
-      if (lastColors[i] === "correct" && guess[i] !== lastGuess[i]) {
-        alert(`Hard mode: The letter ${lastGuess[i]} must stay in position ${i + 1}.`);
-        return;
-      }
-    }
-
-    // All yellows must appear somewhere
-    let requiredYellows = [];
-    for (let i = 0; i < cols; i++) {
-      if (lastColors[i] === "present") {
-        requiredYellows.push(lastGuess[i]);
-      }
-    }
-    for (let letter of requiredYellows) {
-      if (!guess.includes(letter)) {
-        alert(`Hard mode: Your guess must include the letter ${letter}.`);
-        return;
-      }
-    }
-  }
-
-  guessHistory.push(guess);
-
-  const colors = Array(cols).fill("absent");
-  const secretLetters = secret.split("");
-
-  // Greens
-  for (let i = 0; i < cols; i++) {
-    if (guess[i] === secret[i]) {
-      colors[i] = "correct";
-      secretLetters[i] = null;
-    }
-  }
-  // Yellows
-  for (let i = 0; i < cols; i++) {
-    if (colors[i] === "correct") continue;
-    const index = secretLetters.indexOf(guess[i]);
-    if (index !== -1) {
-      colors[i] = "present";
-      secretLetters[index] = null;
-    }
-  }
-
-  colorHistory.push(colors);
-
-  const board = document.getElementById("board");
-  for (let i = 0; i < cols; i++) {
-    const tile = board.children[currentRow].children[i];
-    tile.classList.add(colors[i]);
-    keyColors[guess[i]] = colors[i];
-  }
-  updateKeyboardColors();
-
-  const msgEl = document.getElementById("message");
-
-  if (guess === secret) {
-    msgEl.textContent = "You win!";
-    msgEl.classList.add("show");
-    document.getElementById("newRoundBtn").style.display = "inline-block";
-    document.getElementById("copyBtn").style.display = "inline-block";
-  } else if (currentRow === rows - 1) {
-    msgEl.textContent = "Game over!";
-    msgEl.classList.add("show");
-    document.getElementById("newRoundBtn").style.display = "inline-block";
-    document.getElementById("copyBtn").style.display = "inline-block";
-  } else {
-    currentRow++;
-    currentCol = 0;
-    // Clear message and fade out for next guess
-    msgEl.textContent = "";
-    msgEl.classList.remove("show");
-  }
-}
 
 function updateKeyboardColors() {
   const keys = document.querySelectorAll(".key");
@@ -424,40 +903,15 @@ function updateKeyboardColors() {
   });
 }
 
-function copyResult() {
-  let attempts = guessHistory.length;
-  let statusLine = `Ger-Nor-dle (${attempts}/${rows}) – Secret: ${secret}`;
-  let lines = guessHistory.map((guess, idx) => {
-    let colors = colorHistory[idx]
-      .map((color) => {
-        if (color === "correct") return "🟩";
-        if (color === "present") return "🟨";
-        return "⬛";
-      })
-      .join("");
-    return `${guess} ${colors}`;
-  });
-  let text = statusLine + "\n" + lines.join("\n");
-  navigator.clipboard.writeText(text);
-  alert("Result copied to clipboard!");
-}
-
-function showHint() {
-  const hintEl = document.getElementById("hintText");
-  hintEl.textContent = customHint;
-  hintEl.style.display = "block";
-}
-
 window.onload = () => {
   const wordFromURL = getSecretFromURL();
   if (wordFromURL) {
     secret = wordFromURL;
     document.getElementById("setup").style.display = "none";
-    updateURLWithWord(secret, customHint);
-    beginGame();
+    document.getElementById("username-setup").style.display = "block"; // Show username setup first
+    updateURLWithWord(secret, customHint1, customHint2, customHint3, customHint4);
   }
 };
 </script>
-
 </body>
 </html>
