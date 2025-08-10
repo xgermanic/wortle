@@ -135,6 +135,7 @@
 
   .hint-text {
     font-style: italic;
+    text-transform: uppercase;
     font-weight: normal;
     white-space: normal;
     opacity: 0;
@@ -167,7 +168,7 @@
     box-shadow: 0 0.4rem #1d1d1d;
     border: 2px solid #1d1d1d;
     cursor: pointer;
-    margin: auto;
+    margin: 5px auto;
   }
   #modalNewRoundBtn:hover, #modalCopyBtn:hover, #showStatsBtn:hover {
     background-color: #e97251;
@@ -179,7 +180,6 @@
   }
   h1 { 
     letter-spacing: 1pt; 
-    text-shadow: 2px 2px #780e53; 
     border-bottom:1px solid rgb(34, 65, 78);
     padding:1.4rem;
     margin:0;
@@ -277,12 +277,69 @@
   text-transform: uppercase;
 }
 
+#modal-stats-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out, margin-top 0.5s ease-in-out;
+    background-color: #d8d8d8;
+    color: #333;
+    padding: 0 10px;
+    border-radius: 8px;
+  }
+
+  #modal-stats-container.expanded {
+    max-height: 500px;
+    margin-top: 5px;
+  }
+
+  .stats-line {
+    margin: 5px 0;
+    font-family: monospace;
+  }
+
+  .button-group {
+    display: inline-block;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    align-items: center;
+  }
+  
+  .key:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  #topStatsDisplay {
+    opacity:0.7;
+    transition: opacity 0.2s;
+    text-shadow:2px 2px #000000
+  }
+  #topStatsDisplay:hover {
+    opacity:1;
+  }
+    /* Add the keyframe animation */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+  }
+
+  /* Add the class to apply the animation */
+  .shake {
+    animation: shake 0.5s ease-in-out;
+  }
 </style>
 </head>
 <body>
 
-<h1>Ger<span style="color:rgb(243, 202, 186);">Nor</span>dle &#x1f1e9;&#x1f1ea;&#10084;&#65039;&#x1f1f3;&#x1f1f4;</h1>
+<h1>Ger&#x1f1e9;&#x1f1ea;<span style="color:rgb(243, 202, 186);">Nor</span>&#x1f1f3;&#x1f1f4;dle &#10084;&#65039;</h1>
+
 <div id="topStatsDisplay" style="text-align: center; margin-top: 10px; font-size: 0.9em; display: none;"></div>
+<div id="user-info-section" style="text-align: center; margin-top: 10px;">
+  <div id="username-display-area" style="margin-bottom: 8px;">
+    </div>
+</div>
+
 <div id="setup">
   <p style="margin-bottom:20px;">Host: Enter a secret word and optional hints for the user to reveal</p>
   <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" class="host-input"/>
@@ -315,14 +372,6 @@
 </div>
   <button onclick="startGame()">Start Game</button>
   <p id="urlShare"></p>
-</div>
-
-<div id="username-setup" style="display:none; text-align:center; margin-top:20px;">
-  <div style="margin-bottom:8px; display:flex; gap:8px; align-items:center; justify-content:center; width:100%;">
-    <input type="text" id="usernameInputGame" placeholder="Enter username" style="padding:6px; border-radius:6px; width:180px;" />
-    <button id="setUsernameBtn" onclick="beginGameAfterUsername()" style="padding:8px 12px; border-radius:6px;">Set Username</button>
-  </div>
-  <div id="statsDisplay" style="margin-top:10px; font-size:0.9em; text-align:left; display:none; color:#dbe7ea; max-width:360px;"></div>
 </div>
 
 <div id="game">
@@ -360,12 +409,13 @@
   <div class="modal-content">
     <p id="modal-message"></p>
     <div id="modal-summary"></div>
-    <button id="showStatsBtn">Show My Stats</button>
-    <div id="modal-stats-container" style="display:none; text-align: center; max-width:250px;">
-        <p id="modal-stats-display"></p>
+    <div class="button-group">
+      <button id="showStatsBtn">Show My Stats</button>
+      <div id="modal-stats-container">
+          </div>
+      <button id="modalNewRoundBtn" onclick="location.reload()">Start Again</button>
+      <button id="modalCopyBtn" onclick="copyResult()">Copy Result</button>
     </div>
-    <button id="modalNewRoundBtn" onclick="location.reload()">Start Again</button>
-    <button id="modalCopyBtn" onclick="copyResult()">Copy Result</button>
   </div>
 </div>
 
@@ -387,7 +437,8 @@ let grid = [];
 let keyColors = {};
 let guessHistory = [];
 let colorHistory = [];
-let usernameSet = false; // New flag to track if username is set
+let usernameSet = false;
+let isAnimating = false;
 
 // Base64 helpers
 function base64Encode(str) { return btoa(unescape(encodeURIComponent(str))); }
@@ -403,7 +454,6 @@ function getSecretFromURL() {
   if (!encodedWord) return null;
   const decodedWord = base64Decode(encodedWord);
 
-  // Set hint variables to an empty string if the URL parameter is not present.
   customHint1 = encodedHint1 ? base64Decode(encodedHint1) : "";
   customHint2 = encodedHint2 ? base64Decode(encodedHint2) : "";
   customHint3 = encodedHint3 ? base64Decode(encodedHint3) : "";
@@ -415,17 +465,14 @@ function getSecretFromURL() {
   return null;
 }
 
-// Get container and all special character checkboxes
 const hintContainer = document.getElementById("hintInput4Container");
 const specialCharBoxes = document.querySelectorAll(".specialCharCheckbox");
 
-// Function to update container color
 function updateHintContainerBackground() {
   const anyChecked = Array.from(specialCharBoxes).some(cb => cb.checked);
   hintContainer.classList.toggle("darkened", anyChecked);
 }
 
-// Listen for changes on each checkbox
 specialCharBoxes.forEach(cb => {
   cb.addEventListener("change", updateHintContainerBackground);
 });
@@ -454,7 +501,7 @@ function saveStats(username, stats) {
 }
 
 function updateStats(username, won, guesses) {
-  const user = username || "Player"; // fallback in case no username set
+  const user = username || "Player";
   const stats = getStats(user);
   stats.gamesPlayed++;
   if (won) {
@@ -469,11 +516,17 @@ function displayStats(username) {
   const stats = getStats(user);
   let avgGuesses = stats.wins > 0 ? (stats.totalGuesses / stats.wins).toFixed(2) : "-";
   let winPct = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
-  return `Stats for ${user}:\nGames Played: ${stats.gamesPlayed}\nWins: ${stats.wins}\nWin %: ${winPct}%\nAverage Guesses: ${avgGuesses}`;
+  
+  return [
+    `Stats for ${user}`,
+    `Games Played: ${stats.gamesPlayed}`,
+    `Wins: ${stats.wins}`,
+    `Win %: ${winPct}%`,
+    `Average Guesses: ${avgGuesses}`
+  ];
 }
 
 function startGame() {
-  // Host starts the game by providing the secret and optional hints.
   const inputWord = document.getElementById("secretInput").value.trim().toUpperCase();
   const inputHint1 = document.getElementById("hintInput").value.trim();
   const inputHint2 = document.getElementById("hintInput2").value.trim();
@@ -488,45 +541,44 @@ function startGame() {
   }
   
   secret = inputWord;
-  // Use the trimmed values directly
   customHint1 = inputHint1;
   customHint2 = inputHint2;
   customHint3 = inputHint3;
   customHint4 = inputHint4;
   updateURLWithWord(secret, customHint1, customHint2, customHint3, customHint4);
   
-  // Hide setup and show username input
   document.getElementById("setup").style.display = "none";
-  document.getElementById("username-setup").style.display = "block";
+  document.getElementById("game").style.display = "flex";
   
-  // Pre-fill username if saved
-  const savedUsername = localStorage.getItem("gerNordleUsername");
-  if (savedUsername) {
-    document.getElementById("usernameInputGame").value = savedUsername;
-  }
+  checkUserStatus();
 }
 
-function beginGameAfterUsername() {
-  const username = document.getElementById("usernameInputGame").value.trim();
-  if (!username) { alert("Please enter a username."); return; }
+function checkUserStatus() {
+  const savedUsername = localStorage.getItem("gerNordleUsername");
+  const usernameDisplayArea = document.getElementById("username-display-area");
+  usernameDisplayArea.innerHTML = ''; // Clear previous content
 
-  // Save the username to local storage
-  localStorage.setItem("gerNordleUsername", username);
+  if (savedUsername) {
+    window.currentUsername = savedUsername;
+    usernameSet = true;
 
-  window.currentUsername = username;
-  usernameSet = true;
+    const displayMessage = document.createElement("p");
+    displayMessage.textContent = `Playing as: ${savedUsername.toUpperCase()}`;
+    displayMessage.style.cssText = "font-weight: bold; margin-bottom: 5px;";
+    usernameDisplayArea.appendChild(displayMessage);
 
-  document.getElementById("username-setup").style.display = "none";
-  document.getElementById("game").style.display = "flex";
+    const changeButton = document.createElement("button");
+    changeButton.textContent = "Change User";
+    changeButton.onclick = promptForUsername;
+    usernameDisplayArea.appendChild(changeButton);
 
-  // Update and display stats at the top of the page
-  const topStatsDisplay = document.getElementById("topStatsDisplay");
-  topStatsDisplay.textContent = displayStats(username).replace(/\n/g, " | ");
-  topStatsDisplay.style.display = "block";
-
-  const statsText = displayStats(username);
-  document.getElementById("statsDisplay").textContent = statsText.replace(/\n/g, " | ");
-  document.getElementById("statsDisplay").style.display = "block";
+    const topStatsDisplay = document.getElementById("topStatsDisplay");
+    topStatsDisplay.textContent = displayStats(savedUsername).join(" | ");
+    topStatsDisplay.style.display = "block";
+    
+  } else {
+    promptForUsername();
+  }
 
   const hintButtonsContainer = document.getElementById("hintButtonsContainer");
   const hintTitle = document.getElementById("hintTitle");
@@ -535,7 +587,6 @@ function beginGameAfterUsername() {
   const hintBtn3 = document.getElementById("hintBtn3");
   const hintBtn4 = document.getElementById("hintBtn4");
 
-  // Show individual hint buttons only if a hint was provided.
   if (customHint1 && customHint1.trim() !== "") {
     hintBtn1.style.display = "inline-flex";
   }
@@ -549,7 +600,6 @@ function beginGameAfterUsername() {
     hintBtn4.style.display = "inline-flex";
   }
 
-  // Show the hint title and the buttons container if any of the individual buttons are visible.
   if (hintBtn1.style.display !== "none" || hintBtn2.style.display !== "none" || hintBtn3.style.display !== "none" || hintBtn4.style.display !== "none") {
     document.getElementById("hintButtons").style.display = "block";
     hintButtonsContainer.style.display = "flex";
@@ -569,8 +619,51 @@ function beginGameAfterUsername() {
   keyColors = {};
   currentRow = 0;
   currentCol = 0;
+  isAnimating = false;
   initBoard();
   initKeyboard();
+}
+
+function promptForUsername() {
+  const usernameDisplayArea = document.getElementById("username-display-area");
+  usernameDisplayArea.innerHTML = ''; // Clear for new elements
+
+  const inputContainer = document.createElement("div");
+  inputContainer.style.cssText = "display: flex; gap: 8px; justify-content: center; align-items: center;";
+
+  const usernameInput = document.createElement("input");
+  usernameInput.type = "text";
+  usernameInput.id = "usernameInputGame";
+  usernameInput.placeholder = "Enter username";
+  usernameInput.style.cssText = "padding: 6px; border-radius: 6px; width: 180px;";
+
+  const setButton = document.createElement("button");
+  setButton.textContent = "Set Username";
+  setButton.onclick = setUsername;
+  setButton.style.cssText = "padding: 8px 12px; border-radius: 6px;";
+
+  inputContainer.appendChild(usernameInput);
+  inputContainer.appendChild(setButton);
+  usernameDisplayArea.appendChild(inputContainer);
+
+  window.currentUsername = null;
+  usernameSet = false;
+  document.getElementById("topStatsDisplay").style.display = "none";
+}
+
+function setUsername() {
+  const usernameInput = document.getElementById("usernameInputGame");
+  let username = usernameInput.value.trim();
+
+  if (!username) {
+    alert("Please enter a username.");
+    return;
+  }
+
+  username = username.toUpperCase();
+  localStorage.setItem("gerNordleUsername", username);
+
+  checkUserStatus();
 }
 
 function updateBoard() {
@@ -583,8 +676,9 @@ function updateBoard() {
 }
 
 function handleKeyPress(key) {
-  // Added check here
-  if (!usernameSet) return;
+  if (!usernameSet || isAnimating) {
+    return;
+  }
   
   const msgEl = document.getElementById("message");
   if (msgEl.textContent.trim() === "You win!" || msgEl.textContent.trim() === "Game over!") return;
@@ -599,7 +693,7 @@ function handleKeyPress(key) {
 
   if (/^[a-zA-ZÄÖÜäöüßẞÆØÅæøå]$/.test(key) && currentCol < cols) {
     let letter = key;
-    if (key === "ß") letter = "ẞ"; // uppercase ß
+    if (key === "ß") letter = "ẞ";
     else letter = key.toUpperCase();
 
     grid[currentRow][currentCol] = letter;
@@ -613,8 +707,7 @@ function handleKeyPress(key) {
 }
 
 window.addEventListener("keydown", (e) => {
-  // Added check here
-  if (!usernameSet) return;
+  if (!usernameSet || isAnimating) return;
   
   if (document.getElementById("game").style.display !== "flex") return;
   const key = e.key.toUpperCase();
@@ -629,12 +722,10 @@ window.addEventListener("keydown", (e) => {
 });
 
 function validateHardMode(guess) {
-  // Check all previous guesses
   for (let i = 0; i < guessHistory.length; i++) {
     const prevGuess = guessHistory[i];
     const colors = colorHistory[i];
     
-    // Check correct letters (green) positions must match
     for (let j = 0; j < cols; j++) {
       if (colors[j] === "correct" && guess[j] !== prevGuess[j]) {
         document.getElementById("message").textContent = `Hard mode violation: Letter '${prevGuess[j]}' must be in position ${j+1}`;
@@ -642,8 +733,6 @@ function validateHardMode(guess) {
       }
     }
 
-    // Check present letters (yellow) must be included somewhere
-    // Count how many times a letter was present in prevGuess with "present" color
     const presentLetters = {};
     for (let j = 0; j < cols; j++) {
       if (colors[j] === "present") {
@@ -651,7 +740,6 @@ function validateHardMode(guess) {
       }
     }
     for (const letter in presentLetters) {
-      // Count letter occurrences in new guess
       const countInGuess = [...guess].filter(l => l === letter).length;
       if (countInGuess < presentLetters[letter]) {
         document.getElementById("message").textContent = `Hard mode violation: Guess must include letter '${letter}' at least ${presentLetters[letter]} time(s)`;
@@ -659,15 +747,12 @@ function validateHardMode(guess) {
       }
     }
 
-    // Check absent letters (gray) should not appear, unless they appear in prev guess as present/correct
     for (let j = 0; j < cols; j++) {
       if (colors[j] === "absent") {
         const absentLetter = prevGuess[j];
-        // Check if this letter is anywhere else marked present or correct in the same guess
         const isElsewherePresentOrCorrect = colors.some((color, idx) => 
           (color === "correct" || color === "present") && prevGuess[idx] === absentLetter);
         if (!isElsewherePresentOrCorrect) {
-          // This letter must not appear in new guess
           if (guess.includes(absentLetter)) {
             document.getElementById("message").textContent = `Hard mode violation: Letter '${absentLetter}' cannot be used`;
             return false;
@@ -676,7 +761,6 @@ function validateHardMode(guess) {
       }
     }
   }
-  // If all checks pass, clear message and accept guess
   document.getElementById("message").textContent = "";
   return true;
 }
@@ -684,11 +768,31 @@ function validateHardMode(guess) {
 
 function submitGuess() {
   const guess = grid[currentRow].join("");
-  if (guess.length !== cols) return;
-  if (!validateHardMode(guess)) {
-    // Reject guess without advancing row
+  if (guess.length !== cols) {
+    const currentRowDiv = document.getElementById("board").children[currentRow];
+    if (currentRowDiv) {
+      currentRowDiv.classList.add("shake");
+      setTimeout(() => {
+        currentRowDiv.classList.remove("shake");
+      }, 500); 
+    }
+    document.getElementById("message").textContent = "Not enough letters";
     return;
-  }  
+  }
+  
+  if (!validateHardMode(guess)) {
+    const currentRowDiv = document.getElementById("board").children[currentRow];
+    if (currentRowDiv) {
+      currentRowDiv.classList.add("shake");
+      setTimeout(() => {
+        currentRowDiv.classList.remove("shake");
+      }, 500); 
+    }
+    return;
+  }
+  
+  isAnimating = true;
+  
   guessHistory.push(guess);
   const colors = Array(cols).fill("absent");
   const secretLetters = secret.split("");
@@ -703,7 +807,6 @@ function submitGuess() {
     for (let i = 0; i < cols; i++) {
     const letter = guess[i];
     const color = colors[i];
-    // Only upgrade color if better (correct > present > absent)
     if (!keyColors[letter] || 
         (color === "correct") ||
         (color === "present" && keyColors[letter] === "absent")) {
@@ -732,7 +835,6 @@ function submitGuess() {
 
     let gameIsOver = false;
     
-    // Update stats for the player and check if the game is over
     if (guess === secret) {
       document.getElementById("modal-message").textContent = "You win!";
       updateStats(window.currentUsername, true, guessHistory.length);
@@ -744,25 +846,26 @@ function submitGuess() {
     }
     
     if (gameIsOver) {
-      // Populate stats in the hidden modal container
-      document.getElementById("modal-stats-display").textContent = displayStats(window.currentUsername);
+      const statsContainer = document.getElementById("modal-stats-container");
+      statsContainer.innerHTML = "";
+      const statsLines = displayStats(window.currentUsername);
+      statsLines.forEach(line => {
+          const p = document.createElement('p');
+          p.textContent = line;
+          p.classList.add('stats-line');
+          statsContainer.appendChild(p);
+      });
       modal.classList.add("show");
     
-      // Add event listener for the "Show my stats" button
       document.getElementById("showStatsBtn").addEventListener("click", function() {
         const statsContainer = document.getElementById("modal-stats-container");
-        if (statsContainer.style.display === "none") {
-            statsContainer.style.display = "block";
-            this.textContent = "Hide My Stats";
-        } else {
-            statsContainer.style.display = "none";
-            this.textContent = "Show My Stats";
-        }
+        statsContainer.classList.toggle('expanded');
+        this.textContent = statsContainer.classList.contains('expanded') ? "Hide My Stats" : "Show My Stats";
       });
     } else {
-      // If game is not over, proceed to the next row
       currentRow++;
       currentCol = 0;
+      isAnimating = false;
     }
 
   }, (cols * 150) + 200);
@@ -776,7 +879,6 @@ function copyResult() {
 
 function generateResultText(includeGuess = true) {
   let attempts = guessHistory.length;
-  // Get the current date in a human-readable format, e.g., "August 9, 2025"
   const currentDate = new Date().toLocaleDateString('en-GB', {
     year: 'numeric',
     month: 'short',
@@ -824,18 +926,13 @@ function showHint(hintNumber) {
     }
 
     if (btn) {
-        // Only proceed if the button is not already expanded
         if (!btn.classList.contains('expanded')) {
             const hintLabelSpan = btn.querySelector(".hint-label");
             const hintTextSpan = btn.querySelector(".hint-text");
 
-            // Add the new class to keep the hover color
             btn.classList.add("clicked-hint");
-
-            // Add the disabled attribute to the button
             btn.disabled = true;
 
-            // Expand button
             hintTextSpan.textContent = hintTextValue;
             btn.offsetWidth;
             btn.classList.add("expanded");
@@ -867,8 +964,8 @@ function initKeyboard() {
   const keyboard = document.getElementById("keyboard");
   keyboard.innerHTML = "";
   const layout = [
-    ["Q", "W", "E", "R", "T", "Z", "U", "I", "O", "P", "Ü", "Ö", "Ä", "ß"],  // German letters + ß
-    ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Æ", "Ø", "Å"],            // Norwegian letters
+    ["Q", "W", "E", "R", "T", "Z", "U", "I", "O", "P", "Ü", "Ö", "Ä", "ß"],
+    ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Æ", "Ø", "Å"],
     ["Enter", "Y", "X", "C", "V", "B", "N", "M", "Backspace"]
   ];
 
@@ -908,8 +1005,9 @@ window.onload = () => {
   if (wordFromURL) {
     secret = wordFromURL;
     document.getElementById("setup").style.display = "none";
-    document.getElementById("username-setup").style.display = "block"; // Show username setup first
+    document.getElementById("game").style.display = "flex";
     updateURLWithWord(secret, customHint1, customHint2, customHint3, customHint4);
+    checkUserStatus(); 
   }
 };
 </script>
