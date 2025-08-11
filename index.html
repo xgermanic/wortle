@@ -16,7 +16,12 @@
     display: none;
     flex-direction: column;
     align-items: center;
+    transition: opacity 0.5s ease-in-out;
   }
+#game.dimmed {
+    opacity: 0.5;
+    pointer-events: none; /* Disables interaction with dimmed elements */
+}
   .board {
     display: grid;
     grid-template-rows: repeat(6, 1fr);
@@ -90,7 +95,8 @@
 .hint-button {
   display: none;
 }
-    
+
+
   #hintButtons button {
     align-items: center;
     justify-content: center; /* Center content horizontally */
@@ -149,13 +155,23 @@
     opacity: 1;
     max-width: 250px;
   }
-
 #hintBtn1:hover, #hintBtn2:hover, #hintBtn3:hover, #hintBtn4:hover,
 #hintBtn1.clicked-hint, #hintBtn2.clicked-hint, #hintBtn3.clicked-hint, #hintBtn4.clicked-hint {
   background-color: #070a23;
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
-  
+.styled-button {
+    background-color: #e4e4e4;
+    border: none;
+    font-weight: bold;
+    width: 10em;
+    border-radius: 1rem;
+    color: rgb(35, 35, 35);
+    box-shadow: 0 0.2rem #1d1d1d;
+    border: 2px solid #1d1d1d;
+    cursor: pointer;
+    margin: 5px auto;
+}
   #modalNewRoundBtn, #modalCopyBtn, #showStatsBtn {
     background-color: #e4e4e4;
     border: none;
@@ -170,7 +186,7 @@
     cursor: pointer;
     margin: 5px auto;
   }
-  #modalNewRoundBtn:hover, #modalCopyBtn:hover, #showStatsBtn:hover {
+  #modalNewRoundBtn:hover, #modalCopyBtn:hover, #showStatsBtn:hover, .styled-button:hover {
     background-color: #e97251;
     color: #e9e9e9;
     transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
@@ -309,13 +325,10 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
-  #topStatsDisplay {
-    opacity:0.7;
+  #topStatsDisplay, #username-display-area {
     transition: opacity 0.2s;
-    text-shadow:2px 2px #000000
-  }
-  #topStatsDisplay:hover {
-    opacity:1;
+    text-shadow:2px 2px #000000;
+    font-size: 0.9em;
   }
     /* Add the keyframe animation */
   @keyframes shake {
@@ -332,14 +345,16 @@
 </head>
 <body>
 
-<h1>Ger&#x1f1e9;&#x1f1ea;<span style="color:rgb(243, 202, 186);">Nor</span>&#x1f1f3;&#x1f1f4;dle &#10084;&#65039;</h1>
+<h1>Ger&#x1f1e9;&#x1f1ea;<span style="color:rgb(243, 202, 186);">Nor</span>&#x1f1f3;&#x1f1f4;dle</h1>
 
-<div id="topStatsDisplay" style="text-align: center; margin-top: 10px; font-size: 0.9em; display: none;"></div>
-<div id="user-info-section" style="text-align: center; margin-top: 10px;">
-  <div id="username-display-area" style="margin-bottom: 8px;">
+<div id="header-info" style="display: flex; justify-content: space-between; align-items: center; max-width: 750px; margin: 10px auto; padding: 0 10px;">
+<div id="username-display-area" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align: left; width:180px;">
+  </div>
+  <div id="topStatsDisplay" style="padding:0 5px;">
+    </div>
+  <div id="change-user-button-area" style="text-align: center; width:180px;">
     </div>
 </div>
-
 <div id="setup">
   <p style="margin-bottom:20px;">Host: Enter a secret word and optional hints for the user to reveal</p>
   <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" class="host-input"/>
@@ -556,7 +571,13 @@ function startGame() {
 function checkUserStatus() {
   const savedUsername = localStorage.getItem("gerNordleUsername");
   const usernameDisplayArea = document.getElementById("username-display-area");
-  usernameDisplayArea.innerHTML = ''; // Clear previous content
+  const topStatsDisplay = document.getElementById("topStatsDisplay");
+  const changeUserButtonArea = document.getElementById("change-user-button-area");
+  const gameElement = document.getElementById("game");
+
+  usernameDisplayArea.innerHTML = '';
+  topStatsDisplay.innerHTML = '';
+  changeUserButtonArea.innerHTML = '';
 
   if (savedUsername) {
     window.currentUsername = savedUsername;
@@ -564,22 +585,32 @@ function checkUserStatus() {
 
     const displayMessage = document.createElement("p");
     displayMessage.textContent = `Playing as: ${savedUsername.toUpperCase()}`;
-    displayMessage.style.cssText = "font-weight: bold; margin-bottom: 5px;";
+    displayMessage.style.cssText = "margin: 0;";
     usernameDisplayArea.appendChild(displayMessage);
 
     const changeButton = document.createElement("button");
     changeButton.textContent = "Change User";
     changeButton.onclick = promptForUsername;
-    usernameDisplayArea.appendChild(changeButton);
+    changeButton.classList.add("styled-button");
+    changeUserButtonArea.appendChild(changeButton);
 
-    const topStatsDisplay = document.getElementById("topStatsDisplay");
-    topStatsDisplay.textContent = displayStats(savedUsername).join(" | ");
+    const stats = getStats(savedUsername);
+    let avgGuesses = stats.wins > 0 ? (stats.totalGuesses / stats.wins).toFixed(2) : "-";
+    let winPct = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
+
+    topStatsDisplay.innerHTML = `Games Played: ${stats.gamesPlayed} | Win %: ${winPct}% | Avg. Guesses: ${avgGuesses}`;
     topStatsDisplay.style.display = "block";
-    
+
+    gameElement.classList.remove("dimmed");
+
   } else {
     promptForUsername();
+    // This line was the problem and has been removed:
+    // topStatsDisplay.style.display = "none";
+    gameElement.classList.add("dimmed");
   }
 
+  // Common game initialization
   const hintButtonsContainer = document.getElementById("hintButtonsContainer");
   const hintTitle = document.getElementById("hintTitle");
   const hintBtn1 = document.getElementById("hintBtn1");
@@ -626,10 +657,13 @@ function checkUserStatus() {
 
 function promptForUsername() {
   const usernameDisplayArea = document.getElementById("username-display-area");
-  usernameDisplayArea.innerHTML = ''; // Clear for new elements
+  const topStatsDisplay = document.getElementById("topStatsDisplay");
+  const changeUserButtonArea = document.getElementById("change-user-button-area");
 
-  const inputContainer = document.createElement("div");
-  inputContainer.style.cssText = "display: flex; gap: 8px; justify-content: center; align-items: center;";
+  // Clear the content of all three sections
+  usernameDisplayArea.innerHTML = '';
+  topStatsDisplay.innerHTML = '';
+  changeUserButtonArea.innerHTML = '';
 
   const usernameInput = document.createElement("input");
   usernameInput.type = "text";
@@ -640,15 +674,22 @@ function promptForUsername() {
   const setButton = document.createElement("button");
   setButton.textContent = "Set Username";
   setButton.onclick = setUsername;
-  setButton.style.cssText = "padding: 8px 12px; border-radius: 6px;";
+  setButton.classList.add("styled-button");
+  setButton.style.width = "10em";
+  setButton.style.margin = "5px auto";
 
-  inputContainer.appendChild(usernameInput);
-  inputContainer.appendChild(setButton);
-  usernameDisplayArea.appendChild(inputContainer);
+  // Use the middle section to hold and center the input and button
+  topStatsDisplay.style.display = "flex";
+  topStatsDisplay.style.gap = "8px";
+  topStatsDisplay.style.justifyContent = "center";
+  topStatsDisplay.style.alignItems = "center";
+
+  topStatsDisplay.appendChild(usernameInput);
+  topStatsDisplay.appendChild(setButton);
 
   window.currentUsername = null;
   usernameSet = false;
-  document.getElementById("topStatsDisplay").style.display = "none";
+  document.getElementById("topStatsDisplay").style.display = "flex";
 }
 
 function setUsername() {
