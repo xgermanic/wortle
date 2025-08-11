@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>GerNordle</title>
+<title>WØRTLE</title>
 <style>
   body {
     font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
@@ -172,7 +172,7 @@
     cursor: pointer;
     margin: 5px auto;
 }
-  #modalNewRoundBtn, #modalCopyBtn, #showStatsBtn {
+  #modalCopyBtn, #showStatsBtn {
     background-color: #e4e4e4;
     border: none;
     padding: 10px;
@@ -186,7 +186,7 @@
     cursor: pointer;
     margin: 5px auto;
   }
-  #modalNewRoundBtn:hover, #modalCopyBtn:hover, #showStatsBtn:hover, .styled-button:hover {
+  #modalCopyBtn:hover, #showStatsBtn:hover, .styled-button:hover {
     background-color: #e97251;
     color: #e9e9e9;
     transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
@@ -305,7 +305,6 @@
 
   #modal-stats-container.expanded {
     max-height: 500px;
-    margin-top: 5px;
   }
 
   .stats-line {
@@ -345,7 +344,7 @@
 </head>
 <body>
 
-<h1>Ger&#x1f1e9;&#x1f1ea;<span style="color:rgb(243, 202, 186);">Nor</span>&#x1f1f3;&#x1f1f4;dle</h1>
+<h1><span style="color:rgb(243, 202, 186);">Cross-Germanic</span> WØRTLE</h1>
 
 <div id="header-info" style="display: flex; justify-content: space-between; align-items: center; max-width: 750px; margin: 10px auto; padding: 0 10px;">
 <div id="username-display-area" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align: left; width:180px;">
@@ -391,7 +390,6 @@
 
 <div id="game">
   <p id="message"></p>
-  <button id="newRoundBtn" style="display:none; margin:5px;" onclick="location.reload()">Start Again</button>
   <button id="copyBtn" style="display:none; margin:5px;" onclick="copyResult()">Copy Result</button>
   <div id="board" class="board"></div>
 
@@ -428,8 +426,7 @@
       <button id="showStatsBtn">Show My Stats</button>
       <div id="modal-stats-container">
           </div>
-      <button id="modalNewRoundBtn" onclick="location.reload()">Start Again</button>
-      <button id="modalCopyBtn" onclick="copyResult()">Copy Result</button>
+      <button id="modalCopyBtn" onclick="copySavedResult()">Copy Result</button>
     </div>
   </div>
 </div>
@@ -549,8 +546,11 @@ function startGame() {
   const inputHint4 = Array.from(document.querySelectorAll(".specialCharCheckbox:checked"))
                         .map(cb => cb.value)
                         .join(", ");
+  
   if (!inputWord) { alert("Please enter a secret word."); return; }
-  if (inputWord.length !== 5 || !/^[A-ZÄÖÜäöüßẞÆØÅæøå]+$/i.test(inputWord)) {
+  
+  // The word is now already uppercase due to .toUpperCase()
+  if (inputWord.length !== 5 || !/^[A-ZÄÖÜßẞÆØÅ]+$/i.test(inputWord)) {
     alert("Secret word must be exactly 5 letters and can include Ä, Ö, Ü, ß, ẞ, Æ, Ø, Å.");
     return;
   }
@@ -579,6 +579,59 @@ function checkUserStatus() {
   topStatsDisplay.innerHTML = '';
   changeUserButtonArea.innerHTML = '';
 
+  const isSolved = savedUsername && secret && localStorage.getItem("gerNordleSolved") === secret;
+  const isLost = savedUsername && secret && localStorage.getItem("gerNordleLost") === secret;
+
+  if (isSolved || isLost) {
+    document.getElementById("message").textContent = isSolved ? "You already solved this Wordle! 🥳" : "You have already played this Wordle.";
+    gameElement.classList.add("dimmed");
+
+    const savedGuessHistory = JSON.parse(localStorage.getItem("gerNordleGuessHistory"));
+    const savedColorHistory = JSON.parse(localStorage.getItem("gerNordleColorHistory"));
+    const savedHintStatus = JSON.parse(localStorage.getItem("gerNordleHintStatus"));
+
+    const modal = document.getElementById("game-over-modal");
+    if (isSolved) {
+        document.getElementById("modal-message").textContent = "You win! 🎉";
+    } else {
+        document.getElementById("modal-message").innerHTML = `Game over! The secret word was <span id="secretWordColor">${secret}</span>.`;
+    }
+
+    document.getElementById("modal-summary").textContent = generateResultText(true, savedGuessHistory, savedColorHistory, isSolved, savedHintStatus);
+    
+    document.getElementById("modalCopyBtn").onclick = function() {
+      if (savedGuessHistory && savedColorHistory) {
+        const resultText = generateResultText(false, savedGuessHistory, savedColorHistory, isSolved, savedHintStatus);
+        navigator.clipboard.writeText(resultText);
+        alert("Result copied to clipboard!");
+      } else {
+        alert("No solved game data to copy.");
+      }
+    };
+    
+    document.getElementById("modalCopyBtn").style.display = "block";
+
+    const statsContainer = document.getElementById("modal-stats-container");
+    statsContainer.innerHTML = "";
+    const statsLines = displayStats(savedUsername);
+    statsLines.forEach(line => {
+      const p = document.createElement('p');
+      p.textContent = line;
+      p.classList.add('stats-line');
+      statsContainer.appendChild(p);
+    });
+    modal.classList.add("show");
+
+    document.getElementById("showStatsBtn").addEventListener("click", function() {
+      const statsContainer = document.getElementById("modal-stats-container");
+      statsContainer.classList.toggle('expanded');
+      this.textContent = statsContainer.classList.contains('expanded') ? "Hide My Stats" : "Show My Stats";
+    });
+
+    return;
+  }
+
+  // If the game has not been solved or lost, continue with the normal setup
   if (savedUsername) {
     window.currentUsername = savedUsername;
     usernameSet = true;
@@ -605,12 +658,9 @@ function checkUserStatus() {
 
   } else {
     promptForUsername();
-    // This line was the problem and has been removed:
-    // topStatsDisplay.style.display = "none";
     gameElement.classList.add("dimmed");
   }
 
-  // Common game initialization
   const hintButtonsContainer = document.getElementById("hintButtonsContainer");
   const hintTitle = document.getElementById("hintTitle");
   const hintBtn1 = document.getElementById("hintBtn1");
@@ -642,7 +692,6 @@ function checkUserStatus() {
   hintUsed3 = false;
   hintUsed4 = false;
   document.getElementById("message").textContent = "";
-  document.getElementById("newRoundBtn").style.display = "none";
   document.getElementById("copyBtn").style.display = "none";
   grid = Array(rows).fill(null).map(() => Array(cols).fill(""));
   guessHistory = [];
@@ -722,7 +771,7 @@ function handleKeyPress(key) {
   }
   
   const msgEl = document.getElementById("message");
-  if (msgEl.textContent.trim() === "You win!" || msgEl.textContent.trim() === "Game over!") return;
+  if (msgEl.textContent.trim() === "You win! 🎉" || msgEl.textContent.trim() === "Game over!") return;
 
   const keyButton = document.querySelector(`.key[data-key="${key.toUpperCase()}"]`);
   if (keyButton) {
@@ -872,21 +921,40 @@ function submitGuess() {
   }
   setTimeout(() => {
     const modal = document.getElementById("game-over-modal");
-    document.getElementById("modal-summary").textContent = generateResultText();
 
     let gameIsOver = false;
+    let didWin = false; // Declare a variable to store the win/loss status
     
     if (guess === secret) {
-      document.getElementById("modal-message").textContent = "You win!";
+      document.getElementById("modal-message").textContent = "You win! 🎉";
       updateStats(window.currentUsername, true, guessHistory.length);
+      localStorage.setItem("gerNordleSolved", secret);
+      localStorage.setItem("gerNordleGuessHistory", JSON.stringify(guessHistory));
+      localStorage.setItem("gerNordleColorHistory", JSON.stringify(colorHistory));
       gameIsOver = true;
-    } else if (currentRow === rows - 1) {
+      didWin = true; // Set to true on a win
+    }
+    else if (currentRow === rows - 1) {
       document.getElementById("modal-message").innerHTML = `Game over! The secret word was <span id="secretWordColor">${secret}</span>.`;
       updateStats(window.currentUsername, false, guessHistory.length);
+      localStorage.setItem("gerNordleLost", secret);
+      localStorage.setItem("gerNordleGuessHistory", JSON.stringify(guessHistory));
+      localStorage.setItem("gerNordleColorHistory", JSON.stringify(colorHistory));
       gameIsOver = true;
+      didWin = false; // Set to false on a loss
     }
     
     if (gameIsOver) {
+      // Save hint status to local storage
+      localStorage.setItem("gerNordleHintStatus", JSON.stringify({
+        hintUsed1: hintUsed1,
+        hintUsed2: hintUsed2,
+        hintUsed3: hintUsed3,
+        hintUsed4: hintUsed4
+      }));
+      const savedHintStatus = JSON.parse(localStorage.getItem("gerNordleHintStatus"));
+      // Pass the didWin flag here so generateResultText() knows to use X/6
+      document.getElementById("modal-summary").textContent = generateResultText(true, guessHistory, colorHistory, didWin); 
       const statsContainer = document.getElementById("modal-stats-container");
       statsContainer.innerHTML = "";
       const statsLines = displayStats(window.currentUsername);
@@ -897,6 +965,7 @@ function submitGuess() {
           statsContainer.appendChild(p);
       });
       modal.classList.add("show");
+      document.getElementById("modalCopyBtn").style.display = "block";
     
       document.getElementById("showStatsBtn").addEventListener("click", function() {
         const statsContainer = document.getElementById("modal-stats-container");
@@ -911,34 +980,58 @@ function submitGuess() {
 
   }, (cols * 150) + 200);
 }
+function copySavedResult() {
+  const savedGuessHistory = JSON.parse(localStorage.getItem("gerNordleGuessHistory"));
+  const savedColorHistory = JSON.parse(localStorage.getItem("gerNordleColorHistory"));
+  const didWin = localStorage.getItem("gerNordleSolved") === secret;
+  
+  if (savedGuessHistory && savedColorHistory) {
+    const resultText = generateResultText(false, savedGuessHistory, savedColorHistory, didWin);
+    navigator.clipboard.writeText(resultText);
+    alert("Result copied to clipboard!");
+  } else {
+    alert("No solved game data to copy.");
+  }
+}
 
 function copyResult() {
-  const resultText = generateResultText(false);
+  const didWin = guessHistory[guessHistory.length - 1] === secret;
+  const resultText = generateResultText(false, guessHistory, colorHistory, didWin);
   navigator.clipboard.writeText(resultText);
   alert("Result copied to clipboard!");
 }
 
-function generateResultText(includeGuess = true) {
-  let attempts = guessHistory.length;
+
+function generateResultText(includeGuess = true, history = guessHistory, colors = colorHistory, won = true, hintStatus = null) {
+  const attempts = won ? history.length : 'X';
   const currentDate = new Date().toLocaleDateString('en-GB', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
   });
-  let statusLine = `GerNordle (${attempts}/${rows})\n${currentDate}`;
-  let lines = guessHistory.map((guess, idx) => {
-    let colors = colorHistory[idx].map((color) => {
+  let statusLine = `WØRTLE (${attempts}/${rows})\n${currentDate}`;
+  let lines = colors.map((colorArray) => {
+    let emojiColors = colorArray.map((color) => {
       if (color === "correct") return "🟩";
       if (color === "present") return "🟨";
       return "⬛";
     }).join("");
-    return includeGuess ? `${guess} ${colors}` : colors;
+    return emojiColors;
   });
   let hintLine = "";
-  if (hintUsed1) hintLine += "\nHint 1 was used";
-  if (hintUsed2) hintLine += "\nHint 2 was used";
-  if (hintUsed3) hintLine += "\nHint 3 was used";
-  if (hintUsed4) hintLine += "\nHint 4 was used";
+
+  if (hintStatus) {
+      if (hintStatus.hintUsed1) hintLine += "\nHint 1 was used";
+      if (hintStatus.hintUsed2) hintLine += "\nHint 2 was used";
+      if (hintStatus.hintUsed3) hintLine += "\nHint 3 was used";
+      if (hintStatus.hintUsed4) hintLine += "\nHint 4 was used";
+  } else {
+      if (hintUsed1) hintLine += "\nHint 1 was used";
+      if (hintUsed2) hintLine += "\nHint 2 was used";
+      if (hintUsed3) hintLine += "\nHint 3 was used";
+      if (hintUsed4) hintLine += "\nHint 4 was used";
+  }
+
   return statusLine + "\n" + lines.join("\n") + hintLine;
 }
 
