@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Sansita:ital,wght@1,700&display=swap" rel="stylesheet">
 <title>WØRTLE</title>
 <style>
   body {
@@ -12,11 +13,13 @@
     color: white;
     margin:0 auto;
   }
+
   #game {
     display: none;
     flex-direction: column;
     align-items: center;
     transition: opacity 0.5s ease-in-out;
+    padding-bottom:50px;
   }
 #game.dimmed {
     opacity: 0.5;
@@ -77,100 +80,127 @@
     user-select: none;
   }
   #hintBtn1, #hintBtn2, #hintBtn3, #hintBtn4 {
-    background: rgb(3, 39, 93);
-    border: 2px solid rgb(14, 12, 43);
+    background: transparent;
+    text-align: left;
+    border: 0px;
     border-radius:5px;
     margin-bottom: 5px;
     cursor: pointer;
-    padding:0px 15px 0px 15px;
-    display: none;
+    padding:7px;
     color: #c7d1d5;
     font-size: 10pt;
-    display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: color 0.3s ease;
   }
-
+#hintTitle {
+  width:200px;
+  text-align: center; 
+  text-transform: lowercase;
+  margin:0 auto;
+  font-weight: 700; 
+  font-style:italic;
+  font-family: 'Sansita', cursive;
+  margin-bottom: 10px; 
+  font-size: 1.3em; 
+  letter-spacing: 2pt;
+  position: relative; 
+}
+#hintTitle::before {
+  content: ""; /* Required for pseudo-elements */
+  position: absolute;
+  background-color: #4f1868; /* Your desired "offset" color */
+  width: 148px; /* Or specific width/height */
+  height: 11px; /* Or specific width/height */
+  top: 18px; /* Offset from the top */
+  left: 25px; /* Offset from the left */
+  z-index: -1; /* Place it behind the parent content */
+}
 .hint-button {
   display: none;
 }
-
-
-  #hintButtons button {
-    align-items: center;
-    justify-content: center; /* Center content horizontally */
-    gap: 10px;
-    padding: 0 15px; /* Use horizontal padding to control width */
-    letter-spacing: 1pt;
-    font-weight: bold;
-    background: rgb(3, 39, 93);
-    border: 2px solid rgb(14, 12, 43);
-    border-left: 4px solid rgb(14, 12, 43);
-    box-shadow: 0 0.2rem rgb(14, 12, 43);
-    border-radius: 10px;
-    margin: 4px 2px 4px 2px;
-    cursor: pointer;
-    color: #c7d1d5;
-    font-size: 10pt;
-    transition: max-width 0.5s ease-in-out, background-color 0.3s ease;
-    max-width: 250px; /* Start with a generous initial max-width */
-    overflow: hidden;
-    height: 50px;
-    white-space: nowrap; /* Prevent text from wrapping */
-  }
+#hintButtons button {
+  width: 180px;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px 0;
+  letter-spacing: 1pt;
+  font-weight: bold;
+  background: rgb(3, 39, 93);
+  border: 2px solid rgb(14, 12, 43);
+  border-left: 4px solid rgb(14, 12, 43);
+  box-shadow: 0 0.2rem rgb(14, 12, 43);
+  border-radius: 10px;
+  margin: 4px 2px;
+  cursor: pointer;
+  color: #c7d1d5;
+  font-size: 10pt;
+  white-space: normal;
+  overflow: hidden;
+  height: auto;
+  transition: background-color 0.3s ease;
+}
 
   #hintButtons button.expanded {
-    max-width: 9999px; /* A very large value to allow expansion */
-    justify-content: flex-start; /* Align content to the left when expanded */
-    padding-right: 15px;
+  opacity: 1;
+  max-height: 220px;
   }
   #hintButtons button:disabled {
   cursor: default;
   opacity: 1;
 }
-
-  .hint-label {
-    flex-shrink: 0;
-    transition: margin-right 0.5s ease-in-out;
-  }
+.hint-label {
+  text-transform: lowercase;
+  font-size:12pt;
+  width: 100%;
+  letter-spacing: 1pt;
+  margin: 0;
+  font-family:'Sansita', cursive;
+}
   
   .hint-label.hidden {
       margin-right: 10px;
   }
 
-  .hint-text {
-    font-style: italic;
-    text-transform: uppercase;
-    font-weight: normal;
-    white-space: normal;
-    opacity: 0;
-    max-width: 0;
-    transition: opacity 0.5s ease 0.3s, max-width 0.5s ease 0.3s;
-    flex-grow: 1;
-    margin-left: auto;
-  }
+.hint-text {
+  display: block;
+  font-weight: normal;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+  width: 100%;
+  padding-top: 4px; /* add some breathing room */
+  box-sizing: border-box;
+}
 
-  .hint-text.visible {
-    opacity: 1;
-    max-width: 250px;
-  }
+.hint-text.visible {
+  opacity: 1;
+  overflow:scroll;
+  max-height: 400px; /* increase to ensure enough space */
+}
 #hintBtn1:hover, #hintBtn2:hover, #hintBtn3:hover, #hintBtn4:hover,
 #hintBtn1.clicked-hint, #hintBtn2.clicked-hint, #hintBtn3.clicked-hint, #hintBtn4.clicked-hint {
   background-color: #070a23;
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 .styled-button {
-    background-color: #e4e4e4;
+    background-color: transparent;
     border: none;
-    font-weight: bold;
     width: 10em;
-    border-radius: 1rem;
-    color: rgb(35, 35, 35);
-    box-shadow: 0 0.2rem #1d1d1d;
-    border: 2px solid #1d1d1d;
+    color: rgb(255, 255, 255);
+    text-shadow: 2px 2px #000000;
+    font-size: 0.9em;
+    text-decoration: underline rgb(255, 255, 255) 1px;
+    text-underline-offset: 2px;
+    font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
     cursor: pointer;
     margin: 5px auto;
+}
+.styled-button:hover {
+    color: #e97251;
+    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
 }
   #modalCopyBtn, #showStatsBtn {
     background-color: #e4e4e4;
@@ -186,7 +216,7 @@
     cursor: pointer;
     margin: 5px auto;
   }
-  #modalCopyBtn:hover, #showStatsBtn:hover, .styled-button:hover {
+  #modalCopyBtn:hover, #showStatsBtn:hover {
     background-color: #e97251;
     color: #e9e9e9;
     transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
@@ -201,6 +231,12 @@
     margin:0;
     background-color:rgb(3, 22, 27);
     font-family: monospace;
+    display:flex;
+    justify-content: center;
+    gap:20px;
+  }
+  h1 p {
+    margin:0;
   }
   .modal {
     display: none;
@@ -214,20 +250,17 @@
     align-items: center;
     justify-content: center;
   }
-  #modal-message { font-size: 16pt; width:250px; font-family:monospace; }
+  #modal-message { font-size: 16pt; width:auto; font-family:monospace; }
   .modal.show { display: flex; }
   .modal-content {
-    width:250px;
+    width:300px;
+    max-height:80%;
+    overflow:scroll;
     background-color: #e1dbd9;
-    border:1px solid rgb(49, 49, 49);
-    background-image: linear-gradient(to top, rgb(206, 86, 17) 20px, transparent 20px); /* Blue stripe 5px high at the top */
-    background-repeat: no-repeat;
-    background-position: top;
-    background-size: 100% 20px; /* Ensures the stripe spans the full width and is 5px high */
+    border-top:20px solid rgb(206, 86, 17);
     border-radius:10px;
-    padding: 30px;
+    padding: 15px 30px 30px 30px;
     text-align: center;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -237,13 +270,12 @@
     white-space: pre-wrap;
     font-family: monospace;
     font-size: 1.2em;
-    margin: 10px 0;
     color: rgb(33, 33, 33);
     letter-spacing: 2pt;
   }
   #hintButtonsContainer {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     justify-content: center;
     gap: 3px;
     margin-top: 5px;
@@ -266,10 +298,10 @@
   transition: background 0.2s ease; /* Smooth color change */
 }
 
-.host-input::placeholder {
+.host-input::placeholder, #funFactInput::placeholder {
   color: #6f8a94;
 }
-.host-input:not(:placeholder-shown) {
+.host-input:not(:placeholder-shown), #funFactInput:not(:placeholder-shown) {
   background: #010f15;
 }
 #hintInput4Container {
@@ -340,12 +372,192 @@
   .shake {
     animation: shake 0.5s ease-in-out;
   }
+  #funFactInput {
+    background: #021a24;
+    color: #c7d1d5;
+    border: none;
+    padding: 8px;
+    min-height:100px;
+    border-radius: 6px;
+    font-size:12pt;
+    width: 400px;
+    display: block;
+    margin: auto;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    text-align: left;
+    transition: background 0.2s ease;
+  }
+  .fun-fact-section {
+    background-color: #d8d8d8; /* A dark blue-gray background */
+    color: #333; /* A light off-white font color */
+    font-size: 11pt; /* Slightly larger font size */
+    box-shadow: 0 0.4rem #5d849f;
+    border:2px solid #5d849f;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    min-height:60px;
+    max-height:120px;
+    overflow:scroll;
+  }
+  .fun-fact-section h2 {
+    font-size:12pt;
+    margin:4px 0 6px 0;
+  }
+  .fun-fact-section::-webkit-scrollbar {
+  width: 10px; /* Width of the vertical scrollbar */
+}
+/* Scrollbar thumb */
+.fun-fact-section::-webkit-scrollbar-thumb {
+  background-color: #a14612; /* Color of the thumb */
+  border-radius: 0px 6px; /* Rounded corners for the thumb */
+}
+/* Track */
+.fun-fact-section::-webkit-scrollbar-corner {
+  background: #4e1919;
+  border-radius: 6px 0px;
+}
+.help-button {
+  background: #07548a;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 29px;
+  height: 29px;
+  font-weight: bold;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  margin-left: 10px;
+  vertical-align: middle;
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+
+.help-button:hover {
+  background-color: #0a73c2;
+}
+.help-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #e1dbd9;
+  color: #212121;
+  max-width: 360px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  z-index: 9999;
+  display: flex; /* Use flex by default */
+  flex-direction: column;
+  outline: 2px solid orange;
+  padding: 2px 6px;
+}/* Hide when hidden attribute is present */
+.help-popup[hidden] {
+  display: none;
+}
+.help-popup:focus {
+  outline: 2px solid orange;
+}
+.help-popup-content {
+  position: relative;
+  padding: 20px 45px;
+}
+
+.close-help-btn {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  border: none;
+  background: transparent;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+  color: #333;
+  font-family:'Sansita', cursive;
+  font-weight: bold;
+}
+
+.close-help-btn:hover {
+  color: #000;
+}
+.help-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.4); /* dim background */
+  z-index: 9998; /* just below the popup */
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+}
+
+.popup-overlay[hidden] {
+  display: none;
+}
+
+.hint-popup {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right:0;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 10px;
+  background-color: #204f5e;
+  border-radius: 10px;
+  border:2px solid #010f15;
+  z-index: 1000;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.hint-popup[hidden] {
+  display: none;
+}
+
+.hint-popup.show {
+  transform: translateY(0);
+}
+
+.close-hint-btn {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 2em;
+  color: #c7d1d5;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.close-hint-btn:hover {
+  color: #fff;
+}
+
+
 </style>
 </head>
 <body>
 
-<h1><span style="color:rgb(243, 202, 186);">Cross-Germanic</span> WØRTLE</h1>
-
+<div id="mainContent">
+<h1>
+  <p><span style="color:rgb(243, 202, 186);">Cross-Germanic</span> WØRTLE</p>
+  <button id="helpBtn" aria-label="Show help" title="Show help" class="help-button">?</button>
+</h1>
 <div id="header-info" style="display: flex; justify-content: space-between; align-items: center; max-width: 750px; margin: 10px auto; padding: 0 10px;">
 <div id="username-display-area" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align: left; width:180px;">
   </div>
@@ -354,9 +566,9 @@
   <div id="change-user-button-area" style="text-align: center; width:180px;">
     </div>
 </div>
-<div id="setup">
+<div id="setup" style="padding-bottom:50px;">
   <p style="margin-bottom:20px;">Host: Enter a secret word and optional hints for the user to reveal</p>
-  <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" class="host-input"/>
+  <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" style="border:2px solid rgb(92, 17, 17);" class="host-input"/>
   <input type="text" id="hintInput" placeholder="Language" class="host-input"/>
   <input type="text" id="hintInput2" placeholder="Part of speech" class="host-input"/>
   <input type="text" id="hintInput3" placeholder="Context" class="host-input"/>
@@ -384,6 +596,7 @@
     <input type="checkbox" value="Å" class="specialCharCheckbox"> Å
   </label>
 </div>
+  <input type="text" id="funFactInput" placeholder="Fun fact"/>
   <button onclick="startGame()">Start Game</button>
   <p id="urlShare"></p>
 </div>
@@ -393,8 +606,41 @@
   <button id="copyBtn" style="display:none; margin:5px;" onclick="copyResult()">Copy Result</button>
   <div id="board" class="board"></div>
 
-<div id="hintButtons" style="width:80%; gap:10px; justify-content:center; margin-top:5px; display: none;">
-  <div id="hintTitle" style="display: none; text-align: center; font-weight: bold; margin-bottom: 10px; font-size: 1em; letter-spacing: 1pt;">Need a hint?</div>
+<div id="hintButtons" style="display: none;">
+  <div id="hintTitle" style="cursor:pointer;">Need a hint?</div>
+</div>
+
+  <div id="keyboard" class="keyboard"></div>
+</div>
+
+<div id="game-over-modal" class="modal">
+  <div class="modal-content">
+    <p id="modal-message"></p>
+    <div id="modal-summary"></div>
+    <div class="button-group">
+      <button id="showStatsBtn">Show My Stats</button>
+      <div id="modal-stats-container">
+          </div>
+      <button id="modalCopyBtn">Copy Result</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="helpOverlay" class="help-overlay" hidden></div>
+<div id="helpPopup" class="help-popup" role="dialog" aria-modal="true" aria-labelledby="helpTitle" tabindex="-1" hidden>
+  <div class="help-popup-content">
+    <button id="closeHelpBtn" aria-label="Close help" class="close-help-btn">&times;</button>
+    <h2 id="helpTitle">How to play</h2>
+    <p>Guess the secret word by entering guesses. Use hints if needed. Good luck!</p>
+    <p>Created by bicks@ and lokke@</p>
+  </div>
+</div>
+</div>
+
+<div id="hintPopupOverlay" class="popup-overlay" hidden></div>
+<div id="hintPopup" class="hint-popup" role="dialog" aria-modal="true" aria-labelledby="hintTitle" tabindex="-1" hidden>
+  <button id="closeHintPopupBtn" aria-label="Close hint popup" class="close-hint-btn">&times;</button>
   <div id="hintButtonsContainer">
     <button id="hintBtn1" class="hint-button" onclick="showHint(1)" aria-label="Show Hint 1" title="Show Hint 1" style="display: none;">
       <span class="hint-label">Language</span>
@@ -412,23 +658,7 @@
         <span class="hint-label">Reveal Special Character(s)</span>
         <span class="hint-text"></span>
     </button>
-  </div>
-</div>
-
-  <div id="keyboard" class="keyboard"></div>
-</div>
-
-<div id="game-over-modal" class="modal">
-  <div class="modal-content">
-    <p id="modal-message"></p>
-    <div id="modal-summary"></div>
-    <div class="button-group">
-      <button id="showStatsBtn">Show My Stats</button>
-      <div id="modal-stats-container">
-          </div>
-      <button id="modalCopyBtn" onclick="copySavedResult()">Copy Result</button>
-    </div>
-  </div>
+      </div>
 </div>
 
 <script>
@@ -437,6 +667,7 @@ let customHint1 = "";
 let customHint2 = "";
 let customHint3 = "";
 let customHint4 = "";
+let customFunFact = "";
 let hintUsed1 = false;
 let hintUsed2 = false;
 let hintUsed3 = false;
@@ -451,6 +682,16 @@ let guessHistory = [];
 let colorHistory = [];
 let usernameSet = false;
 let isAnimating = false;
+let gameCreatedDate = null;
+let hintExpanded1 = false;
+let hintExpanded2 = false;
+let hintExpanded3 = false;
+let hintExpanded4 = false;
+const hintTitle = document.getElementById("hintTitle");
+const hintPopup = document.getElementById("hintPopup");
+const hintPopupOverlay = document.getElementById("hintPopupOverlay");
+const closeHintPopupBtn = document.getElementById("closeHintPopupBtn");
+const game = document.getElementById("game");
 
 // Base64 helpers
 function base64Encode(str) { return btoa(unescape(encodeURIComponent(str))); }
@@ -463,6 +704,7 @@ function getSecretFromURL() {
   const encodedHint2 = params.get("h2");
   const encodedHint3 = params.get("h3");
   const encodedHint4 = params.get("h4");
+
   if (!encodedWord) return null;
   const decodedWord = base64Decode(encodedWord);
 
@@ -471,11 +713,27 @@ function getSecretFromURL() {
   customHint3 = encodedHint3 ? base64Decode(encodedHint3) : "";
   customHint4 = encodedHint4 ? base64Decode(encodedHint4) : "";
 
+  const encodedFunFact = params.get("ff");
+  customFunFact = encodedFunFact ? base64Decode(encodedFunFact) : "";
+
+  // ✅ Parse and store creation date ONLY if not already set
+  if (!gameCreatedDate) {
+    const encodedDate = params.get("d");
+    if (encodedDate) {
+      const decodedDateStr = base64Decode(encodedDate);
+      const parsedDate = new Date(decodedDateStr);
+      if (!isNaN(parsedDate)) {
+        gameCreatedDate = parsedDate;
+      }
+    }
+  }
+
   if (decodedWord && /^[A-ZÆØÅÄÖÜẞ]{5}$/.test(decodedWord)) {
     return decodedWord.toUpperCase();
   }
   return null;
 }
+
 
 const hintContainer = document.getElementById("hintInput4Container");
 const specialCharBoxes = document.querySelectorAll(".specialCharCheckbox");
@@ -490,13 +748,16 @@ specialCharBoxes.forEach(cb => {
 });
 
 
-function updateURLWithWord(word, hint1, hint2, hint3, hint4) {
+function updateURLWithWord(word, hint1, hint2, hint3, hint4, funFact) {
   const url = new URL(window.location);
   url.searchParams.set("w", base64Encode(word));
   if (hint1) url.searchParams.set("h1", base64Encode(hint1));
   if (hint2) url.searchParams.set("h2", base64Encode(hint2));
   if (hint3) url.searchParams.set("h3", base64Encode(hint3));
   if (hint4) url.searchParams.set("h4", base64Encode(hint4));
+  if (funFact) url.searchParams.set("ff", base64Encode(funFact));
+  const today = new Date().toISOString();
+  url.searchParams.set("d", base64Encode(today));
   window.history.replaceState({}, "", url);
   document.getElementById("urlShare").textContent = `Share this link to play: ${url.href}`;
 }
@@ -546,170 +807,242 @@ function startGame() {
   const inputHint4 = Array.from(document.querySelectorAll(".specialCharCheckbox:checked"))
                         .map(cb => cb.value)
                         .join(", ");
+  const inputFunFact = document.getElementById("funFactInput").value.trim();
+
+  // Validate the user input for the secret word
+  if (!inputWord) { 
+    alert("Please enter a secret word."); 
+    return; 
+  }
   
-  if (!inputWord) { alert("Please enter a secret word."); return; }
-  
-  // The word is now already uppercase due to .toUpperCase()
   if (inputWord.length !== 5 || !/^[A-ZÄÖÜßẞÆØÅ]+$/i.test(inputWord)) {
     alert("Secret word must be exactly 5 letters and can include Ä, Ö, Ü, ß, ẞ, Æ, Ø, Å.");
     return;
   }
   
+  // Set the global variables
   secret = inputWord;
   customHint1 = inputHint1;
   customHint2 = inputHint2;
   customHint3 = inputHint3;
   customHint4 = inputHint4;
-  updateURLWithWord(secret, customHint1, customHint2, customHint3, customHint4);
+  customFunFact = inputFunFact;
+
+  // Update the URL to share the game
+  updateURLWithWord(secret, customHint1, customHint2, customHint3, customHint4, customFunFact);
   
+  // Hide the setup screen and show the game screen
   document.getElementById("setup").style.display = "none";
   document.getElementById("game").style.display = "flex";
   
+  // Now, call checkUserStatus to load the game state based on the current user and word
   checkUserStatus();
 }
 
 function checkUserStatus() {
-  const savedUsername = localStorage.getItem("gerNordleUsername");
-  const usernameDisplayArea = document.getElementById("username-display-area");
-  const topStatsDisplay = document.getElementById("topStatsDisplay");
-  const changeUserButtonArea = document.getElementById("change-user-button-area");
-  const gameElement = document.getElementById("game");
+    const savedUsername = localStorage.getItem("gerNordleUsername");
+    const gameElement = document.getElementById("game");
 
-  usernameDisplayArea.innerHTML = '';
-  topStatsDisplay.innerHTML = '';
-  changeUserButtonArea.innerHTML = '';
+    // Clear all header areas at the start
+    document.getElementById("username-display-area").innerHTML = '';
+    document.getElementById("topStatsDisplay").innerHTML = '';
+    document.getElementById("change-user-button-area").innerHTML = '';
 
-  const isSolved = savedUsername && secret && localStorage.getItem("gerNordleSolved") === secret;
-  const isLost = savedUsername && secret && localStorage.getItem("gerNordleLost") === secret;
+    const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
+    const encodedSecret = secret ? base64Encode(secret) : null;
+    const userGameHistory = savedUsername ? allGameData[savedUsername] : undefined;
+    const pastGame = userGameHistory && encodedSecret ? userGameHistory[encodedSecret] : null;
 
-  if (isSolved || isLost) {
-    document.getElementById("message").textContent = isSolved ? "You already solved this Wordle! 🥳" : "You have already played this Wordle.";
-    gameElement.classList.add("dimmed");
+    // 1. Check for a COMPLETED game first.
+    if (pastGame && (pastGame.status === 'won' || pastGame.status === 'lost')) {
+        setupHeader(savedUsername);
+        gameElement.classList.add("dimmed");
 
-    const savedGuessHistory = JSON.parse(localStorage.getItem("gerNordleGuessHistory"));
-    const savedColorHistory = JSON.parse(localStorage.getItem("gerNordleColorHistory"));
-    const savedHintStatus = JSON.parse(localStorage.getItem("gerNordleHintStatus"));
+        if (pastGame.createdDate) {
+            gameCreatedDate = new Date(pastGame.createdDate);
+        } else {
+            gameCreatedDate = gameCreatedDate || new Date();
+        }
 
-    const modal = document.getElementById("game-over-modal");
-    if (isSolved) {
-        document.getElementById("modal-message").textContent = "You win! 🎉";
-    } else {
-        document.getElementById("modal-message").innerHTML = `Game over! The secret word was <span id="secretWordColor">${secret}</span>.`;
+        const isSolved = pastGame.status === 'won';
+        document.getElementById("message").textContent = isSolved
+            ? "You already solved this Wordle! 🥳"
+            : "You have already played this Wordle.";
+
+        const savedGuessHistory = pastGame.guessHistory;
+        const savedColorHistory = pastGame.colorHistory;
+        
+        const savedHintStatus = pastGame.hintStatus;
+        if (savedHintStatus) {
+            hintUsed1 = savedHintStatus.hintUsed1;
+            hintUsed2 = savedHintStatus.hintUsed2;
+            hintUsed3 = savedHintStatus.hintUsed3;
+            hintUsed4 = savedHintStatus.hintUsed4;
+            hintExpanded1 = savedHintStatus.hintExpanded1 || false;
+            hintExpanded2 = savedHintStatus.hintExpanded2 || false;
+            hintExpanded3 = savedHintStatus.hintExpanded3 || false;
+            hintExpanded4 = savedHintStatus.hintExpanded4 || false;
+        }
+
+        updateHintButtons();
+
+        const modal = document.getElementById("game-over-modal");
+
+        if (isSolved) {
+            document.getElementById("modal-message").innerHTML =
+                `You win! 🎉<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
+        } else {
+            document.getElementById("modal-message").innerHTML =
+                `Game over!<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
+        }
+        
+        document.getElementById("modal-summary").textContent =
+            generateResultText(true, savedGuessHistory, savedColorHistory, isSolved, savedHintStatus);
+
+        const existingFunFact = document.querySelector("#game-over-modal .fun-fact-section");
+        if (existingFunFact) existingFunFact.remove();
+
+        if (customFunFact && customFunFact.trim() !== "") {
+            const funFactDiv = document.createElement('div');
+            funFactDiv.classList.add('fun-fact-section');
+            const funFactHeader = document.createElement('h2');
+            funFactHeader.textContent = "Fun fact about today's Wørtle:";
+            const funFactText = document.createElement('p');
+            funFactText.textContent = customFunFact;
+            funFactText.style.margin = "0";
+            funFactDiv.appendChild(funFactHeader);
+            funFactDiv.appendChild(funFactText);
+            const modalContent = document.querySelector("#game-over-modal .modal-content");
+            if (modalContent) {
+                modalContent.appendChild(funFactDiv);
+            }
+        }
+
+        document.getElementById("modalCopyBtn").style.display = "block";
+
+        // Populate stats before binding buttons
+        const statsContainer = document.getElementById("modal-stats-container");
+        statsContainer.innerHTML = "";
+        displayStats(savedUsername).forEach(line => {
+            const p = document.createElement("p");
+            p.textContent = line;
+            p.classList.add("stats-line");
+            statsContainer.appendChild(p);
+        });
+
+        // Bind the modal buttons (Copy Result + Show My Stats)
+        bindModalButtons(savedGuessHistory, savedColorHistory, isSolved, savedHintStatus);
+        
+        const headerInfo = document.getElementById("header-info");
+          if (headerInfo) {
+              headerInfo.style.visibility = "hidden";
+          }
+
+        document.querySelectorAll(".hint-button").forEach(btn => {
+            btn.style.visibility = "hidden";
+        });
+
+        modal.classList.add("show");
+
+        return;
+    } 
+    // 2. ELSE, check for an ONGOING game.
+    else if (pastGame && pastGame.ongoingState) {
+        console.log("Found ongoing game, restoring state...");
+        
+        const savedState = pastGame.ongoingState;
+        grid = savedState.grid;
+        currentRow = savedState.currentRow;
+        guessHistory = savedState.guessHistory;
+        colorHistory = savedState.colorHistory;
+        keyColors = savedState.keyColors;
+        hintUsed1 = savedState.hintStatus.hintUsed1;
+        hintUsed2 = savedState.hintStatus.hintUsed2;
+        hintUsed3 = savedState.hintStatus.hintUsed3;
+        hintUsed4 = savedState.hintStatus.hintUsed4;
+        hintExpanded1 = savedState.hintStatus.hintExpanded1 || false;
+        hintExpanded2 = savedState.hintStatus.hintExpanded2 || false;
+        hintExpanded3 = savedState.hintStatus.hintExpanded3 || false;
+        hintExpanded4 = savedState.hintStatus.hintExpanded4 || false;
+        currentCol = 0;
+
+        setupHeader(savedUsername);
+        initKeyboard();
+        initBoard();
+        updateBoard();
+        updateKeyboardColors();
+
+        for (let r = 0; r < colorHistory.length; r++) {
+            const colors = colorHistory[r];
+            const rowDiv = document.getElementById("board").children[r];
+            for (let c = 0; c < cols; c++) {
+                if (rowDiv && rowDiv.children[c]) {
+                    rowDiv.children[c].classList.add(colors[c]);
+                }
+            }
+        }
+        updateKeyboardColors();
+        updateHintButtons();
+
+        window.currentUsername = savedUsername;
+        usernameSet = true;
+        gameElement.classList.remove("dimmed");
+        return;
     }
 
-    document.getElementById("modal-summary").textContent = generateResultText(true, savedGuessHistory, savedColorHistory, isSolved, savedHintStatus);
-    
-    document.getElementById("modalCopyBtn").onclick = function() {
-      if (savedGuessHistory && savedColorHistory) {
-        const resultText = generateResultText(false, savedGuessHistory, savedColorHistory, isSolved, savedHintStatus);
-        navigator.clipboard.writeText(resultText);
-        alert("Result copied to clipboard!");
-      } else {
-        alert("No solved game data to copy.");
-      }
-    };
-    
-    document.getElementById("modalCopyBtn").style.display = "block";
+    // 3. If neither of the above, proceed as a NEW game.
+    if (savedUsername) {
+        setupHeader(savedUsername);
+        gameElement.classList.remove("dimmed");
+        window.currentUsername = savedUsername;
+        usernameSet = true;
 
-    const statsContainer = document.getElementById("modal-stats-container");
-    statsContainer.innerHTML = "";
-    const statsLines = displayStats(savedUsername);
-    statsLines.forEach(line => {
-      const p = document.createElement('p');
-      p.textContent = line;
-      p.classList.add('stats-line');
-      statsContainer.appendChild(p);
-    });
-    modal.classList.add("show");
+        resetHints();
+        grid = Array(rows).fill(null).map(() => Array(cols).fill(""));
+        guessHistory = [];
+        colorHistory = [];
+        keyColors = {};
+        currentRow = 0;
+        currentCol = 0;
+        isAnimating = false;
+        initBoard();
+        initKeyboard();
+        updateHintButtons();
+        
+        const displayMessage = document.createElement("p");
+        displayMessage.textContent = `Playing as: ${savedUsername.toUpperCase()}`;
+        displayMessage.style.cssText = "margin: 0;";
+        usernameDisplayArea.appendChild(displayMessage);
 
-    document.getElementById("showStatsBtn").addEventListener("click", function() {
-      const statsContainer = document.getElementById("modal-stats-container");
-      statsContainer.classList.toggle('expanded');
-      this.textContent = statsContainer.classList.contains('expanded') ? "Hide My Stats" : "Show My Stats";
-    });
+        const changeButton = document.createElement("button");
+        changeButton.textContent = "Change User";
+        changeButton.onclick = promptForUsername;
+        changeButton.classList.add("styled-button");
+        changeUserButtonArea.appendChild(changeButton);
 
-    return;
-  }
+        const stats = getStats(savedUsername);
+        let avgGuesses = stats.wins > 0 ? (stats.totalGuesses / stats.wins).toFixed(2) : "-";
+        let winPct = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
 
-  // If the game has not been solved or lost, continue with the normal setup
-  if (savedUsername) {
-    window.currentUsername = savedUsername;
-    usernameSet = true;
+        topStatsDisplay.innerHTML = `Games Played: ${stats.gamesPlayed} | Win %: ${winPct}% | Avg. Guesses: ${avgGuesses}`;
+        topStatsDisplay.style.display = "block";
 
-    const displayMessage = document.createElement("p");
-    displayMessage.textContent = `Playing as: ${savedUsername.toUpperCase()}`;
-    displayMessage.style.cssText = "margin: 0;";
-    usernameDisplayArea.appendChild(displayMessage);
-
-    const changeButton = document.createElement("button");
-    changeButton.textContent = "Change User";
-    changeButton.onclick = promptForUsername;
-    changeButton.classList.add("styled-button");
-    changeUserButtonArea.appendChild(changeButton);
-
-    const stats = getStats(savedUsername);
-    let avgGuesses = stats.wins > 0 ? (stats.totalGuesses / stats.wins).toFixed(2) : "-";
-    let winPct = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
-
-    topStatsDisplay.innerHTML = `Games Played: ${stats.gamesPlayed} | Win %: ${winPct}% | Avg. Guesses: ${avgGuesses}`;
-    topStatsDisplay.style.display = "block";
-
-    gameElement.classList.remove("dimmed");
-
-  } else {
-    promptForUsername();
-    gameElement.classList.add("dimmed");
-  }
-
-  const hintButtonsContainer = document.getElementById("hintButtonsContainer");
-  const hintTitle = document.getElementById("hintTitle");
-  const hintBtn1 = document.getElementById("hintBtn1");
-  const hintBtn2 = document.getElementById("hintBtn2");
-  const hintBtn3 = document.getElementById("hintBtn3");
-  const hintBtn4 = document.getElementById("hintBtn4");
-
-  if (customHint1 && customHint1.trim() !== "") {
-    hintBtn1.style.display = "inline-flex";
-  }
-  if (customHint2 && customHint2.trim() !== "") {
-    hintBtn2.style.display = "inline-flex";
-  }
-  if (customHint3 && customHint3.trim() !== "") {
-    hintBtn3.style.display = "inline-flex";
-  }
-  if (customHint4 && customHint4.trim() !== "") {
-    hintBtn4.style.display = "inline-flex";
-  }
-
-  if (hintBtn1.style.display !== "none" || hintBtn2.style.display !== "none" || hintBtn3.style.display !== "none" || hintBtn4.style.display !== "none") {
-    document.getElementById("hintButtons").style.display = "block";
-    hintButtonsContainer.style.display = "flex";
-    hintTitle.style.display = "block";
-  }
-
-  hintUsed1 = false;
-  hintUsed2 = false;
-  hintUsed3 = false;
-  hintUsed4 = false;
-  document.getElementById("message").textContent = "";
-  document.getElementById("copyBtn").style.display = "none";
-  grid = Array(rows).fill(null).map(() => Array(cols).fill(""));
-  guessHistory = [];
-  colorHistory = [];
-  keyColors = {};
-  currentRow = 0;
-  currentCol = 0;
-  isAnimating = false;
-  initBoard();
-  initKeyboard();
+        gameElement.classList.remove("dimmed");
+    } else {
+        initBoard();
+        initKeyboard();
+        updateHintButtons();
+        promptForUsername();
+        gameElement.classList.add("dimmed");
+    }
 }
+
 
 function promptForUsername() {
   const usernameDisplayArea = document.getElementById("username-display-area");
   const topStatsDisplay = document.getElementById("topStatsDisplay");
   const changeUserButtonArea = document.getElementById("change-user-button-area");
 
-  // Clear the content of all three sections
   usernameDisplayArea.innerHTML = '';
   topStatsDisplay.innerHTML = '';
   changeUserButtonArea.innerHTML = '';
@@ -727,7 +1060,6 @@ function promptForUsername() {
   setButton.style.width = "10em";
   setButton.style.margin = "5px auto";
 
-  // Use the middle section to hold and center the input and button
   topStatsDisplay.style.display = "flex";
   topStatsDisplay.style.gap = "8px";
   topStatsDisplay.style.justifyContent = "center";
@@ -752,7 +1084,7 @@ function setUsername() {
 
   username = username.toUpperCase();
   localStorage.setItem("gerNordleUsername", username);
-
+  resetHints();
   checkUserStatus();
 }
 
@@ -771,7 +1103,7 @@ function handleKeyPress(key) {
   }
   
   const msgEl = document.getElementById("message");
-  if (msgEl.textContent.trim() === "You win! 🎉" || msgEl.textContent.trim() === "Game over!") return;
+  if (msgEl.textContent.trim() === "You win! 🎉" || msgEl.textContent.trim().startsWith("Game over!")) return;
 
   const keyButton = document.querySelector(`.key[data-key="${key.toUpperCase()}"]`);
   if (keyButton) {
@@ -911,172 +1243,111 @@ function submitGuess() {
   for (let i = 0; i < cols; i++) {
     const tile = board.children[currentRow].children[i];
     setTimeout(() => {
-      tile.classList.add("flip");
-      setTimeout(() => {
-        tile.classList.remove("flip");
         tile.classList.add(colors[i]);
-        tile.classList.add("flipped");
-      }, 150);
-    }, i * 150);
+    }, i * 200);
   }
+  
   setTimeout(() => {
-    const modal = document.getElementById("game-over-modal");
-
-    let gameIsOver = false;
-    let didWin = false; // Declare a variable to store the win/loss status
-    
     if (guess === secret) {
-      document.getElementById("modal-message").textContent = "You win! 🎉";
-      updateStats(window.currentUsername, true, guessHistory.length);
-      localStorage.setItem("gerNordleSolved", secret);
-      localStorage.setItem("gerNordleGuessHistory", JSON.stringify(guessHistory));
-      localStorage.setItem("gerNordleColorHistory", JSON.stringify(colorHistory));
-      gameIsOver = true;
-      didWin = true; // Set to true on a win
-    }
-    else if (currentRow === rows - 1) {
-      document.getElementById("modal-message").innerHTML = `Game over! The secret word was <span id="secretWordColor">${secret}</span>.`;
-      updateStats(window.currentUsername, false, guessHistory.length);
-      localStorage.setItem("gerNordleLost", secret);
-      localStorage.setItem("gerNordleGuessHistory", JSON.stringify(guessHistory));
-      localStorage.setItem("gerNordleColorHistory", JSON.stringify(colorHistory));
-      gameIsOver = true;
-      didWin = false; // Set to false on a loss
-    }
-    
-    if (gameIsOver) {
-      // Save hint status to local storage
-      localStorage.setItem("gerNordleHintStatus", JSON.stringify({
-        hintUsed1: hintUsed1,
-        hintUsed2: hintUsed2,
-        hintUsed3: hintUsed3,
-        hintUsed4: hintUsed4
-      }));
-      const savedHintStatus = JSON.parse(localStorage.getItem("gerNordleHintStatus"));
-      // Pass the didWin flag here so generateResultText() knows to use X/6
-      document.getElementById("modal-summary").textContent = generateResultText(true, guessHistory, colorHistory, didWin); 
-      const statsContainer = document.getElementById("modal-stats-container");
-      statsContainer.innerHTML = "";
-      const statsLines = displayStats(window.currentUsername);
-      statsLines.forEach(line => {
-          const p = document.createElement('p');
-          p.textContent = line;
-          p.classList.add('stats-line');
-          statsContainer.appendChild(p);
-      });
-      modal.classList.add("show");
-      document.getElementById("modalCopyBtn").style.display = "block";
-    
-      document.getElementById("showStatsBtn").addEventListener("click", function() {
-        const statsContainer = document.getElementById("modal-stats-container");
-        statsContainer.classList.toggle('expanded');
-        this.textContent = statsContainer.classList.contains('expanded') ? "Hide My Stats" : "Show My Stats";
-      });
+      endGame(true);
+    } else if (currentRow === rows - 1) {
+      endGame(false);
     } else {
       currentRow++;
       currentCol = 0;
       isAnimating = false;
+      saveOngoingGame(window.currentUsername, base64Encode(secret));      
     }
-
-  }, (cols * 150) + 200);
-}
-function copySavedResult() {
-  const savedGuessHistory = JSON.parse(localStorage.getItem("gerNordleGuessHistory"));
-  const savedColorHistory = JSON.parse(localStorage.getItem("gerNordleColorHistory"));
-  const didWin = localStorage.getItem("gerNordleSolved") === secret;
-  
-  if (savedGuessHistory && savedColorHistory) {
-    const resultText = generateResultText(false, savedGuessHistory, savedColorHistory, didWin);
-    navigator.clipboard.writeText(resultText);
-    alert("Result copied to clipboard!");
-  } else {
-    alert("No solved game data to copy.");
-  }
+  }, cols * 200);
 }
 
-function copyResult() {
-  const didWin = guessHistory[guessHistory.length - 1] === secret;
-  const resultText = generateResultText(false, guessHistory, colorHistory, didWin);
-  navigator.clipboard.writeText(resultText);
-  alert("Result copied to clipboard!");
-}
+function endGame(won) {
+    isAnimating = true; 
+    const username = window.currentUsername;
+    updateStats(username, won, currentRow + 1);
 
-
-function generateResultText(includeGuess = true, history = guessHistory, colors = colorHistory, won = true, hintStatus = null) {
-  const attempts = won ? history.length : 'X';
-  const currentDate = new Date().toLocaleDateString('en-GB', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-  let statusLine = `WØRTLE (${attempts}/${rows})\n${currentDate}`;
-  let lines = colors.map((colorArray) => {
-    let emojiColors = colorArray.map((color) => {
-      if (color === "correct") return "🟩";
-      if (color === "present") return "🟨";
-      return "⬛";
-    }).join("");
-    return emojiColors;
-  });
-  let hintLine = "";
-
-  if (hintStatus) {
-      if (hintStatus.hintUsed1) hintLine += "\nHint 1 was used";
-      if (hintStatus.hintUsed2) hintLine += "\nHint 2 was used";
-      if (hintStatus.hintUsed3) hintLine += "\nHint 3 was used";
-      if (hintStatus.hintUsed4) hintLine += "\nHint 4 was used";
-  } else {
-      if (hintUsed1) hintLine += "\nHint 1 was used";
-      if (hintUsed2) hintLine += "\nHint 2 was used";
-      if (hintUsed3) hintLine += "\nHint 3 was used";
-      if (hintUsed4) hintLine += "\nHint 4 was used";
-  }
-
-  return statusLine + "\n" + lines.join("\n") + hintLine;
-}
-
-function showHint(hintNumber) {
-    if (!usernameSet) {
-        alert("Please enter a username before using hints.");
-        return;
-    }
-    let btn, hintTextValue;
-    if (hintNumber === 1) {
-        btn = document.getElementById("hintBtn1");
-        hintTextValue = customHint1;
-        hintUsed1 = true;
-    } else if (hintNumber === 2) {
-        btn = document.getElementById("hintBtn2");
-        hintTextValue = customHint2;
-        hintUsed2 = true;
-    } else if (hintNumber === 3) {
-        btn = document.getElementById("hintBtn3");
-        hintTextValue = customHint3;
-        hintUsed3 = true;
-    } else if (hintNumber === 4) {
-        btn = document.getElementById("hintBtn4");
-        hintTextValue = customHint4;
-        hintUsed4 = true;
+    const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
+    const encodedSecret = base64Encode(secret);
+    if (!allGameData[username]) {
+        allGameData[username] = {};
     }
 
-    if (btn) {
-        if (!btn.classList.contains('expanded')) {
-            const hintLabelSpan = btn.querySelector(".hint-label");
-            const hintTextSpan = btn.querySelector(".hint-text");
+    // ✅ Preserve original creation date if it exists
+    const existingGame = allGameData[username][encodedSecret];
+    const creationDateToSave = existingGame && existingGame.createdDate
+        ? existingGame.createdDate
+        : (gameCreatedDate ? gameCreatedDate.toISOString() : new Date().toISOString());
 
-            btn.classList.add("clicked-hint");
-            btn.disabled = true;
-
-            hintTextSpan.textContent = hintTextValue;
-            btn.offsetWidth;
-            btn.classList.add("expanded");
-            hintLabelSpan.classList.add('hidden');
-
-            setTimeout(() => {
-                hintTextSpan.classList.add('visible');
-            }, 300);
-        }
+    // Save game data
+    if (allGameData[username][encodedSecret]) {
+        delete allGameData[username][encodedSecret].ongoingState;
     }
+    allGameData[username][encodedSecret] = {
+        status: won ? 'won' : 'lost',
+        guessHistory: guessHistory,
+        colorHistory: colorHistory,
+        hintStatus: { 
+            hintUsed1, hintUsed2, hintUsed3, hintUsed4, 
+            hintExpanded1, hintExpanded2, hintExpanded3, hintExpanded4 
+        },
+        createdDate: creationDateToSave
+    };
+
+    localStorage.setItem("gerNordleGameData", JSON.stringify(allGameData));
+
+    const modal = document.getElementById("game-over-modal");
+
+    // Message
+    if (won) {
+        document.getElementById("modal-message").innerHTML = 
+            `You win! 🎉<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
+    } else {
+        document.getElementById("modal-message").innerHTML = 
+            `Game over!<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
+    }
+
+    // Summary text
+    const hintStatusForSummary = { hintUsed1, hintUsed2, hintUsed3, hintUsed4 };
+    document.getElementById("modal-summary").textContent = 
+        generateResultText(true, guessHistory, colorHistory, won, hintStatusForSummary);
+
+    // Remove existing fun fact if present
+    const existingFunFact = document.querySelector("#game-over-modal .fun-fact-section");
+    if (existingFunFact) existingFunFact.remove();
+
+    // Add fun fact if available
+    if (customFunFact && customFunFact.trim() !== "") {
+        const funFactDiv = document.createElement('div');
+        funFactDiv.classList.add('fun-fact-section');
+        const funFactHeader = document.createElement('h2');
+        funFactHeader.textContent = "Fun fact about today's Wørtle:";
+        const funFactText = document.createElement('p');
+        funFactText.textContent = customFunFact;
+        funFactText.style.margin = "0";
+        funFactDiv.appendChild(funFactHeader);
+        funFactDiv.appendChild(funFactText);
+        document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
+    }
+
+    // Stats section
+    const statsContainer = document.getElementById("modal-stats-container");
+    statsContainer.innerHTML = "";
+    statsContainer.classList.remove('expanded');
+    document.getElementById('showStatsBtn').textContent = "Show My Stats";
+
+    displayStats(username).forEach(line => {
+        const p = document.createElement('p');
+        p.textContent = line;
+        p.classList.add('stats-line'); // ✅ Added class for styling
+        statsContainer.appendChild(p);
+    });
+
+    // Bind modal buttons (copy + toggle stats)
+    bindModalButtons(guessHistory, colorHistory, won, hintStatusForSummary);
+
+    // Show modal
+    modal.classList.add("show");
+    document.getElementById("modalCopyBtn").style.display = "block";
 }
 
 function initBoard() {
@@ -1086,64 +1357,446 @@ function initBoard() {
     const rowDiv = document.createElement("div");
     rowDiv.classList.add("row");
     for (let c = 0; c < cols; c++) {
-      const tile = document.createElement("div");
-      tile.classList.add("tile");
-      rowDiv.appendChild(tile);
+      const tileDiv = document.createElement("div");
+      tileDiv.classList.add("tile");
+      rowDiv.appendChild(tileDiv);
     }
     board.appendChild(rowDiv);
   }
 }
 
 function initKeyboard() {
-  const keyboard = document.getElementById("keyboard");
-  keyboard.innerHTML = "";
-  const layout = [
-    ["Q", "W", "E", "R", "T", "Z", "U", "I", "O", "P", "Ü", "Ö", "Ä", "ß"],
-    ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Æ", "Ø", "Å"],
-    ["Enter", "Y", "X", "C", "V", "B", "N", "M", "Backspace"]
+  const keyboardDiv = document.getElementById("keyboard");
+  keyboardDiv.innerHTML = "";
+  const keysLayout = [
+    ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "Å"],
+    ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Ö", "Ä", "Ø"],
+    ["Enter", "Z", "X", "C", "V", "B", "N", "M", "Ü", "ẞ", "Æ", "Backspace"]
   ];
 
-  layout.forEach(row => {
+  keysLayout.forEach(row => {
     const rowDiv = document.createElement("div");
     rowDiv.classList.add("key-row");
     row.forEach(key => {
-      const keyButton = document.createElement("button");
-      keyButton.textContent = key;
-      keyButton.classList.add("key");
-      keyButton.setAttribute("data-key", key);
-      keyButton.addEventListener("click", () => {
-        if (key === "Backspace") handleKeyPress("Backspace");
-        else if (key === "Enter") handleKeyPress("Enter");
-        else handleKeyPress(key);
-      });
-      rowDiv.appendChild(keyButton);
+      const keyBtn = document.createElement("button");
+      keyBtn.textContent = key;
+      keyBtn.classList.add("key");
+      keyBtn.dataset.key = key;
+      keyBtn.onclick = () => handleKeyPress(key);
+      rowDiv.appendChild(keyBtn);
     });
-    keyboard.appendChild(rowDiv);
+    keyboardDiv.appendChild(rowDiv);
   });
 }
 
-
 function updateKeyboardColors() {
-  const keys = document.querySelectorAll(".key");
-  keys.forEach((keyBtn) => {
-    const letter = keyBtn.textContent;
-    if (keyColors[letter]) {
-      keyBtn.classList.remove("correct", "present", "absent");
-      keyBtn.classList.add(keyColors[letter]);
+    for (const key in keyColors) {
+        const keyBtn = document.querySelector(`.key[data-key="${key}"]`);
+        if (keyBtn) {
+            keyBtn.classList.remove("present", "absent", "correct"); // Clear old colors
+            keyBtn.classList.add(keyColors[key]);
+        }
+    }
+}
+
+function showHint(hintNumber) {
+    let btn, hintText, hintContent;
+    
+    switch(hintNumber) {
+        case 1:
+            btn = document.getElementById('hintBtn1');
+            hintContent = customHint1;
+            if (hintUsed1) return; 
+            hintUsed1 = true; 
+            hintExpanded1 = true;
+            break;
+        case 2:
+            btn = document.getElementById('hintBtn2');
+            hintContent = customHint2;
+            if (hintUsed2) return; 
+            hintUsed2 = true; 
+            hintExpanded2 = true;
+            break;
+        case 3:
+            btn = document.getElementById('hintBtn3');
+            hintContent = customHint3;
+            if (hintUsed3) return; 
+            hintUsed3 = true; 
+            hintExpanded3 = true;
+            break;
+        case 4:
+            btn = document.getElementById('hintBtn4');
+            hintContent = customHint4;
+            if (hintUsed4) return; 
+            hintUsed4 = true; 
+            hintExpanded4 = true;
+            break;
+    }
+
+    if (btn && !btn.classList.contains('expanded')) {
+        hintText = btn.querySelector('.hint-text');
+        hintText.textContent = hintContent;
+        btn.classList.add('expanded');
+        hintText.classList.add('visible');
+        btn.classList.add('clicked-hint');
+        btn.disabled = true;
+    }
+    
+    // ✅ Add this line to save the game state immediately
+    if (window.currentUsername && secret) {
+        saveOngoingGame(window.currentUsername, base64Encode(secret));
+    }
+}
+
+function generateResultText(isForDisplay, history, colors, won, hintStatus) {
+    // Get and format the current date
+    const dateToUse = gameCreatedDate || new Date();
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    const dateString = dateToUse.toLocaleDateString('en-GB', options);
+
+    // The first line of the result text
+    let text = `WØRTLE (${won ? history.length : 'X'}/6)\n`;
+    
+    // Add the formatted date on the next line
+    text += `${dateString}\n`;
+
+    // Count the total number of hints used
+    let hintCount = 0;
+    if (hintStatus.hintUsed1) hintCount++;
+    if (hintStatus.hintUsed2) hintCount++;
+    if (hintStatus.hintUsed3) hintCount++;
+    if (hintStatus.hintUsed4) hintCount++;
+
+    // Add the emoji grid (this part remains the same)
+    const colorMap = {
+        correct: '🟩',
+        present: '🟨',
+        absent: '⬛'
+    };
+
+    for (let i = 0; i < colors.length; i++) {
+        let rowText = colors[i].map(color => colorMap[color] || '⬛').join('');
+        text += rowText + '\n';
+    }
+
+    // Add the hint summary sentence if any hints were used, followed by a blank line
+    if (hintCount === 1) {
+        text += "1 hint used\n";
+    } else if (hintCount > 1) {
+        text += `${hintCount} hints used\n`;
+    } else {
+        // If no hints were used, just add a blank line for spacing
+        text += "\n";
+    }
+
+    return text;
+}
+
+function resetHints() {
+    hintUsed1 = hintUsed2 = hintUsed3 = hintUsed4 = false;
+    hintExpanded1 = hintExpanded2 = hintExpanded3 = hintExpanded4 = false; // Reset new variables
+    ['hintBtn1', 'hintBtn2', 'hintBtn3', 'hintBtn4'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.classList.remove('expanded', 'clicked-hint');
+            btn.disabled = false;
+            const hintTextSpan = btn.querySelector('.hint-text');
+            if(hintTextSpan) {
+              hintTextSpan.classList.remove('visible');
+              hintTextSpan.textContent = '';
+            }
+            const hintLabel = btn.querySelector('.hint-label');
+            if (hintLabel) {
+                hintLabel.classList.remove('hidden');
+            }
+        }
+    });
+}
+
+// Initial setup on page load
+window.onload = () => {
+  secret = getSecretFromURL();
+  if (secret) {
+    document.getElementById("setup").style.display = "none";
+    document.getElementById("game").style.display = "flex";
+    
+    checkUserStatus();
+  }
+};
+
+function saveOngoingGame(username, encodedSecret) {
+    if (!username || !encodedSecret) return;
+
+    // Get the main data object from localStorage
+    const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
+
+    // Ensure the structure for the user and secret exists
+    if (!allGameData[username]) {
+        allGameData[username] = {};
+    }
+    if (!allGameData[username][encodedSecret]) {
+        allGameData[username][encodedSecret] = {};
+    }
+
+    // Create an object with all the data needed to restore the game
+    const ongoingState = {
+        grid,
+        currentRow,
+        guessHistory,
+        colorHistory,
+        keyColors,
+        hintStatus: { hintUsed1, hintUsed2, hintUsed3, hintUsed4, hintExpanded1, hintExpanded2, hintExpanded3, hintExpanded4 }
+    };
+
+    // Save this state to the specific user and word
+    allGameData[username][encodedSecret].ongoingState = ongoingState;
+
+    // Write the updated data back to localStorage
+    localStorage.setItem("gerNordleGameData", JSON.stringify(allGameData));
+}
+
+function setupHeader(username) {
+    const usernameDisplayArea = document.getElementById("username-display-area");
+    const topStatsDisplay = document.getElementById("topStatsDisplay");
+    const changeUserButtonArea = document.getElementById("change-user-button-area");
+
+    // Display the username
+    const displayMessage = document.createElement("p");
+    displayMessage.textContent = `Playing as: ${username.toUpperCase()}`;
+    displayMessage.style.cssText = "margin: 0;";
+    usernameDisplayArea.appendChild(displayMessage);
+
+    // Display the "Change User" button
+    const changeButton = document.createElement("button");
+    changeButton.textContent = "Change User";
+    changeButton.onclick = promptForUsername;
+    changeButton.classList.add("styled-button");
+    changeUserButtonArea.appendChild(changeButton);
+
+    // Display the user's stats
+    const stats = getStats(username);
+    let avgGuesses = stats.wins > 0 ? (stats.totalGuesses / stats.wins).toFixed(2) : "-";
+    let winPct = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
+    topStatsDisplay.innerHTML = `Games Played: ${stats.gamesPlayed} | Win %: ${winPct}% | Avg. Guesses: ${avgGuesses}`;
+    topStatsDisplay.style.display = "block";
+}
+
+const helpBtn = document.getElementById("helpBtn");
+const helpPopup = document.getElementById("helpPopup");
+const closeHelpBtn = document.getElementById("closeHelpBtn");
+const helpOverlay = document.getElementById("helpOverlay");
+const mainContent = document.getElementById("mainContent");
+
+function showHelpPopup() {
+  helpPopup.hidden = false;
+  helpOverlay.hidden = false;
+  mainContent.inert = true;
+  mainContent.setAttribute('aria-hidden', 'true');
+  setInputsDisabled(true);
+  helpPopup.focus();
+}
+
+function hideHelpPopup() {
+  helpPopup.hidden = true;
+  helpOverlay.hidden = true;
+  mainContent.inert = false;
+  mainContent.removeAttribute('aria-hidden');
+  setInputsDisabled(false);
+}
+
+helpBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (helpPopup.hidden) {
+    showHelpPopup();
+  } else {
+    hideHelpPopup();
+  }
+});
+
+closeHelpBtn.addEventListener("click", () => {
+  hideHelpPopup();
+});
+
+helpOverlay.addEventListener("click", () => {
+  hideHelpPopup();
+});
+
+// Global keydown: block all keys except Ctrl/Meta shortcuts and Escape when popup is visible
+document.addEventListener("keydown", (event) => {
+  if (!helpPopup.hidden) {
+    // Allow Escape to close popup
+    if (event.key === "Escape") {
+      return;
+    }
+
+    // For Cmd/Ctrl + key combos like Cmd+C:
+    if (event.ctrlKey || event.metaKey) {
+      // Stop propagation to prevent Wordle input, but allow native shortcut
+      event.stopImmediatePropagation();
+      // Don't preventDefault here so native shortcut works
+      return;
+    }
+
+    // Block all other keys completely (typing)
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }
+}, true);
+
+// Also block typing on Wordle input elements specifically except shortcuts and Escape
+const wordleInputs = mainContent.querySelectorAll('input, textarea, [contenteditable="true"]');
+wordleInputs.forEach(input => {
+  input.addEventListener('keydown', (event) => {
+    if (!helpPopup.hidden) {
+      if (event.ctrlKey || event.metaKey || event.key === "Escape") {
+        return; // allow shortcuts and Escape
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  }, true);
+});
+
+// Optional: allow Escape to close popup (already handled above, but keep if needed)
+document.addEventListener("keydown", (event) => {
+  if (!helpPopup.hidden && event.key === "Escape") {
+    hideHelpPopup();
+  }
+});
+
+// Prevent clicks inside popup from closing it
+helpPopup.addEventListener("click", (event) => {
+  event.stopPropagation();
+});
+
+function setInputsDisabled(state) {
+  // Select all inputs, textareas, and contenteditable elements inside mainContent
+  const inputs = mainContent.querySelectorAll('input, textarea, [contenteditable="true"], button, select');
+  inputs.forEach(el => {
+    el.disabled = state;
+    if (state) {
+      el.setAttribute('aria-disabled', 'true');
+      el.blur(); // remove focus when disabling
+    } else {
+      el.removeAttribute('aria-disabled');
     }
   });
 }
+function updateHintButtons() {
+    const hintBtn1 = document.getElementById("hintBtn1");
+    const hintBtn2 = document.getElementById("hintBtn2");
+    const hintBtn3 = document.getElementById("hintBtn3");
+    const hintBtn4 = document.getElementById("hintBtn4");
 
-window.onload = () => {
-  const wordFromURL = getSecretFromURL();
-  if (wordFromURL) {
-    secret = wordFromURL;
-    document.getElementById("setup").style.display = "none";
-    document.getElementById("game").style.display = "flex";
-    updateURLWithWord(secret, customHint1, customHint2, customHint3, customHint4);
-    checkUserStatus(); 
-  }
-};
+    // Hide all hint buttons by default.
+    // The restoreHintButton logic will show them if they are available.
+    hintBtn1.style.display = "none";
+    hintBtn2.style.display = "none";
+    hintBtn3.style.display = "none";
+    hintBtn4.style.display = "none";
+
+    // Helper function to restore a single hint button's state
+    function restoreHintButton(btn, hintContent, used, expanded) {
+        // Only proceed if the hint content exists.
+        if (hintContent && hintContent.trim() !== "") {
+            // Show the button in the pop-up.
+            btn.style.display = "inline-flex";
+
+            // If the hint was used, apply the 'clicked-hint' class and disable the button.
+            if (used) {
+                btn.classList.add('clicked-hint');
+                btn.disabled = true;
+
+                // If the hint was also expanded, show the hint text.
+                if (expanded) {
+                    const hintTextSpan = btn.querySelector('.hint-text');
+                    if (hintTextSpan) {
+                        hintTextSpan.textContent = hintContent;
+                        hintTextSpan.classList.add('visible');
+                    }
+                    btn.classList.add('expanded');
+                    btn.querySelector('.hint-label').classList.add('hidden');
+                }
+            } else {
+                // If the hint was not used, make sure the button is not disabled
+                // and the hint text is hidden.
+                btn.disabled = false;
+                btn.classList.remove('clicked-hint', 'expanded');
+                const hintTextSpan = btn.querySelector('.hint-text');
+                if (hintTextSpan) {
+                    hintTextSpan.classList.remove('visible');
+                }
+                btn.querySelector('.hint-label').classList.remove('hidden');
+            }
+        }
+    }
+
+    // Apply the restoration logic to each hint button.
+    restoreHintButton(hintBtn1, customHint1, hintUsed1, hintExpanded1);
+    restoreHintButton(hintBtn2, customHint2, hintUsed2, hintExpanded2);
+    restoreHintButton(hintBtn3, customHint3, hintUsed3, hintExpanded3);
+    restoreHintButton(hintBtn4, customHint4, hintUsed4, hintExpanded4);
+
+    // This line is the only change.
+    // We always set the hint container to 'block' so the title never disappears.
+    document.getElementById("hintButtons").style.display = "block";
+}
+
+function bindModalButtons(savedGuessHistory, savedColorHistory, isSolved, savedHintStatus) {
+    const showStatsBtn = document.getElementById("showStatsBtn");
+    const statsContainer = document.getElementById("modal-stats-container");
+    const modalCopyBtn = document.getElementById("modalCopyBtn");
+
+    // Stats toggle button
+    showStatsBtn.addEventListener("click", function () {
+        statsContainer.classList.toggle('expanded');
+        this.textContent = statsContainer.classList.contains('expanded')
+            ? "Hide My Stats"
+            : "Show My Stats";
+    });
+
+    // Copy result button
+    modalCopyBtn.onclick = function () {
+        const btn = this;
+        const resultText = generateResultText(
+            false,
+            savedGuessHistory,
+            savedColorHistory,
+            isSolved,
+            savedHintStatus
+        );
+        navigator.clipboard.writeText(resultText).then(() => {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = "<i>Copied!</i>";
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }, 1500);
+        });
+    };
+}
+function showHintPopup() {
+  hintPopup.hidden = false;
+  hintPopup.classList.add("show");
+  hintPopupOverlay.hidden = false;
+}
+
+function hideHintPopup() {
+  hintPopup.classList.remove("show");
+  hintPopupOverlay.hidden = true;
+}
+// Event listeners for the new hint popup
+if (hintTitle) {
+  hintTitle.addEventListener("click", showHintPopup);
+}
+if (closeHintPopupBtn) {
+  closeHintPopupBtn.addEventListener("click", hideHintPopup);
+}
+if (hintPopupOverlay) {
+  hintPopupOverlay.addEventListener("click", hideHintPopup);
+}
+
 </script>
 </body>
 </html>
