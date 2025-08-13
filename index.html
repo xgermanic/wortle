@@ -80,18 +80,20 @@
     user-select: none;
   }
   #hintBtn1, #hintBtn2, #hintBtn3, #hintBtn4 {
+    height: 48px;
     background: transparent;
     text-align: left;
     border: 0px;
     border-radius:5px;
     margin-bottom: 5px;
     cursor: pointer;
-    padding:7px;
-    color: #c7d1d5;
+    padding: 10px;
+    color: #214a5a;
     font-size: 10pt;
     align-items: center;
     justify-content: center;
     transition: color 0.3s ease;
+  border-bottom: 2px solid #81a4c7;
   }
 #hintTitle {
   width:200px;
@@ -115,6 +117,10 @@
   top: 18px; /* Offset from the top */
   left: 25px; /* Offset from the left */
   z-index: -1; /* Place it behind the parent content */
+}
+#hintTitle:hover::before {
+  background-color: #1e0729; /* Your desired "offset" color */
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 .hint-button {
   display: none;
@@ -151,12 +157,13 @@
   opacity: 1;
 }
 .hint-label {
-  text-transform: lowercase;
-  font-size:12pt;
-  width: 100%;
-  letter-spacing: 1pt;
-  margin: 0;
-  font-family:'Sansita', cursive;
+    text-transform: lowercase;
+    padding-bottom: 2px;
+    font-size: 13pt;
+    width: 100%;
+    letter-spacing: 1pt;
+    margin: 0;
+    font-family: 'Sansita', cursive;
 }
   
   .hint-label.hidden {
@@ -171,24 +178,29 @@
   overflow: hidden;
   transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
   width: 100%;
-  padding-top: 4px; /* add some breathing room */
   box-sizing: border-box;
 }
 
 .hint-text.visible {
   opacity: 1;
-  overflow:scroll;
-  max-height: 400px; /* increase to ensure enough space */
+  text-transform: uppercase;
+  overflow: scroll;
+  max-height: 400px;
+  font-size: 11pt;
+  margin: 0 5px;
+  text-align:right;
+  font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
 }
 #hintBtn1:hover, #hintBtn2:hover, #hintBtn3:hover, #hintBtn4:hover,
 #hintBtn1.clicked-hint, #hintBtn2.clicked-hint, #hintBtn3.clicked-hint, #hintBtn4.clicked-hint {
-  background-color: #070a23;
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  background-color: #b3c4e0;
+  border-bottom: 2px solid #81a4c7;
 }
 .styled-button {
     background-color: transparent;
     border: none;
-    width: 10em;
+    width: auto;
     color: rgb(255, 255, 255);
     text-shadow: 2px 2px #000000;
     font-size: 0.9em;
@@ -198,11 +210,7 @@
     cursor: pointer;
     margin: 5px auto;
 }
-.styled-button:hover {
-    color: #e97251;
-    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
-}
-  #modalCopyBtn, #showStatsBtn {
+  #modalCopyBtn, #showStatsBtn, #copy-url-btn, #start-playing-btn {
     background-color: #e4e4e4;
     border: none;
     padding: 10px;
@@ -216,7 +224,7 @@
     cursor: pointer;
     margin: 5px auto;
   }
-  #modalCopyBtn:hover, #showStatsBtn:hover {
+  #modalCopyBtn:hover, #showStatsBtn:hover, #copy-url-btn:hover, #start-playing-btn:hover {
     background-color: #e97251;
     color: #e9e9e9;
     transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
@@ -278,13 +286,14 @@
     flex-direction: column;
     justify-content: center;
     gap: 3px;
-    margin-top: 5px;
+    margin-top: 30px;
   }
   #secretWordColor {
   color: #cd1616; /* Example: a bright orange color */
 }
 .host-input {
   background: #021a24;
+  font-size:11pt;
   color: #c7d1d5;
   border: none;
   padding: 8px;
@@ -309,7 +318,6 @@
   margin-top: 5px;
   margin-bottom: 5px;
   display: block;
-  text-align: left;
   background: #021a24;
   padding: 8px;
   width: 200px;
@@ -373,20 +381,23 @@
     animation: shake 0.5s ease-in-out;
   }
   #funFactInput {
-    background: #021a24;
-    color: #c7d1d5;
-    border: none;
-    padding: 8px;
-    min-height:100px;
-    border-radius: 6px;
-    font-size:12pt;
-    width: 400px;
-    display: block;
-    margin: auto;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    text-align: left;
-    transition: background 0.2s ease;
+  background: #021a24;
+  color: #c7d1d5;
+  border: none;
+  padding: 10px 13px;
+  min-height: 70px;
+  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  border-radius: 6px;
+  font-size: 12pt;
+  width: 300px;
+  display: block;
+  margin: auto;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: left;
+  transition: background 0.2s ease;
+  resize: vertical; /* Let users adjust height if they want */
+  line-height: 1.4;
   }
   .fun-fact-section {
     background-color: #d8d8d8; /* A dark blue-gray background */
@@ -464,11 +475,10 @@
   position: relative;
   padding: 20px 45px;
 }
-
-.close-help-btn {
+.close-help-btn, .close-hint-btn {
   position: absolute;
   top: 0px;
-  right: 0px;
+  right: 2px;
   border: none;
   background: transparent;
   font-size: 30px;
@@ -478,8 +488,8 @@
   font-family:'Sansita', cursive;
   font-weight: bold;
 }
-
-.close-help-btn:hover {
+.close-help-btn:hover, .close-hint-btn:hover {
+  transition: background-color 0.3s ease;
   color: #000;
 }
 .help-overlay {
@@ -508,20 +518,20 @@
   display: none;
 }
 
-.hint-popup {
+.hint-popup {    
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right:0;
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 10px;
-  background-color: #204f5e;
-  border-radius: 10px;
-  border:2px solid #010f15;
-  z-index: 1000;
-  transform: translateY(100%);
-  transition: transform 0.3s ease;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 10px;
+    background-color: #d0d9dc;
+    border-radius: 10px;
+    border: 2px solid #b3c4e0;
+    z-index: 1000;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
 }
 
 .hint-popup[hidden] {
@@ -531,23 +541,22 @@
 .hint-popup.show {
   transform: translateY(0);
 }
-
-.close-hint-btn {
-  position: absolute;
-  top: 5px;
-  right: 15px;
-  background: transparent;
-  border: none;
-  font-size: 2em;
-  color: #c7d1d5;
-  cursor: pointer;
-  line-height: 1;
+#share-message-box {
+    width: 100%;
+    height: 80px;
+    padding: 10px;
+    box-sizing: border-box;
+    background-color: #d8d8d8;
+    border: 2px dashed #ccc;
+    border-radius: 15px;
+    color: #4b819d;
+    font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
+    font-size: 1em;
+    resize: none;
 }
-
-.close-hint-btn:hover {
-  color: #fff;
+#share-message-box:focus {
+    outline: none;
 }
-
 
 </style>
 </head>
@@ -558,7 +567,7 @@
   <p><span style="color:rgb(243, 202, 186);">Cross-Germanic</span> WØRTLE</p>
   <button id="helpBtn" aria-label="Show help" title="Show help" class="help-button">?</button>
 </h1>
-<div id="header-info" style="display: flex; justify-content: space-between; align-items: center; max-width: 750px; margin: 10px auto; padding: 0 10px;">
+<div id="header-info" style="height:35px;display: flex; justify-content: space-between; align-items: center; max-width: 750px; margin: 10px auto; padding: 0 10px;">
 <div id="username-display-area" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align: left; width:180px;">
   </div>
   <div id="topStatsDisplay" style="padding:0 5px;">
@@ -573,7 +582,7 @@
   <input type="text" id="hintInput2" placeholder="Part of speech" class="host-input"/>
   <input type="text" id="hintInput3" placeholder="Context" class="host-input"/>
 <div id="hintInput4Container">
-  <p style="margin:0 0 5px 0; font-size:0.9em; color:#c7d1d5;">Special character(s)</p>
+  <p style="margin:0 0 5px 0; font-size:11pt; color:#c7d1d5;">Special character(s)</p>
   <label style="display:block; margin-bottom:4px; cursor:pointer;">
     <input type="checkbox" value="Ä" class="specialCharCheckbox"> Ä
   </label>
@@ -596,9 +605,8 @@
     <input type="checkbox" value="Å" class="specialCharCheckbox"> Å
   </label>
 </div>
-  <input type="text" id="funFactInput" placeholder="Fun fact"/>
-  <button onclick="startGame()">Start Game</button>
-  <p id="urlShare"></p>
+  <textarea id="funFactInput" placeholder="Fun fact"></textarea>
+  <button onclick="startGame()">Create Game</button>
 </div>
 
 <div id="game">
@@ -627,13 +635,25 @@
 </div>
 </div>
 
+<div id="share-modal" class="modal">
+  <div class="modal-content">
+    <p style="font-weight:600;margin-bottom:5px;font-size: 12pt;width:auto;font-family:monospace;">Share with others:</p>
+    <textarea id="share-message-box" readonly></textarea>
+    <div class="button-group">
+      <button id="copy-url-btn">Copy</button>
+      <button id="start-playing-btn">Start Playing</button>
+    </div>
+  </div>
+</div>
+
 <div id="helpOverlay" class="help-overlay" hidden></div>
 <div id="helpPopup" class="help-popup" role="dialog" aria-modal="true" aria-labelledby="helpTitle" tabindex="-1" hidden>
   <div class="help-popup-content">
     <button id="closeHelpBtn" aria-label="Close help" class="close-help-btn">&times;</button>
     <h2 id="helpTitle">How to play</h2>
     <p>Guess the secret word by entering guesses. Use hints if needed. Good luck!</p>
-    <p>Created by bicks@ and lokke@</p>
+    <p><i>Created by bicks@ and lokke@</i></p>
+    <p>Find a bug? Or have any suggestions for improvement? Please write to lokke@google.com</p>
   </div>
 </div>
 </div>
@@ -747,8 +767,7 @@ specialCharBoxes.forEach(cb => {
   cb.addEventListener("change", updateHintContainerBackground);
 });
 
-
-function updateURLWithWord(word, hint1, hint2, hint3, hint4, funFact) {
+function generateShareURL(word, hint1, hint2, hint3, hint4, funFact) {
   const url = new URL(window.location);
   url.searchParams.set("w", base64Encode(word));
   if (hint1) url.searchParams.set("h1", base64Encode(hint1));
@@ -758,8 +777,7 @@ function updateURLWithWord(word, hint1, hint2, hint3, hint4, funFact) {
   if (funFact) url.searchParams.set("ff", base64Encode(funFact));
   const today = new Date().toISOString();
   url.searchParams.set("d", base64Encode(today));
-  window.history.replaceState({}, "", url);
-  document.getElementById("urlShare").textContent = `Share this link to play: ${url.href}`;
+  return url.href;
 }
 
 function getStats(username) {
@@ -798,8 +816,7 @@ function displayStats(username) {
     `Average Guesses: ${avgGuesses}`
   ];
 }
-
-function startGame() {
+async function startGame() {
   const inputWord = document.getElementById("secretInput").value.trim().toUpperCase();
   const inputHint1 = document.getElementById("hintInput").value.trim();
   const inputHint2 = document.getElementById("hintInput2").value.trim();
@@ -810,16 +827,16 @@ function startGame() {
   const inputFunFact = document.getElementById("funFactInput").value.trim();
 
   // Validate the user input for the secret word
-  if (!inputWord) { 
-    alert("Please enter a secret word."); 
-    return; 
+  if (!inputWord) {
+    alert("Please enter a secret word.");
+    return;
   }
-  
+
   if (inputWord.length !== 5 || !/^[A-ZÄÖÜßẞÆØÅ]+$/i.test(inputWord)) {
     alert("Secret word must be exactly 5 letters and can include Ä, Ö, Ü, ß, ẞ, Æ, Ø, Å.");
     return;
   }
-  
+
   // Set the global variables
   secret = inputWord;
   customHint1 = inputHint1;
@@ -828,17 +845,67 @@ function startGame() {
   customHint4 = inputHint4;
   customFunFact = inputFunFact;
 
-  // Update the URL to share the game
-  updateURLWithWord(secret, customHint1, customHint2, customHint3, customHint4, customFunFact);
-  
-  // Hide the setup screen and show the game screen
-  document.getElementById("setup").style.display = "none";
-  document.getElementById("game").style.display = "flex";
-  
-  // Now, call checkUserStatus to load the game state based on the current user and word
-  checkUserStatus();
-}
+  // Generate the original long URL needed for the game to function
+  const longUrl = generateShareURL(secret, customHint1, customHint2, customHint3, customHint4, customFunFact);
 
+  // Get modal elements
+  const shareModal = document.getElementById("share-modal");
+  const shareMessageBox = document.getElementById("share-message-box"); // Changed from share-url-input
+  const copyBtn = document.getElementById("copy-url-btn");
+  const startBtn = document.getElementById("start-playing-btn");
+  const modalMessage = shareModal.querySelector('p');
+
+  // Show the modal immediately with a loading state
+  modalMessage.textContent = "Share with others:"; // Reset message
+  shareMessageBox.value = "Creating short link...";
+  copyBtn.disabled = true;
+  startBtn.disabled = true;
+  shareModal.classList.add("show");
+
+  try {
+    // Call the TinyURL API to shorten the link
+    const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`);
+    if (!response.ok) {
+      throw new Error('TinyURL service is not available.');
+    }
+    const shortUrl = await response.text();
+    // Construct the full message with the short URL
+    shareMessageBox.value = `Play my WØRTLE: ${shortUrl}`;
+  } catch (error) {
+    console.error("Could not shorten URL:", error);
+    modalMessage.innerHTML = "Could not create short link.<br>Please share the full link below:";
+    // Construct the full message with the long URL as a fallback
+    shareMessageBox.value = `Play my WØRTLE: ${longUrl}`;
+  } finally {
+    // Re-enable the buttons once the process is complete
+    copyBtn.disabled = false;
+    startBtn.disabled = false;
+  }
+
+  // Handle Copy Button click
+  copyBtn.onclick = () => {
+      // Select the text in the textarea
+      shareMessageBox.select();
+      shareMessageBox.setSelectionRange(0, 99999);
+      // Copy the entire message from the textarea
+      navigator.clipboard.writeText(shareMessageBox.value).then(() => {
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => { copyBtn.textContent = "Copy Link"; }, 2000);
+      }).catch(err => {
+          console.error('Failed to copy message: ', err);
+          alert('Could not copy message automatically. Please copy it manually.');
+      });
+  };
+
+  // Handle Start Playing Button click
+  startBtn.onclick = () => {
+      shareModal.classList.remove("show");
+      window.history.replaceState({}, "", longUrl);
+      document.getElementById("setup").style.display = "none";
+      document.getElementById("game").style.display = "flex";
+      checkUserStatus();
+  };
+}
 function checkUserStatus() {
     const savedUsername = localStorage.getItem("gerNordleUsername");
     const gameElement = document.getElementById("game");
@@ -1057,8 +1124,6 @@ function promptForUsername() {
   setButton.textContent = "Set Username";
   setButton.onclick = setUsername;
   setButton.classList.add("styled-button");
-  setButton.style.width = "10em";
-  setButton.style.margin = "5px auto";
 
   topStatsDisplay.style.display = "flex";
   topStatsDisplay.style.gap = "8px";
@@ -1689,25 +1754,25 @@ function updateHintButtons() {
     const hintBtn4 = document.getElementById("hintBtn4");
 
     // Hide all hint buttons by default.
-    // The restoreHintButton logic will show them if they are available.
     hintBtn1.style.display = "none";
     hintBtn2.style.display = "none";
     hintBtn3.style.display = "none";
     hintBtn4.style.display = "none";
 
+    let hasAnyHints = false; // Track if any hints are available
+
     // Helper function to restore a single hint button's state
     function restoreHintButton(btn, hintContent, used, expanded) {
-        // Only proceed if the hint content exists.
         if (hintContent && hintContent.trim() !== "") {
+            hasAnyHints = true; // Mark that we have at least one hint
+
             // Show the button in the pop-up.
             btn.style.display = "inline-flex";
 
-            // If the hint was used, apply the 'clicked-hint' class and disable the button.
             if (used) {
                 btn.classList.add('clicked-hint');
                 btn.disabled = true;
 
-                // If the hint was also expanded, show the hint text.
                 if (expanded) {
                     const hintTextSpan = btn.querySelector('.hint-text');
                     if (hintTextSpan) {
@@ -1718,28 +1783,26 @@ function updateHintButtons() {
                     btn.querySelector('.hint-label').classList.add('hidden');
                 }
             } else {
-                // If the hint was not used, make sure the button is not disabled
-                // and the hint text is hidden.
                 btn.disabled = false;
                 btn.classList.remove('clicked-hint', 'expanded');
                 const hintTextSpan = btn.querySelector('.hint-text');
                 if (hintTextSpan) {
                     hintTextSpan.classList.remove('visible');
+                    hintTextSpan.textContent = ""; // Clear hidden hint text
                 }
                 btn.querySelector('.hint-label').classList.remove('hidden');
             }
         }
     }
 
-    // Apply the restoration logic to each hint button.
+    // Apply restoration logic for each hint button
     restoreHintButton(hintBtn1, customHint1, hintUsed1, hintExpanded1);
     restoreHintButton(hintBtn2, customHint2, hintUsed2, hintExpanded2);
     restoreHintButton(hintBtn3, customHint3, hintUsed3, hintExpanded3);
     restoreHintButton(hintBtn4, customHint4, hintUsed4, hintExpanded4);
 
-    // This line is the only change.
-    // We always set the hint container to 'block' so the title never disappears.
-    document.getElementById("hintButtons").style.display = "block";
+    // Show or hide the "Need a hint?" container based on availability
+    document.getElementById("hintButtons").style.display = hasAnyHints ? "block" : "none";
 }
 
 function bindModalButtons(savedGuessHistory, savedColorHistory, isSolved, savedHintStatus) {
@@ -1776,6 +1839,7 @@ function bindModalButtons(savedGuessHistory, savedColorHistory, isSolved, savedH
         });
     };
 }
+
 function showHintPopup() {
   hintPopup.hidden = false;
   hintPopup.classList.add("show");
