@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="https://fonts.googleapis.com/css2?family=Sansita:ital,wght@1,700&display=swap" rel="stylesheet">
@@ -80,14 +82,14 @@
     user-select: none;
   }
   #hintBtn1, #hintBtn2, #hintBtn3, #hintBtn4 {
-    height: 48px;
+    height: 68px;
     background: transparent;
     text-align: left;
     border: 0px;
     border-radius:5px;
     margin-bottom: 5px;
     cursor: pointer;
-    padding: 10px;
+    padding: 0 0 0 10px;
     color: #214a5a;
     font-size: 10pt;
     align-items: center;
@@ -113,7 +115,7 @@
   position: absolute;
   background-color: #4f1868; /* Your desired "offset" color */
   width: 148px; /* Or specific width/height */
-  height: 11px; /* Or specific width/height */
+  height: 9px; /* Or specific width/height */
   top: 18px; /* Offset from the top */
   left: 25px; /* Offset from the left */
   z-index: -1; /* Place it behind the parent content */
@@ -183,11 +185,12 @@
 
 .hint-text.visible {
   opacity: 1;
+  padding: 7px 15px 7px 7px;
+  width: 500px;
   text-transform: uppercase;
   overflow: scroll;
-  max-height: 400px;
+  max-height: 68px;
   font-size: 11pt;
-  margin: 0 5px;
   text-align:right;
   font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
 }
@@ -204,13 +207,11 @@
     color: rgb(255, 255, 255);
     text-shadow: 2px 2px #000000;
     font-size: 0.9em;
-    text-decoration: underline rgb(255, 255, 255) 1px;
-    text-underline-offset: 2px;
     font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
     cursor: pointer;
     margin: 5px auto;
 }
-  #modalCopyBtn, #showStatsBtn, #copy-url-btn, #start-playing-btn {
+  #modalCopyBtn, #showStatsBtn, #showScoreboardBtn, #copy-url-btn, #start-playing-btn {
     background-color: #e4e4e4;
     border: none;
     padding: 10px;
@@ -224,7 +225,7 @@
     cursor: pointer;
     margin: 5px auto;
   }
-  #modalCopyBtn:hover, #showStatsBtn:hover, #copy-url-btn:hover, #start-playing-btn:hover {
+  #modalCopyBtn:hover, #showStatsBtn:hover, #showScoreboardBtn:hover, #copy-url-btn:hover, #start-playing-btn:hover {
     background-color: #e97251;
     color: #e9e9e9;
     transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
@@ -239,40 +240,96 @@
     margin:0;
     background-color:rgb(3, 22, 27);
     font-family: monospace;
-    display:flex;
-    justify-content: center;
-    gap:20px;
-  }
-  h1 p {
-    margin:0;
-  }
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 100;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    align-items: center;
-    justify-content: center;
-  }
-  #modal-message { font-size: 16pt; width:auto; font-family:monospace; }
-  .modal.show { display: flex; }
-  .modal-content {
-    width:300px;
-    max-height:80%;
-    overflow:scroll;
-    background-color: #e1dbd9;
-    border-top:20px solid rgb(206, 86, 17);
-    border-radius:10px;
-    padding: 15px 30px 30px 30px;
+    position: relative;
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    color: rgb(33, 33, 33);
+  }
+h1 p {
+  margin: 0;
+  }
+
+.h1-button-group {
+  position: absolute;
+  top: 50%;
+  right: 30px; /* Adjust spacing from the edge as needed */
+  transform: translateY(-50%); /* Vertically center the buttons */
+}
+/* Styling for the simple share modal */
+.share-popup {
+  /* Use the classic centering method for this modal */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+  width: 360px;
+  
+  /* Hiding and transition */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Rule to show the share modal */
+.share-popup.show {
+  opacity: 1;
+  visibility: visible;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+
+  /* Flexbox properties for centering */
+  display: flex;
+  align-items: center;     /* Vertical centering */
+  justify-content: center; /* Horizontal centering */
+  
+  /* Hiding and transition */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.modal {
+  position: relative;
+  width: 360px;
+  
+  /* The animation for the modal itself */
+  transform: scale(0.95);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition-delay: 0.1s; /* Small delay to let the overlay fade in first */
+}
+
+
+
+/* This class now controls the visibility of the overlay and the modal inside it */
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+/* When the overlay is shown, also animate the modal */
+.modal-overlay.show .modal {
+  transform: scale(1);
+  opacity: 1;
+}
+  #modal-message { font-size: 16pt; width:auto; font-family:monospace; }
+  .modal-content {
+    position: relative; 
+  width:300px;
+  max-height:80%;
+  background-color: #e1dbd9;
+  border-top:20px solid rgb(206, 86, 17);
+  border-radius:10px;
+  padding: 15px 30px 30px 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  color: rgb(33, 33, 33);
   }
   #modal-summary {
     white-space: pre-wrap;
@@ -384,17 +441,17 @@
   background: #021a24;
   color: #c7d1d5;
   border: none;
-  padding: 10px 13px;
+  padding: 8px 28px;
   min-height: 70px;
   font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
   border-radius: 6px;
-  font-size: 12pt;
+  font-size: 11pt;
   width: 300px;
   display: block;
   margin: auto;
   margin-top: 5px;
   margin-bottom: 5px;
-  text-align: left;
+  text-align: center;
   transition: background 0.2s ease;
   resize: vertical; /* Let users adjust height if they want */
   line-height: 1.4;
@@ -440,7 +497,6 @@
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
-  margin-left: 10px;
   vertical-align: middle;
   user-select: none;
   transition: background-color 0.3s ease;
@@ -474,8 +530,10 @@
 .help-popup-content {
   position: relative;
   padding: 20px 45px;
+    overflow: scroll;
+    max-height: 550px;
 }
-.close-help-btn, .close-hint-btn {
+.close-help-btn, .close-hint-btn, .close-btn {
   position: absolute;
   top: 0px;
   right: 2px;
@@ -488,7 +546,7 @@
   font-family:'Sansita', cursive;
   font-weight: bold;
 }
-.close-help-btn:hover, .close-hint-btn:hover {
+.close-help-btn:hover, .close-hint-btn:hover, .close-btn:hover {
   transition: background-color 0.3s ease;
   color: #000;
 }
@@ -501,45 +559,55 @@
   background: rgba(0,0,0,0.4); /* dim background */
   z-index: 9998; /* just below the popup */
 }
-
-.popup-overlay {
+/* The dark background overlay */
+#hintPopupOverlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.4);
+  width: 100%;
+  height: 100%;
+  /* This z-index is crucial. It must be high. */
   z-index: 999;
-  transition: opacity 0.3s ease;
   opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s 0.3s;
 }
 
-.popup-overlay[hidden] {
-  display: none;
-}
-
-.hint-popup {    
+/* The popup box itself */
+.hint-popup {
   position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 10px;
-    background-color: #d0d9dc;
-    border-radius: 10px;
-    border: 2px solid #b3c4e0;
-    z-index: 1000;
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 10px;
+  background-color: #d0d9dc;
+  border-radius: 10px;
+  border: 2px solid #b3c4e0;
+  /* This must have a HIGHER z-index than the overlay. */
+  z-index: 1000;
+  transform: translateY(100%);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s 0.3s;
 }
 
-.hint-popup[hidden] {
-  display: none;
-}
+/* --- The rest of the CSS remains the same --- */
 
+/* Active (visible) state for the popup */
 .hint-popup.show {
   transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+/* When the popup is shown, also show the overlay */
+.hint-popup.show + #hintPopupOverlay {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
 }
 #share-message-box {
     width: 100%;
@@ -557,6 +625,168 @@
 #share-message-box:focus {
     outline: none;
 }
+/* Container for the custom tooltip */
+.custom-tooltip {
+  position: relative; /* This is required for positioning the tooltip */
+  cursor: pointer;
+}
+/* The tooltip itself, created with a pseudo-element */
+.custom-tooltip::after {
+  content: attr(data-tooltip); /* Grabs the text from the data-tooltip attribute */
+  position: absolute;
+  top: 100%; /* Position it above the button */
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 10px; /* Space between button and tooltip */
+  /* Appearance */
+  background-color: #d8d8d8;
+  color: #4b819d;
+  font-weight:400;
+  padding: 8px;
+  border-radius: 4px;
+  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 14px;
+  white-space: nowrap; /* Prevent the text from wrapping */
+  /* Visibility and instant transition */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s ease, visibility 0.1s ease;
+  transition-delay: 0s; /* No delay on hiding */
+}
+
+/* Show the tooltip on hover */
+.custom-tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s; /* No delay on showing */
+}
+
+table {
+  font-family: monospace;
+  font-size:10pt;
+  border-collapse: collapse;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+tr>:nth-child(2){
+  min-width: 35px;
+}
+tr>:nth-child(1), tr>:nth-child(4) {
+  max-width:20px;
+  text-align:center;
+}
+tr>:nth-child(3) {
+  max-width:30px;
+  text-align:center;
+}
+td, th {
+  border: 1px #ddd;
+  border-style: none solid solid none;
+  padding: 5px;
+  text-align:left;
+}
+td {
+  max-width: 10px;
+  overflow: scroll;
+}
+th {
+  border:0px;
+}
+tr:first-child td:first-child { border-top-left-radius: 10px; }
+tr:first-child td:last-child { border-top-right-radius: 10px; }
+
+tr:last-child td:first-child { border-bottom-left-radius: 10px; }
+tr:last-child td:last-child { border-bottom-right-radius: 10px; }
+
+tr:first-child td { border-top-style: solid; }
+tr td:first-child { border-left-style: solid; }
+tr:nth-child(even){
+  background-color: #01222e;
+}
+#game-over-modal {
+  position: relative; /* Establishes a stacking context */ /* Acts as the positioning anchor */
+}
+.side-panel {
+  position: absolute;
+  top: 25px;
+  left: 360px;
+  z-index: 1;
+  /* --- MODIFIED --- */
+  width: 0;
+  overflow: hidden; /* This now hides the static inner content */
+  transition: width 0.4s ease-in-out;
+  padding: 0; /* Padding is now on the inner wrapper */
+  /* Your other styles */
+  height: 90%;
+  background-color: #021a24;
+  color: #fff;
+  border-radius: 0 12px 12px 0;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+.side-panel.show {
+  width: 280px; /* The outer container still expands to this width */
+  pointer-events: auto;
+}
+/* --- ADD THIS NEW RULE --- */
+.side-panel-content {
+  /* This container has a fixed width, so the text inside doesn't reflow */
+  width: 280px;
+  padding: 20px;
+  height: 100%;
+  overflow: auto; /* Adds a scrollbar if content is too tall */
+  box-sizing: border-box; /* Keeps padding inside the defined width/height */
+}
+.close-btn {
+  color:#384d58;
+}
+    /* Add these new styles for the scoreboard summary */
+    #scoreboard-summary-container {
+        padding: 10px 15px;
+        border-bottom: 1px solid #444; /* A separator line */
+        margin-bottom: 10px;
+    }
+
+    .summary-stat {
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+    }
+
+    .summary-stat:last-child {
+        margin-bottom: 0;
+    }
+
+    .stat-label {
+        width: 90px; /* Helps align the labels */
+        text-align: left;
+        color: #c7d1d5;
+        flex-shrink: 0;
+    }
+
+    .stat-bar-container {
+        flex-grow: 1;
+        height: 20px;
+        border-right: 3px dotted #384d58;
+        overflow: hidden;
+    }
+
+    .stat-bar {
+        height: 100%;
+        background-color: rgb(92, 17, 17); /* A color that fits your theme */
+        border-radius: 5px;
+        transition: width 0.5s ease-in-out;
+        text-align: center;
+    text-shadow: 1px 2px #000000;
+    color: #e5e8ea;
+        font-weight: bold;
+        line-height: 20px; /* Vertically center text */
+        white-space: nowrap;
+    }
+
 
 </style>
 </head>
@@ -565,7 +795,10 @@
 <div id="mainContent">
 <h1>
   <p><span style="color:rgb(243, 202, 186);">Cross-Germanic</span> WØRTLE</p>
-  <button id="helpBtn" aria-label="Show help" title="Show help" class="help-button">?</button>
+  <div class="h1-button-group">
+    <button id="newGameBtn" aria-label="Create new game" class="help-button custom-tooltip" data-tooltip="New Wørtle">+</button>
+   <button id="helpBtn" aria-label="Show help" data-tooltip="Info" class="help-button custom-tooltip">?</button>
+  </div>
 </h1>
 <div id="header-info" style="height:35px;display: flex; justify-content: space-between; align-items: center; max-width: 750px; margin: 10px auto; padding: 0 10px;">
 <div id="username-display-area" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align: left; width:180px;">
@@ -578,9 +811,10 @@
 <div id="setup" style="padding-bottom:50px;">
   <p style="margin-bottom:20px;">Host: Enter a secret word and optional hints for the user to reveal</p>
   <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" style="border:2px solid rgb(92, 17, 17);" class="host-input"/>
+    <button id="generateWordBtn" style="margin:5px 0 7px 0;">Pick Random Word</button>
   <input type="text" id="hintInput" placeholder="Language" class="host-input"/>
   <input type="text" id="hintInput2" placeholder="Part of speech" class="host-input"/>
-  <input type="text" id="hintInput3" placeholder="Context" class="host-input"/>
+  <input type="text" id="hintInput3" placeholder="Context clue" class="host-input"/>
 <div id="hintInput4Container">
   <p style="margin:0 0 5px 0; font-size:11pt; color:#c7d1d5;">Special character(s)</p>
   <label style="display:block; margin-bottom:4px; cursor:pointer;">
@@ -605,8 +839,8 @@
     <input type="checkbox" value="Å" class="specialCharCheckbox"> Å
   </label>
 </div>
-  <textarea id="funFactInput" placeholder="Fun fact"></textarea>
-  <button onclick="startGame()">Create Game</button>
+  <textarea id="funFactInput" placeholder="Fun fact about the word (to be shown after the game is over)"></textarea>
+  <button onclick="startGame()" style="margin:10px;">Create Game</button>
 </div>
 
 <div id="game">
@@ -621,29 +855,43 @@
   <div id="keyboard" class="keyboard"></div>
 </div>
 
-<div id="game-over-modal" class="modal">
-  <div class="modal-content">
-    <p id="modal-message"></p>
-    <div id="modal-summary"></div>
-    <div class="button-group">
-      <button id="showStatsBtn">Show My Stats</button>
-      <div id="modal-stats-container">
-          </div>
-      <button id="modalCopyBtn">Copy Result</button>
+<div id="game-over-overlay" class="modal-overlay">
+
+  <div id="game-over-modal" class="modal">
+
+    <div id="scoreboard-panel" class="side-panel">
+      <div class="side-panel-content">
+        <h2 style="font-size:14pt;">Scoreboard for <span id="scoreboard-word"></span></h2>
+        <div id="scoreboard-summary-container"></div>
+        <div id="scoreboard-container"></div>
+      </div>
     </div>
+
+    <div class="modal-content">
+      <p id="modal-message"></p>
+      <pre id="modal-summary"></pre>
+
+      <div class="modal-button-container">
+        <button id="modalCopyBtn">Copy Result</button>
+        <button id="showStatsBtn">Show My Stats</button>
+        <div id="modal-stats-container"></div>
+        <button id="showScoreboardBtn">View Scoreboard</button>
+      </div>
+    </div>
+
   </div>
 </div>
-</div>
 
-<div id="share-modal" class="modal">
+<div id="share-modal" class="share-popup">
   <div class="modal-content">
     <p style="font-weight:600;margin-bottom:5px;font-size: 12pt;width:auto;font-family:monospace;">Share with others:</p>
     <textarea id="share-message-box" readonly></textarea>
     <div class="button-group">
-      <button id="copy-url-btn">Copy</button>
+      <button id="copy-url-btn">Copy Text</button>
       <button id="start-playing-btn">Start Playing</button>
     </div>
   </div>
+</div>
 </div>
 
 <div id="helpOverlay" class="help-overlay" hidden></div>
@@ -651,35 +899,40 @@
   <div class="help-popup-content">
     <button id="closeHelpBtn" aria-label="Close help" class="close-help-btn">&times;</button>
     <h2 id="helpTitle">How to play</h2>
-    <p>Guess the secret word by entering guesses. Use hints if needed. Good luck!</p>
-    <p><i>Created by bicks@ and lokke@</i></p>
-    <p>Find a bug? Or have any suggestions for improvement? Please write to lokke@google.com</p>
+    <p><b>Host:</b> Enter or generate a secret word, as well as any optional hints for the user to reveal. Then share the URL.</p>
+    <p><b>Players:</b> Guess the secret word by entering guesses. Use hints if needed. Good luck!</p>
+    <p>--------------------</p>
+    <p>WØRTLE is currently enabled for:<br>de, no, sv, da & en</p>
+    <p>Note that each language utilises a limited word list, which vary quite a bit in how extensive they are.</p>
+    <p><i>Created by lokke@ and bicks@<br>Original idea by aottl@</i></p>
+    <p>--------------------</p>
+    <p>Find a bug? Want to add a word to the word list? Or have any other suggestions for improvement?<br>Please write to lokke@google.com</p>
   </div>
 </div>
+
+<div id="hintPopup" class="hint-popup" role="dialog" aria-modal="true" aria-labelledby="hintPopupTitle">
+    <button id="closeHintPopupBtn" aria-label="Close hint popup" class="close-hint-btn">&times;</button>
+    <div id="hintButtonsContainer">
+        <button id="hintBtn1" class="hint-button" onclick="showHint(1)">
+            <span class="hint-label">Language</span>
+            <span class="hint-text"></span>
+        </button>
+        <button id="hintBtn2" class="hint-button" onclick="showHint(2)">
+            <span class="hint-label">Part Of Speech</span>
+            <span class="hint-text"></span>
+        </button>
+        <button id="hintBtn3" class="hint-button" onclick="showHint(3)">
+            <span class="hint-label">Context</span>
+            <span class="hint-text"></span>
+        </button>
+        <button id="hintBtn4" class="hint-button" onclick="showHint(4)">
+            <span class="hint-label">Special Character(s)</span>
+            <span class="hint-text"></span>
+        </button>
+    </div>
 </div>
 
-<div id="hintPopupOverlay" class="popup-overlay" hidden></div>
-<div id="hintPopup" class="hint-popup" role="dialog" aria-modal="true" aria-labelledby="hintTitle" tabindex="-1" hidden>
-  <button id="closeHintPopupBtn" aria-label="Close hint popup" class="close-hint-btn">&times;</button>
-  <div id="hintButtonsContainer">
-    <button id="hintBtn1" class="hint-button" onclick="showHint(1)" aria-label="Show Hint 1" title="Show Hint 1" style="display: none;">
-      <span class="hint-label">Language</span>
-      <span class="hint-text"></span>
-    </button>
-    <button id="hintBtn2" class="hint-button" onclick="showHint(2)" aria-label="Show Hint 2" title="Show Hint 2" style="display: none;">
-      <span class="hint-label">Part Of Speech</span>
-      <span class="hint-text"></span>
-    </button>
-    <button id="hintBtn3" class="hint-button" onclick="showHint(3)" aria-label="Show Hint 3" title="Show Hint 3" style="display: none;">
-      <span class="hint-label">Context</span>
-      <span class="hint-text"></span>
-    </button>
-    <button id="hintBtn4" class="hint-button" onclick="showHint(4)" aria-label="Show Hint 4" title="Show Hint 4" style="display: none;">
-        <span class="hint-label">Reveal Special Character(s)</span>
-        <span class="hint-text"></span>
-    </button>
-      </div>
-</div>
+<div id="hintPopupOverlay" class="popup-overlay"></div>
 
 <script>
 let secret = "";
@@ -707,11 +960,39 @@ let hintExpanded1 = false;
 let hintExpanded2 = false;
 let hintExpanded3 = false;
 let hintExpanded4 = false;
+let scoreboardListener = null;
 const hintTitle = document.getElementById("hintTitle");
 const hintPopup = document.getElementById("hintPopup");
 const hintPopupOverlay = document.getElementById("hintPopupOverlay");
 const closeHintPopupBtn = document.getElementById("closeHintPopupBtn");
 const game = document.getElementById("game");
+const SUPPORTED_LANGUAGES = ['german', 'norwegian', 'english', 'swedish', 'danish']; // <-- Add all your file names here (without .txt)
+const allValidWords = new Set();
+
+
+// Add this corrected block to the top of your script
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDGepZP9hu3hHAL1wfrp4gjIurEPLPUbaw",
+  authDomain: "woertle-7dc73.firebaseapp.com",
+  databaseURL: "https://woertle-7dc73-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "woertle-7dc73",
+  storageBucket: "woertle-7dc73.firebasestorage.app",
+  messagingSenderId: "97063588719",
+  appId: "1:97063588719:web:dc734f9c0772d49e5b0e9a"
+};
+
+// Initialize Firebase using the global firebase object
+firebase.initializeApp(firebaseConfig);
+
+// Create a database reference for your other functions to use
+const database = firebase.database();
+
+(async () => {
+  await loadAllWordLists();
+  // You can enable the "Create Game" button here after lists are loaded
+})();
 
 // Base64 helpers
 function base64Encode(str) { return btoa(unescape(encodeURIComponent(str))); }
@@ -754,7 +1035,6 @@ function getSecretFromURL() {
   return null;
 }
 
-
 const hintContainer = document.getElementById("hintInput4Container");
 const specialCharBoxes = document.querySelectorAll(".specialCharCheckbox");
 
@@ -766,6 +1046,43 @@ function updateHintContainerBackground() {
 specialCharBoxes.forEach(cb => {
   cb.addEventListener("change", updateHintContainerBackground);
 });
+
+function saveSetupState() {
+  const setupState = {
+    secret: document.getElementById('secretInput').value,
+    hint1: document.getElementById('hintInput').value,
+    hint2: document.getElementById('hintInput2').value,
+    hint3: document.getElementById('hintInput3').value,
+    funFact: document.getElementById('funFactInput').value,
+    // Save an array of the values of all checked boxes
+    specialChars: Array.from(document.querySelectorAll('.specialCharCheckbox:checked')).map(cb => cb.value)
+  };
+  // Convert the object to a string and save it
+  localStorage.setItem('wurtleSetupState', JSON.stringify(setupState));
+}
+
+function loadSetupState() {
+  const savedStateJSON = localStorage.getItem('wurtleSetupState');
+  if (savedStateJSON) {
+    const savedState = JSON.parse(savedStateJSON);
+    
+    // Repopulate all the text fields
+    document.getElementById('secretInput').value = savedState.secret || '';
+    document.getElementById('hintInput').value = savedState.hint1 || '';
+    document.getElementById('hintInput2').value = savedState.hint2 || '';
+    document.getElementById('hintInput3').value = savedState.hint3 || '';
+    document.getElementById('funFactInput').value = savedState.funFact || '';
+
+    // Re-check all the necessary checkboxes
+    if (savedState.specialChars && savedState.specialChars.length > 0) {
+      document.querySelectorAll('.specialCharCheckbox').forEach(cb => {
+        if (savedState.specialChars.includes(cb.value)) {
+          cb.checked = true;
+        }
+      });
+    }
+  }
+}
 
 function generateShareURL(word, hint1, hint2, hint3, hint4, funFact) {
   const url = new URL(window.location);
@@ -816,6 +1133,7 @@ function displayStats(username) {
     `Average Guesses: ${avgGuesses}`
   ];
 }
+
 async function startGame() {
   const inputWord = document.getElementById("secretInput").value.trim().toUpperCase();
   const inputHint1 = document.getElementById("hintInput").value.trim();
@@ -837,6 +1155,32 @@ async function startGame() {
     return;
   }
 
+  if (!allValidWords.has(inputWord.toLowerCase())) {
+    alert(`The word "${inputWord}" is not in the valid word dictionary. Please choose another word.`);
+    return;
+  }
+
+  // --- NEW: Check if the game already exists in Firebase ---
+  try {
+    const gameRef = database.ref('games/' + inputWord);
+    const snapshot = await gameRef.once('value');
+
+    if (snapshot.exists()) {
+      // If data exists at this path, the game has already been made.
+      alert(`A Wørtle for the word "${inputWord}" has already been created. Please choose a different word.`);
+      return; // Stop the function from proceeding.
+    }
+  } catch (error) {
+    console.error("Firebase check failed:", error);
+    alert("Could not check if game exists. Please try again.");
+    return;
+  }
+
+  // If all checks have passed, clear the saved setup data from localStorage.
+  localStorage.removeItem('wurtleSetupState');
+
+  // --- END OF NEW CODE ---
+
   // Set the global variables
   secret = inputWord;
   customHint1 = inputHint1;
@@ -850,13 +1194,13 @@ async function startGame() {
 
   // Get modal elements
   const shareModal = document.getElementById("share-modal");
-  const shareMessageBox = document.getElementById("share-message-box"); // Changed from share-url-input
+  const shareMessageBox = document.getElementById("share-message-box");
   const copyBtn = document.getElementById("copy-url-btn");
   const startBtn = document.getElementById("start-playing-btn");
   const modalMessage = shareModal.querySelector('p');
 
   // Show the modal immediately with a loading state
-  modalMessage.textContent = "Share with others:"; // Reset message
+  modalMessage.textContent = "Share with others:";
   shareMessageBox.value = "Creating short link...";
   copyBtn.disabled = true;
   startBtn.disabled = true;
@@ -870,12 +1214,12 @@ async function startGame() {
     }
     const shortUrl = await response.text();
     // Construct the full message with the short URL
-    shareMessageBox.value = `Play my WØRTLE: ${shortUrl}`;
+    shareMessageBox.value = `Hi! Play my WØRTLE: ${shortUrl}`;
   } catch (error) {
     console.error("Could not shorten URL:", error);
     modalMessage.innerHTML = "Could not create short link.<br>Please share the full link below:";
     // Construct the full message with the long URL as a fallback
-    shareMessageBox.value = `Play my WØRTLE: ${longUrl}`;
+    shareMessageBox.value = `Hi! Play my WØRTLE: ${longUrl}`;
   } finally {
     // Re-enable the buttons once the process is complete
     copyBtn.disabled = false;
@@ -884,13 +1228,11 @@ async function startGame() {
 
   // Handle Copy Button click
   copyBtn.onclick = () => {
-      // Select the text in the textarea
       shareMessageBox.select();
       shareMessageBox.setSelectionRange(0, 99999);
-      // Copy the entire message from the textarea
       navigator.clipboard.writeText(shareMessageBox.value).then(() => {
           copyBtn.textContent = "Copied!";
-          setTimeout(() => { copyBtn.textContent = "Copy Link"; }, 2000);
+          setTimeout(() => { copyBtn.textContent = "Copy Text"; }, 2000);
       }).catch(err => {
           console.error('Failed to copy message: ', err);
           alert('Could not copy message automatically. Please copy it manually.');
@@ -901,11 +1243,13 @@ async function startGame() {
   startBtn.onclick = () => {
       shareModal.classList.remove("show");
       window.history.replaceState({}, "", longUrl);
+      document.getElementById("header-info").style.display = "flex";
       document.getElementById("setup").style.display = "none";
       document.getElementById("game").style.display = "flex";
       checkUserStatus();
   };
 }
+
 function checkUserStatus() {
     const savedUsername = localStorage.getItem("gerNordleUsername");
     const gameElement = document.getElementById("game");
@@ -1008,8 +1352,10 @@ function checkUserStatus() {
         document.querySelectorAll(".hint-button").forEach(btn => {
             btn.style.visibility = "hidden";
         });
-
-        modal.classList.add("show");
+                // Hide the game board to remove the scroll space
+        document.getElementById("game").style.display = "none";
+        document.getElementById("header-info").style.display = "none";
+        document.getElementById("game-over-overlay").classList.add('show');
 
         return;
     } 
@@ -1138,7 +1484,57 @@ function promptForUsername() {
   document.getElementById("topStatsDisplay").style.display = "flex";
 }
 
-function setUsername() {
+// NEW: Helper function to check if a username is already used for the current game by another player.
+async function isUsernameTaken(usernameToCheck) {
+  // We need the secret word to know which game to check.
+  if (!secret) return false;
+
+  const gameRef = database.ref('games/' + secret);
+  const snapshot = await gameRef.once('value');
+  const scores = snapshot.val();
+
+  // If there are no scores for this game yet, the name is available.
+  if (!scores) {
+    return false;
+  }
+
+  const currentPlayerId = getPlayerId();
+  const usernameToCheckUpper = usernameToCheck.toUpperCase();
+
+  // The 'scores' object has keys like 'ENCODED_USERNAME_player_randomid123'
+  for (const compositeKey in scores) {
+    // ---- THIS IS THE CORRECTED LOGIC ----
+    const playerMarker = '_player_';
+    const markerIndex = compositeKey.indexOf(playerMarker);
+
+    // If the key doesn't match our expected format (e.g. USERNAME_player_...), skip it.
+    // markerIndex <= 0 means the username part would be empty.
+    if (markerIndex <= 0) {
+      continue;
+    }
+
+    const encodedUsername = compositeKey.substring(0, markerIndex);
+    const keyPlayerId = compositeKey.substring(markerIndex + 1); // This gets the full 'player_...' string
+    // ---- END OF CORRECTION ----
+    
+    try {
+      const existingUsername = decodeURIComponent(encodedUsername);
+
+      // Check if the username matches AND it belongs to a different player.
+      if (existingUsername.toUpperCase() === usernameToCheckUpper && keyPlayerId !== currentPlayerId) {
+        return true; // The username is taken by someone else.
+      }
+    } catch (e) {
+      // This might happen with legacy or malformed data. It's safe to ignore and continue.
+      console.error("Could not decode username from Firebase key:", encodedUsername, e);
+      continue;
+    }
+  }
+
+  return false; // The username is not taken by another player.
+}
+// MODIFIED: This function now checks Firebase before setting a username.
+async function setUsername() {
   const usernameInput = document.getElementById("usernameInputGame");
   let username = usernameInput.value.trim();
 
@@ -1147,11 +1543,26 @@ function setUsername() {
     return;
   }
 
+  // Disable the button to prevent multiple clicks while checking
+  const setButton = usernameInput.nextElementSibling;
+  if (setButton) setButton.disabled = true;
+
+  const isTaken = await isUsernameTaken(username);
+
+  if (isTaken) {
+    alert(`The username "${username.toUpperCase()}" is already in use for this Wørtle. Please choose another.`);
+    if (setButton) setButton.disabled = false; // Re-enable the button
+    return;
+  }
+
+  // If the username is available, proceed as before.
   username = username.toUpperCase();
   localStorage.setItem("gerNordleUsername", username);
   resetHints();
   checkUserStatus();
+  // The UI will be rebuilt by checkUserStatus, so no need to re-enable the button here.
 }
+
 
 function updateBoard() {
   const board = document.getElementById("board");
@@ -1252,8 +1663,50 @@ function validateHardMode(guess) {
   return true;
 }
 
+async function loadAllWordLists() {
+  console.log("Loading all word lists...");
 
-function submitGuess() {
+  // Create an array of fetch promises
+  const promises = SUPPORTED_LANGUAGES.map(lang => {
+    const filePath = `${lang}.txt`; // e.g., "german.txt"
+    return fetch(filePath)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${filePath}`);
+        }
+        return response.text();
+      });
+  });
+
+  try {
+    // Wait for all files to be fetched and returned as an array of text content
+    const allTexts = await Promise.all(promises);
+
+    // Process each text file's content
+    allTexts.forEach(text => {
+      const words = text.split(/\s+/); // Splits by any whitespace
+      words.forEach(word => {
+        if (word) { // Ensure we don't add empty strings
+          allValidWords.add(word.trim().toLowerCase());
+        }
+      });
+    });
+
+    console.log(`All word lists loaded! Total valid words: ${allValidWords.size}`);
+
+  } catch (error) {
+    console.error("Could not load one or more word lists:", error);
+    // Handle the error, maybe show a message to the user
+  }
+}
+
+function isValidWord(word) {
+  // The check is now a simple, fast lookup in the Set.
+  // We convert the guessed word to lowercase to ensure case-insensitivity.
+  return allValidWords.has(word.toLowerCase());
+}
+
+async function submitGuess() {
   const guess = grid[currentRow].join("");
   if (guess.length !== cols) {
     const currentRowDiv = document.getElementById("board").children[currentRow];
@@ -1261,57 +1714,76 @@ function submitGuess() {
       currentRowDiv.classList.add("shake");
       setTimeout(() => {
         currentRowDiv.classList.remove("shake");
-      }, 500); 
+      }, 500);
     }
     document.getElementById("message").textContent = "Not enough letters";
     return;
   }
-  
+
   if (!validateHardMode(guess)) {
     const currentRowDiv = document.getElementById("board").children[currentRow];
     if (currentRowDiv) {
       currentRowDiv.classList.add("shake");
       setTimeout(() => {
         currentRowDiv.classList.remove("shake");
-      }, 500); 
+      }, 500);
     }
     return;
   }
-  
-  isAnimating = true;
-  
+
+  // Check if the guess is in our loaded word lists. This is now instant.
+  if (!isValidWord(guess)) {
+    const currentRowDiv = document.getElementById("board").children[currentRow];
+    if (currentRowDiv) {
+      currentRowDiv.classList.add("shake");
+      setTimeout(() => {
+        currentRowDiv.classList.remove("shake");
+      }, 500);
+    }
+    document.getElementById("message").textContent = "Not in word list";
+    return;
+  }
+
+  // Word is valid, proceed with game logic and animations
+  isAnimating = true; // Lock input during the animation
+  document.getElementById("message").textContent = ""; // Clear any previous messages
+
   guessHistory.push(guess);
   const colors = Array(cols).fill("absent");
   const secretLetters = secret.split("");
   for (let i = 0; i < cols; i++) {
-    if (guess[i] === secret[i]) { colors[i] = "correct"; secretLetters[i] = null; }
+    if (guess[i] === secret[i]) {
+      colors[i] = "correct";
+      secretLetters[i] = null;
+    }
   }
   for (let i = 0; i < cols; i++) {
     if (colors[i] === "correct") continue;
     const index = secretLetters.indexOf(guess[i]);
-    if (index !== -1) { colors[i] = "present"; secretLetters[index] = null; }
+    if (index !== -1) {
+      colors[i] = "present";
+      secretLetters[index] = null;
+    }
   }
-    for (let i = 0; i < cols; i++) {
+  for (let i = 0; i < cols; i++) {
     const letter = guess[i];
     const color = colors[i];
-    if (!keyColors[letter] || 
-        (color === "correct") ||
-        (color === "present" && keyColors[letter] === "absent")) {
+    if (!keyColors[letter] || (color === "correct") || (color === "present" && keyColors[letter] === "absent")) {
       keyColors[letter] = color;
     }
   }
 
   updateKeyboardColors();
-  
+
   colorHistory.push(colors);
   const board = document.getElementById("board");
   for (let i = 0; i < cols; i++) {
     const tile = board.children[currentRow].children[i];
     setTimeout(() => {
-        tile.classList.add(colors[i]);
+      tile.classList.add(colors[i]);
     }, i * 200);
   }
-  
+
   setTimeout(() => {
     if (guess === secret) {
       endGame(true);
@@ -1320,8 +1792,8 @@ function submitGuess() {
     } else {
       currentRow++;
       currentCol = 0;
-      isAnimating = false;
-      saveOngoingGame(window.currentUsername, base64Encode(secret));      
+      isAnimating = false; // Unlock input for the next row
+      saveOngoingGame(window.currentUsername, base64Encode(secret));
     }
   }, cols * 200);
 }
@@ -1359,6 +1831,14 @@ function endGame(won) {
     };
 
     localStorage.setItem("gerNordleGameData", JSON.stringify(allGameData));
+
+    // NEW: Save the score to Firebase
+    const resultData = {
+        username: window.currentUsername || "Anonymous",
+        guesses: won ? currentRow + 1 : -1, // -1 or another indicator for a loss
+        timestamp: new Date().toISOString()
+    };
+    saveScoreToFirebase(resultData);
 
     const modal = document.getElementById("game-over-modal");
 
@@ -1410,9 +1890,45 @@ function endGame(won) {
     // Bind modal buttons (copy + toggle stats)
     bindModalButtons(guessHistory, colorHistory, won, hintStatusForSummary);
 
+    // Hide the game board to remove the scroll space
+    document.getElementById("game").style.display = "none";
+
     // Show modal
-    modal.classList.add("show");
+    document.getElementById("game-over-overlay").classList.add('show');
     document.getElementById("modalCopyBtn").style.display = "block";
+}
+
+function getPlayerId() {
+  let playerId = localStorage.getItem('myWordlePlayerId');
+  if (!playerId) {
+    // Create a simple, random ID if one doesn't exist
+    playerId = 'player_' + Date.now() + Math.random().toString(36).substring(2, 9);
+    localStorage.setItem('myWordlePlayerId', playerId);
+  }
+  return playerId;
+}
+
+function saveScoreToFirebase(resultData) {
+  if (!secret || !window.currentUsername) return;
+  const playerId = getPlayerId(); // e.g., 'player_12345'
+  const username = window.currentUsername; // e.g., 'PLAYER1'
+  // Create a composite key from both the username and the player ID.
+  // We encode the username to make sure it's a valid key in Firebase.
+  const compositeKey = `${encodeURIComponent(username)}_${playerId}`;
+  // --- NEW: Calculate hint count ---
+  let hintCount = 0;
+  if (hintUsed1) hintCount++;
+  if (hintUsed2) hintCount++;
+  if (hintUsed3) hintCount++;
+  if (hintUsed4) hintCount++;
+  
+  // Add hintCount to the data being saved
+  resultData.hintCount = hintCount;
+  // Create a "game room" using the secret word
+  const gameRef = database.ref('games/' + secret);
+  // Use the new composite key to save the score
+  const userScoreRef = gameRef.child(compositeKey);
+  userScoreRef.set(resultData);
 }
 
 function initBoard() {
@@ -1581,11 +2097,31 @@ function resetHints() {
 // Initial setup on page load
 window.onload = () => {
   secret = getSecretFromURL();
+  const headerInfo = document.getElementById("header-info");
   if (secret) {
+    headerInfo.style.display = "flex";
     document.getElementById("setup").style.display = "none";
     document.getElementById("game").style.display = "flex";
-    
     checkUserStatus();
+  } else {
+    // This is the HOST page, so hide the header
+    headerInfo.style.display = "none";
+    
+    // --- ADD THIS NEW LOGIC ---
+    // 1. Load any previously saved form data
+    loadSetupState();
+    
+    // 2. Set up event listeners to save data on any change
+    const setupInputs = [
+      document.getElementById('secretInput'),
+      document.getElementById('hintInput'),
+      document.getElementById('hintInput2'),
+      document.getElementById('hintInput3'),
+      document.getElementById('funFactInput')
+    ];
+    setupInputs.forEach(input => input.addEventListener('input', saveSetupState));
+    document.querySelectorAll('.specialCharCheckbox').forEach(cb => cb.addEventListener('change', saveSetupState));
+    // --- END OF NEW LOGIC ---
   }
 };
 
@@ -1667,6 +2203,20 @@ function hideHelpPopup() {
   mainContent.inert = false;
   mainContent.removeAttribute('aria-hidden');
   setInputsDisabled(false);
+}
+
+// Find the new button in the document
+const newGameBtn = document.getElementById("newGameBtn");
+
+// This function navigates to the base URL of your site
+function goToHostPage() {
+  // window.location.origin provides the base URL (e.g., "https://your-site.com")
+  window.location.href = window.location.origin + window.location.pathname;
+}
+
+// Attach the function to the button's click event
+if (newGameBtn) {
+  newGameBtn.addEventListener("click", goToHostPage);
 }
 
 helpBtn.addEventListener("click", (e) => {
@@ -1806,60 +2356,252 @@ function updateHintButtons() {
 }
 
 function bindModalButtons(savedGuessHistory, savedColorHistory, isSolved, savedHintStatus) {
-    const showStatsBtn = document.getElementById("showStatsBtn");
-    const statsContainer = document.getElementById("modal-stats-container");
     const modalCopyBtn = document.getElementById("modalCopyBtn");
+    const showStatsBtn = document.getElementById("showStatsBtn");
+    const showScoreboardBtn = document.getElementById("showScoreboardBtn");
 
-    // Stats toggle button
-    showStatsBtn.addEventListener("click", function () {
-        statsContainer.classList.toggle('expanded');
-        this.textContent = statsContainer.classList.contains('expanded')
-            ? "Hide My Stats"
-            : "Show My Stats";
-    });
+    // --- 1. Copy Result Button ---
+    if (modalCopyBtn) {
+        modalCopyBtn.onclick = () => {
+            const resultText = generateResultText(false, savedGuessHistory, savedColorHistory, isSolved, savedHintStatus);
+            navigator.clipboard.writeText(resultText).then(() => {
+                modalCopyBtn.innerHTML = "<i>Copied!</i>";
+                modalCopyBtn.disabled = true;
+                setTimeout(() => {
+                    modalCopyBtn.innerHTML = "Copy Result";
+                    modalCopyBtn.disabled = false;
+                }, 1500);
+            });
+        };
+    }
 
-    // Copy result button
-    modalCopyBtn.onclick = function () {
-        const btn = this;
-        const resultText = generateResultText(
-            false,
-            savedGuessHistory,
-            savedColorHistory,
-            isSolved,
-            savedHintStatus
-        );
-        navigator.clipboard.writeText(resultText).then(() => {
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = "<i>Copied!</i>";
-            btn.disabled = true;
-            setTimeout(() => {
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-            }, 1500);
-        });
-    };
+    // --- 2. Stats Toggle Button ---
+    if (showStatsBtn) {
+        showStatsBtn.onclick = () => {
+            const statsContainer = document.getElementById("modal-stats-container");
+            statsContainer.classList.toggle('expanded');
+            showStatsBtn.textContent = statsContainer.classList.contains('expanded') ? "Hide My Stats" : "Show My Stats";
+        };
+    }
+
+    // --- 3. View/Hide Scoreboard Button (MODIFIED) ---
+    if (showScoreboardBtn) {
+        // Set initial text
+        showScoreboardBtn.textContent = "View Scoreboard";
+        
+        showScoreboardBtn.onclick = () => {
+            const scoreboardPanel = document.getElementById('scoreboard-panel');
+            // Check if the panel is already visible
+            if (scoreboardPanel.classList.contains('show')) {
+                hideScoreboard(); // If yes, hide it
+            } else {
+                showScoreboard(); // If no, show it
+            }
+        };
+    }
 }
 
 function showHintPopup() {
-  hintPopup.hidden = false;
   hintPopup.classList.add("show");
-  hintPopupOverlay.hidden = false;
 }
 
 function hideHintPopup() {
   hintPopup.classList.remove("show");
-  hintPopupOverlay.hidden = true;
 }
-// Event listeners for the new hint popup
+// Event listeners for the hint popup
 if (hintTitle) {
   hintTitle.addEventListener("click", showHintPopup);
 }
 if (closeHintPopupBtn) {
   closeHintPopupBtn.addEventListener("click", hideHintPopup);
 }
+
+// This handles the "click outside" functionality
 if (hintPopupOverlay) {
   hintPopupOverlay.addEventListener("click", hideHintPopup);
 }
+
+// This prevents clicks *inside* the popup from closing it
+if (hintPopup) {
+  hintPopup.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
+}
+// --- Add this new function to your script ---
+
+function generateRandomWord() {
+  // Ensure the word list has been loaded
+  if (allValidWords.size === 0) {
+    alert("Word lists are still loading. Please wait a moment and try again.");
+    return;
+  }
+
+  // Convert the Set of words into an array to easily pick a random one
+  const allWordsArray = [...allValidWords];
+  
+  // Select a random word from the array
+  const randomIndex = Math.floor(Math.random() * allWordsArray.length);
+  const randomWord = allWordsArray[randomIndex];
+
+  // Put the selected word into the input field, in uppercase
+  const secretInput = document.getElementById("secretInput");
+  secretInput.value = randomWord.toUpperCase();
+}
+
+// --- Add this event listener to make the button work ---
+
+// Find the new button in the document
+const generateBtn = document.getElementById("generateWordBtn");
+
+// Attach the function to the button's click event
+if (generateBtn) {
+  generateBtn.addEventListener("click", generateRandomWord);
+}
+
+// --- Find the new scoreboard elements ---
+const scoreboardPanel = document.getElementById('scoreboard-panel');
+
+function showScoreboard() {
+  const showScoreboardBtn = document.getElementById('showScoreboardBtn');
+  // First, fetch the data and populate the panel
+  fetchAndDisplayScoreboard();
+  // Then, slide the panel into view
+  scoreboardPanel.classList.add('show');
+  // Update button text
+  if (showScoreboardBtn) {
+    showScoreboardBtn.textContent = 'Hide Scoreboard';
+  }
+}
+
+// This function now hides the side panel
+function hideScoreboard() {
+  const showScoreboardBtn = document.getElementById('showScoreboardBtn');
+  scoreboardPanel.classList.remove('show');
+  
+  // Reset the button text
+  if (showScoreboardBtn) {
+    showScoreboardBtn.textContent = 'View Scoreboard';
+  }
+  
+  // Clean up the real-time listener to prevent memory leaks
+  if (scoreboardListener && secret) {
+      const gameRef = database.ref('games/' + secret);
+      gameRef.off('value', scoreboardListener);
+      scoreboardListener = null; // Clear the variable
+  }
+}
+
+function fetchAndDisplayScoreboard() {
+    if (!secret) return;
+
+    const container = document.getElementById('scoreboard-container');
+    const wordDisplay = document.getElementById('scoreboard-word');
+    // Get the new summary container
+    const summaryContainer = document.getElementById('scoreboard-summary-container');
+    
+    if (!container || !wordDisplay || !summaryContainer) {
+        console.error("Scoreboard HTML elements not found! Check your element IDs.");
+        return; 
+    }
+
+    const gameRef = database.ref('games/' + secret);
+
+    wordDisplay.textContent = secret;
+    container.innerHTML = '<p>Loading scores...</p>';
+    summaryContainer.innerHTML = ''; // Clear previous summary
+
+    if (scoreboardListener) {
+        gameRef.off('value', scoreboardListener);
+    }
+    
+    scoreboardListener = gameRef.on('value', (snapshot) => {
+        const scores = snapshot.val();
+
+        if (!scores) {
+            container.innerHTML = '<p>Be the first to set a score!</p>';
+            return;
+        }
+
+        const allScores = Object.values(scores || {});
+
+        // ---- NEW: Calculate Average Stats ----
+        const totalPlayers = allScores.length;
+        const winners = allScores.filter(score => score.guesses > 0);
+        const totalWinners = winners.length;
+
+        const solveRate = totalPlayers > 0 ? (totalWinners / totalPlayers) * 100 : 0;
+        
+        const totalGuesses = winners.reduce((sum, player) => sum + player.guesses, 0);
+        const avgGuesses = totalWinners > 0 ? totalGuesses / totalWinners : 0;
+
+        const totalHints = allScores.reduce((sum, player) => sum + (player.hintCount || 0), 0);
+        const avgHints = totalPlayers > 0 ? totalHints / totalPlayers : 0;
+
+        // Generate HTML for the summary section
+        summaryContainer.innerHTML = `
+            <div class="summary-stat">
+                <span class="stat-label">Solve Rate</span>
+                <div class="stat-bar-container">
+                    <div class="stat-bar" style="width: ${solveRate.toFixed(1)}%;">${solveRate.toFixed(1)}%</div>
+                </div>
+            </div>
+            <div class="summary-stat">
+                <span class="stat-label">Avg. Guesses</span>
+                <div class="stat-bar-container">
+                    <div class="stat-bar" style="width: ${(avgGuesses / 6) * 100}%;">${avgGuesses.toFixed(1)}</div>
+                </div>
+            </div>
+            <div class="summary-stat">
+                <span class="stat-label">Avg. Hints</span>
+                <div class="stat-bar-container">
+                    <div class="stat-bar" style="width: ${(avgHints / 4) * 100}%;">${avgHints.toFixed(1)}</div>
+                </div>
+            </div>
+        `;
+        // ---- END OF NEW STATS LOGIC ----
+
+
+        // Sort players for the main scoreboard table
+        winners.sort((a, b) => {
+            const guessDifference = a.guesses - b.guesses;
+            if (guessDifference !== 0) return guessDifference;
+            return (a.hintCount || 0) - (b.hintCount || 0);
+        });
+
+        const losers = allScores.filter(score => score.guesses <= 0);
+        const sortedScores = [...winners, ...losers];
+
+        if (sortedScores.length === 0) {
+            container.innerHTML = '<p>No scores have been recorded yet.</p>';
+            return;
+        }
+
+        let tableHTML = `
+            <table>
+                <thead><tr><th>Rank</th><th>Player</th><th>Guesses</th><th>Hints</th></tr></thead>
+                <tbody>`;
+
+        sortedScores.forEach((score, index) => {
+            const guessDisplay = score.guesses > 0 ? score.guesses : 'X';
+            tableHTML += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${score.username}</td>
+                    <td>${guessDisplay}</td>
+                    <td>${score.hintCount || 0}</td>
+                </tr>`;
+        });
+
+        tableHTML += '</tbody></table>';
+        container.innerHTML = tableHTML;
+
+    }, (error) => {
+        console.error("Firebase listener error:", error);
+        container.innerHTML = '<p>Could not load scores due to an error.</p>';
+        summaryContainer.innerHTML = '<p style="text-align:center; color:#c7d1d5;">Could not load stats.</p>';
+    });
+}
+
 
 </script>
 </body>
