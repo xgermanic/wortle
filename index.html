@@ -820,6 +820,57 @@ tr:nth-child(even){
   gap: 0px;             /* Adds some space between each button */
   width: 100%;           /* Ensures the container takes up the available space */
 }
+
+/* Add this CSS to your stylesheet */
+.alert-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: none; /* Hidden by default */
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.alert-modal-overlay.show {
+  display: flex; /* Show it with flexbox */
+}
+
+.alert-modal-content {
+  background: #2c3e50; /* A dark theme background */
+  padding: 25px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  color: #ecf0f1;
+}
+
+.alert-modal-content h2 {
+  margin-top: 0;
+}
+
+/* Style for the input box holding the link */
+#custom-alert-link-container input {
+  width: 100%;
+  padding: 8px;
+  margin: 15px 0;
+  box-sizing: border-box;
+  background-color: #34495e;
+  border: 1px solid #7f8c8d;
+  color: #ecf0f1;
+  border-radius: 5px;
+  text-align: center;
+}
+
+.alert-modal-content button {
+  margin-top: 10px;
+}
+
 </style>
 </head>
 <body>
@@ -843,8 +894,8 @@ tr:nth-child(even){
 <div id="setup" style="padding-bottom:10px;">
   <p style="margin-bottom:20px;">Host: Enter a secret word and optional hints for the user to reveal</p>
   <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" style="border:2px solid rgb(92, 17, 17);" class="host-input"/>
-    <button id="generateWordBtn" style="margin:5px 0 7px 0;">Pick Random Word</button>
-    <button id="checkWordBtn" class="styled-button">Check Availability</button>
+    <button id="generateWordBtn" style="width:140px;margin:5px 0 7px 0;">Pick Random Word</button>
+    <button id="checkWordBtn" style="width:140px;margin:5px 0 7px 0;">Check Availability</button>
     <input type="text" id="hintInput" placeholder="Language" class="host-input"/>
   <input type="text" id="hintInput2" placeholder="Part of speech" class="host-input"/>
   <input type="text" id="hintInput3" placeholder="Context clue" class="host-input"/>
@@ -969,6 +1020,15 @@ tr:nth-child(even){
 </div>
 
 <div id="hintPopupOverlay" class="popup-overlay"></div>
+
+<div id="custom-alert-overlay" class="alert-modal-overlay">
+  <div id="custom-alert-modal" class="alert-modal-content">
+    <h2 id="custom-alert-title"></h2>
+    <p id="custom-alert-message"></p>
+    <div id="custom-alert-link-container"></div>
+    <button id="custom-alert-close-btn" class="styled-button">Close</button>
+  </div>
+</div>
 
 <script>
 let secret = "";
@@ -1182,21 +1242,19 @@ async function startGame() {
 
   // 1. Basic Validation
   if (!inputWord) {
-    alert("Please enter a secret word.");
+    showCustomAlert('Input Needed', 'Please enter a secret word.');
     return;
   }
-
   if (inputWord.length !== 5 || !/^[A-ZÄÖÜßẞÆØÅ]+$/i.test(inputWord)) {
-    alert("Secret word must be exactly 5 letters and can include Ä, Ö, Ü, ß, ẞ, Æ, Ø, Å.");
+    showCustomAlert('Invalid Word', 'Secret word must be 5 letters and can include Ä, Ö, Ü, ß, ẞ, Æ, Ø, Å.');
     return;
   }
-
   if (!allValidWords.has(inputWord.toLowerCase())) {
-    alert(`The word "${inputWord}" is not in the valid word dictionary. Please choose another word.`);
+    showCustomAlert('Invalid Word', `The word "${inputWord}" is not in the valid word dictionary. Please choose another word.`);
     return;
   }
 
-  // --- 2. FINAL DATABASE CHECK AND CREATION ---
+  // 2. FINAL DATABASE CHECK AND CREATION
   try {
     const gameRef = database.ref('games/' + inputWord);
     const snapshot = await gameRef.once('value');
@@ -1206,17 +1264,24 @@ async function startGame() {
       const metadata = snapshot.child('metadata').val();
       if (metadata) {
         const existingLongUrl = generateShareURL(metadata.word || inputWord, metadata.hint1, metadata.hint2, metadata.hint3, metadata.hint4, metadata.funFact);
-        alert(`A Wørtle for "${inputWord}" already exists. Generating the link for you...`);
         try {
           const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(existingLongUrl)}`);
           if (!response.ok) throw new Error('TinyURL failed');
           const shortUrl = await response.text();
-          alert(`Creation failed: The word "${inputWord}" is already taken.\n\nHere is the link to the existing game: ${shortUrl}`);
+          showCustomAlert(
+            'Creation Failed',
+            `The word "${inputWord}" is already taken. You can copy the link to the existing game below.`,
+            shortUrl
+          );
         } catch (shortenError) {
-          alert(`Creation failed: The word "${inputWord}" is already taken.\n\nHere is the link (could not shorten):\n${existingLongUrl}`);
+          showCustomAlert(
+            'Creation Failed',
+            `The word "${inputWord}" is already taken. You can copy the link below (could not shorten).`,
+            existingLongUrl
+          );
         }
       } else {
-        alert(`Creation failed: The word "${inputWord}" is already taken, but its share link could not be retrieved.`);
+        showCustomAlert('Creation Failed', `The word "${inputWord}" is already taken, but its share link could not be retrieved.`);
       }
       return; // Stop the function here.
     }
@@ -1245,7 +1310,7 @@ async function startGame() {
 
   } catch (error) {
     console.error("Firebase check/save failed:", error);
-    alert("Could not connect to the database to create the game. Please try again.");
+    showCustomAlert('Error', 'Could not connect to the database to create the game. Please try again.');
     return;
   }
   
@@ -1288,7 +1353,7 @@ async function startGame() {
           setTimeout(() => { copyBtn.textContent = "Copy Text"; }, 2000);
       }).catch(err => {
           console.error('Failed to copy message: ', err);
-          alert('Could not copy message automatically. Please copy it manually.');
+          showCustomAlert('Copy Failed', 'Could not copy message automatically. Please copy it manually.');
       });
   };
 
@@ -2663,7 +2728,6 @@ function generateGuessHistoryHTML(guessHistory, colorHistory) {
   return historyHtml;
 }
 
-// --- NEW: Function to check word availability on demand ---
 async function checkWordAvailability() {
   const checkButton = document.getElementById("checkWordBtn");
   const originalButtonText = checkButton.textContent;
@@ -2671,15 +2735,15 @@ async function checkWordAvailability() {
 
   // 1. Basic Validation
   if (!inputWord) {
-    alert("Please enter a word to check.");
+    showCustomAlert('Input Needed', 'Please enter a word to check.');
     return;
   }
   if (inputWord.length !== 5 || !/^[A-ZÄÖÜßẞÆØÅ]+$/i.test(inputWord)) {
-    alert("Word must be 5 letters and can include Ä, Ö, Ü, ß, ẞ, Æ, Ø, Å.");
+    showCustomAlert('Invalid Word', 'Word must be 5 letters and can include Ä, Ö, Ü, ß, ẞ, Æ, Ø, Å.');
     return;
   }
   if (!allValidWords.has(inputWord.toLowerCase())) {
-    alert(`"${inputWord}" is not in the valid word dictionary.`);
+    showCustomAlert('Invalid Word', `"${inputWord}" is not in the valid word dictionary.`);
     return;
   }
 
@@ -2694,30 +2758,89 @@ async function checkWordAvailability() {
     if (snapshot.exists()) {
       const metadata = snapshot.child('metadata').val();
       if (metadata) {
-        // Word is taken, generate the share link
         const existingLongUrl = generateShareURL(metadata.word || inputWord, metadata.hint1, metadata.hint2, metadata.hint3, metadata.hint4, metadata.funFact);
         try {
           const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(existingLongUrl)}`);
           if (!response.ok) throw new Error('TinyURL failed');
           const shortUrl = await response.text();
-          alert(`The word "${inputWord}" is already taken! 😕\n\nHere is the link to the existing game: ${shortUrl}`);
+          showCustomAlert(
+            'Word Taken 😕',
+            `The Wørtle for "${inputWord}" has already been created. You can copy the link below.`,
+            shortUrl
+          );
         } catch (shortenError) {
-          alert(`The word "${inputWord}" is already taken! 😕\n\nHere is the link (could not shorten):\n${existingLongUrl}`);
+          showCustomAlert(
+            'Word Taken 😕',
+            `The Wørtle for "${inputWord}" has already been created. You can copy the link below (could not shorten).`,
+            existingLongUrl
+          );
         }
       } else {
-        alert(`The word "${inputWord}" is already taken, but its share link could not be retrieved. 😕`);
+        showCustomAlert('Word Taken 😕', `The word "${inputWord}" is already taken, but its share link could not be retrieved.`);
       }
     } else {
-      // Word is available
-      alert(`The word "${inputWord}" is available! 👍`);
+      showCustomAlert('Available! 👍', `The word "${inputWord}" is available to use.`);
     }
   } catch (error) {
     console.error("Firebase check failed:", error);
-    alert("Could not connect to the database to check the word. Please try again.");
+    showCustomAlert('Error', 'Could not connect to the database to check the word. Please try again.');
   } finally {
     checkButton.disabled = false;
     checkButton.textContent = originalButtonText;
   }
+}
+
+// --- NEW: Functions for the Custom Alert Modal ---
+
+// Get the modal elements once
+const customAlertOverlay = document.getElementById('custom-alert-overlay');
+const customAlertTitle = document.getElementById('custom-alert-title');
+const customAlertMessage = document.getElementById('custom-alert-message');
+const customAlertLinkContainer = document.getElementById('custom-alert-link-container');
+const customAlertCloseBtn = document.getElementById('custom-alert-close-btn');
+
+/**
+ * Shows a custom modal with a title, message, and an optional interactive link.
+ * @param {string} title - The title to display in the modal.
+ * @param {string} message - The main text message.
+ * @param {string} [link] - An optional URL to display in a selectable input box.
+ */
+function showCustomAlert(title, message, link = '') {
+  customAlertTitle.textContent = title;
+  customAlertMessage.textContent = message;
+
+  // Clear any previous link
+  customAlertLinkContainer.innerHTML = '';
+  
+  // If a link is provided, create a selectable input field for it
+  if (link) {
+    const linkInput = document.createElement('input');
+    linkInput.type = 'text';
+    linkInput.value = link;
+    linkInput.readOnly = true; // Makes it non-editable but still selectable/copyable
+    linkInput.onclick = () => linkInput.select(); // Select all text on click
+    customAlertLinkContainer.appendChild(linkInput);
+  }
+
+  customAlertOverlay.classList.add('show');
+}
+
+// Function to hide the modal
+function hideCustomAlert() {
+  customAlertOverlay.classList.remove('show');
+}
+
+// Add event listeners to close the modal
+if (customAlertCloseBtn) {
+    customAlertCloseBtn.addEventListener('click', hideCustomAlert);
+}
+if (customAlertOverlay) {
+    customAlertOverlay.addEventListener('click', (event) => {
+        // Only close if the click is on the overlay itself, not the modal content
+        if (event.target === customAlertOverlay) {
+            hideCustomAlert();
+        }
+    });
 }
 
 </script>
