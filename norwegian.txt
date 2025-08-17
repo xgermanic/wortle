@@ -3191,8 +3191,6 @@ fiste
 fistl
 fitla
 fitle
-fitta
-fitte
 fivel
 fjagg
 fjakk
@@ -5129,10 +5127,6 @@ hopet
 hoppa
 hoppe
 horde
-horen
-horer
-hores
-horet
 horga
 horka
 horna
