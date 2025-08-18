@@ -1003,6 +1003,7 @@ tr:nth-child(even){
     width: 28px;
     height: 28px;
     font-size: 12pt;
+    margin-top:2px;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -1176,7 +1177,7 @@ tr:nth-child(even){
   letter-spacing: 1px;
   text-shadow: 2px 2px #000000;
   margin: 0;
-  padding: 4px 8px;
+  padding: 4px;
 }
 #setup-form-content {
   transition: opacity 0.4s ease-in-out;
@@ -2169,7 +2170,7 @@ async function endGame(won) {
             disableKeyboard();
             gameContainer.style.opacity = '0.5';
             gameContainer.style.pointerEvents = 'none';
-        }, 500);
+        }, 400);
     }
 }
 
@@ -2180,34 +2181,6 @@ function disableKeyboard() {
   });
   // Use the existing isAnimating flag to block physical keyboard input
   isAnimating = true; 
-}
-
-function getPlayerId() {
-  let playerId = localStorage.getItem('myWordlePlayerId');
-  if (!playerId) {
-    // Create a simple, random ID if one doesn't exist
-    playerId = 'player_' + Date.now() + Math.random().toString(36).substring(2, 9);
-    localStorage.setItem('myWordlePlayerId', playerId);
-  }
-  return playerId;
-}
-
-function saveScoreToFirebase(resultData) {
-    const username = localStorage.getItem("gerNordleUsername");
-    if (!secret || !username) return;
-
-    const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
-
-    let hintCount = 0;
-    if (hintUsed1) hintCount++;
-    if (hintUsed2) hintCount++;
-    if (hintUsed3) hintCount++;
-    if (hintUsed4) hintCount++;
-    resultData.hintCount = hintCount;
-
-    const gameRef = database.ref('games/' + secret);
-    const userScoreRef = gameRef.child(sanitizedUsername);
-    userScoreRef.set(resultData);
 }
 
 function initBoard() {
@@ -3143,7 +3116,7 @@ function setupUsernameInterface(config) {
         usernameInput.id = inputId;
         usernameInput.placeholder = placeholder;
         usernameInput.maxLength = 10; 
-        usernameInput.style.cssText = "padding: 3px 6px; border-radius: 6px; margin: 0px;";
+        usernameInput.style.cssText = "padding: 3px 6px; border-radius: 6px; margin: 0px; width: 140px;";
 
         const pinInput = document.createElement("input");
         pinInput.type = "password";
