@@ -16,17 +16,7 @@
     margin:0 auto;
   }
 
-  #game {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    transition: opacity 0.5s ease-in-out; 
-    padding-bottom: 50px;
-  }
-  #setup {
-    min-width:400px;
-  }
-#game.dimmed {
+  .dimmed {
     opacity: 0.5;
     pointer-events: none; /* Disables interaction with dimmed elements */
 }
@@ -38,10 +28,14 @@
     transition: opacity 0.4s ease-in-out;
   }
   .row {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 5px;
-  }
+  display: grid;
+  /* ✅ FIX: Columns are now explicitly sized to fit the 60px tiles. */
+  grid-template-columns: repeat(5, 60px);
+  gap: 10px; /* You can still adjust this value if you want */
+  
+  /* ✅ ADD: This centers the entire group of 5 tiles within the row. */
+  justify-content: center;
+}
   .tile {
     box-shadow: 2px 2px 2px #732b2b;
     width: 60px;
@@ -182,7 +176,9 @@
   opacity: 0;
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.5s ease, 
+              overflow 0s linear 0.5s;
   width: 100%;
   box-sizing: border-box;
 }
@@ -192,7 +188,7 @@
   padding: 7px 15px 7px 7px;
   width: 435px;
   text-transform: uppercase;
-  overflow: scroll;
+  overflow: auto;
   max-height: 68px;
   font-size: 11pt;
   text-align:right;
@@ -210,10 +206,11 @@
     width: auto;
     color: rgb(255, 255, 255);
     text-shadow: 2px 2px #000000;
-    font-size: 0.9em;
+    font-size: 10pt;
     font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
     cursor: pointer;
-    margin: 5px auto;
+    margin: 0;
+    letter-spacing: 1px;
 }
   #modalCopyBtn, #showStatsBtn, #showScoreboardBtn, #copy-url-btn, #start-playing-btn {
     background-color: #e4e4e4;
@@ -228,6 +225,7 @@
     border: 2px solid #1d1d1d;
     cursor: pointer;
     margin: 5px auto;
+    z-index: 100;
   }
   #modalCopyBtn:hover, #showStatsBtn:hover, #showScoreboardBtn:hover, #copy-url-btn:hover, #start-playing-btn:hover {
     background-color: #e97251;
@@ -246,7 +244,7 @@
     font-family: monospace;
     position: relative;
     text-align: center;
-    min-width:400px;
+    box-sizing: border-box;
   }
 h1 p {
   margin: 0;
@@ -255,7 +253,8 @@ h1 p {
 .h1-button-group {
   position: absolute;
   top: 50%;
-  right: 30px; /* Adjust spacing from the edge as needed */
+  right: 30px;
+  border-radius: 5px;
   transform: translateY(-50%); /* Vertically center the buttons */
 }
 /* Styling for the simple share modal */
@@ -323,11 +322,11 @@ h1 p {
 }
   #modal-message { font-size: 16pt; width:auto; font-family:monospace; }
   .modal-content {
-    position: relative; 
+  position: relative; 
   width:300px;
   max-height:80%;
   background-color: #e1dbd9;
-  border-top:20px solid rgb(206, 86, 17);
+  border-top:30px solid rgb(206, 86, 17);
   border-radius:10px;
   padding: 15px 30px 30px 30px;
   text-align: center;
@@ -335,6 +334,8 @@ h1 p {
   flex-direction: column;
   gap: 0px;
   color: rgb(33, 33, 33);
+  max-height: 85vh;      /* Set a max height relative to the screen */
+  overflow-y: auto;      /* Add a vertical scrollbar ONLY when needed */
   }
   #modal-summary {
     white-space: pre-wrap;
@@ -440,18 +441,6 @@ h1 p {
     opacity: 0.5;
     cursor: not-allowed;
   }
-  #topStatsDisplay, #username-display-area {
-    transition: opacity 0.2s;
-    text-shadow:2px 2px #000000;
-    font-size: 0.9em;
-  }
-    /* Add the keyframe animation */
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    20%, 60% { transform: translateX(-5px); }
-    40%, 80% { transform: translateX(5px); }
-  }
-
   /* Add the class to apply the animation */
   .shake {
     animation: shake 0.5s ease-in-out;
@@ -531,7 +520,7 @@ h1 p {
   transform: translate(-50%, -50%);
   background: #e1dbd9;
   color: #212121;
-  max-width: 360px;
+  max-width: 380px;
   border-radius: 10px;
   box-shadow: 0 0 15px rgba(0,0,0,0.5);
   z-index: 9999;
@@ -551,35 +540,48 @@ h1 p {
   padding: 20px 45px;
     overflow: scroll;
     max-height: 550px;
+    font-size: 11.5pt;
 }
 .close-btn {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: -3px;
+  right: 3px;
+  width: 25px;
+  height: 25px;
   border: none;
   background: transparent;
+  z-index: 1000;
   border-radius: 50%;
-  font-size: 18pt;
-  line-height: 1;
+  font-size: 17pt;
   cursor: pointer;
-  color: #333;
+  color: #5e2603;
+  font-family: 'Sansita', cursive;
 }
-.close-help-btn, .close-hint-btn {
-  position: absolute;
-  top: 0px;
-  right: 2px;
-  border: none;
-  background: transparent;
-  font-size: 30px;
-  line-height: 1;
-  cursor: pointer;
-  color: #333;
-  font-family:'Sansita', cursive;
-  font-weight: bold;
-}
-.close-help-btn:hover, .close-hint-btn:hover, .close-btn:hover {
+.close-btn:hover {
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
   color: #000;
+}
+.close-help-btn, .close-hint-btn {
+    position: absolute;
+    top: 0px;
+    right: 1px;
+    width: 30px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    z-index: 1000;
+    border-radius: 50%;
+    font-size: 19pt;
+    cursor: pointer;
+    color: #707070;
+    font-family: 'Sansita', cursive;
+}
+.close-help-btn:hover, .close-hint-btn:hover {
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  color: #000;
+}
+.close-hint-btn {
+  top:-3px;
 }
 .help-overlay {
   position: fixed;
@@ -635,7 +637,7 @@ h1 p {
 }
 
 /* When the popup is shown, also show the overlay */
-.hint-popup.show + #hintPopupOverlay {
+.hint-popup.show ~ #hintPopupOverlay {
   opacity: 1;
   visibility: visible;
   transition-delay: 0s;
@@ -711,6 +713,9 @@ tr>:nth-child(3) {
   max-width:30px;
   text-align:center;
 }
+tr {
+  text-transform: uppercase;
+}
 td, th {
   border: 1px #ddd;
   border-style: none solid solid none;
@@ -723,6 +728,7 @@ td {
 }
 th {
   border:0px;
+  text-transform: capitalize;
 }
 tr:first-child td:first-child { border-top-left-radius: 10px; }
 tr:first-child td:last-child { border-top-right-radius: 10px; }
@@ -740,7 +746,7 @@ tr:nth-child(even){
 }
 .side-panel {
   position: absolute;
-  top: 25px;
+  top: 35px;
   left: 360px;
   z-index: 1;
   /* --- MODIFIED --- */
@@ -769,9 +775,6 @@ tr:nth-child(even){
   overflow: auto; /* Adds a scrollbar if content is too tall */
   box-sizing: border-box; /* Keeps padding inside the defined width/height */
 }
-.close-btn {
-  color:#384d58;
-}
     /* Add these new styles for the scoreboard summary */
     #scoreboard-summary-container {
         padding: 10px 15px;
@@ -793,7 +796,7 @@ tr:nth-child(even){
 
     .stat-label {
         width: 90px; /* Helps align the labels */
-        text-align: left;
+        text-align: center;
         color: #c7d1d5;
         flex-shrink: 0;
     }
@@ -817,32 +820,6 @@ tr:nth-child(even){
         line-height: 20px; /* Vertically center text */
         white-space: nowrap;
     }
-#guess-history-display {
-  /* Set a fixed width to match the game board's dimensions */
-  display: none; /* Hidden by default */
-  width: 250px;
-  box-sizing: border-box;
-  margin: 60px auto;
-  flex-direction: column;
-  gap: 5px;
-}
-#guess-history-display .tile {    
-    box-shadow: 2px 2px 2px #732b2b;
-    width: auto;
-    height: auto;
-    border: 3px solid #041c47;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1em;
-    font-weight: bold;
-    text-transform: uppercase;
-    background-color: #121213;
-    color: white;
-    border-radius: 5px;
-    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-}
-
 .modal-button-container {
   display: flex;
   flex-direction: column; /* Stacks items vertically */
@@ -913,28 +890,329 @@ tr:nth-child(even){
   align-items: center;
 }
 
+/* --- Account Sidebar Styles --- */
+#account-sidebar {
+    font-family: monospace;
+    position: fixed;
+    top: 0;
+    right: -320px; /* Start off-screen */
+    width: 300px;
+    height: 100%;
+    background-color: #01222e;
+    border-left: 2px solid rgb(34, 65, 78);
+    box-shadow: -5px 0 15px rgba(0,0,0,0.4);
+    z-index: 9999;
+    padding: 10px;
+    transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    color: #c7d1d5;
+    overflow-y: auto;
+}
+
+#account-sidebar.show {
+    right: 0; /* Slide into view */
+}
+
+#account-sidebar h2 {
+    text-align: center;
+    margin-top: 25px;
+    text-transform: lowercase;
+    font-family: 'Sansita', cursive;
+    position: relative; /* Establishes a positioning context for the ::before element */
+    display: inline-block; /* Makes the h2 only as wide as the text inside it */
+}
+
+#account-sidebar h2::before {
+    content: "";
+    position: absolute;
+    background-color: #4f1868;
+    height: 9px;
+    width: 110%; /* Makes the element as wide as the text */
+    left: -5%;     /* Aligns it to the start of the text */
+    bottom: -2px; 
+    z-index: -1;
+}
+
+.account-section {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+.user-games-title {
+    font-weight: 400;
+    text-transform: lowercase;
+}
+.games-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 30px;
+}
+
+.games-list a {
+    color: #81a4c7;
+    text-decoration: none;
+    background-color: transparent;
+    padding: 8px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.game-status {
+    font-size: 0.8em;
+    font-style: italic;
+    color: #c7d1d5;
+    opacity: 0.8;
+}
+
+.game-list-item {
+    background-color: transparent;
+    padding: 2px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.game-list-item:hover {
+    background-color: #060e12;
+}
+
+.game-list-item a {
+    color: #edf6ff;
+    text-decoration: none;
+    letter-spacing: 1px;
+    font-size:9pt;
+}
+
+.game-item-actions {
+    display: flex;
+    gap: 0px;
+}
+
+.game-item-actions button {
+    background: transparent;
+    border: none;
+    color: #c7d1d5;
+    border-radius: 50%;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    font-size: 12pt;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.game-item-actions button svg {
+    color: #1898cb;
+}
+.game-item-actions button:hover svg {
+    transition: background-color 0.2s ease, color 0.2s ease;
+    stroke: #E57373; /* A nice red color for the hover state */
+}
+.game-item-actions button:hover {
+    color: #fff;
+}
+#account-stats-section {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    padding: 15px 10px;
+    /* background-color: #021a24; */
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #fff;
+}
+
+.stat-label {
+    font-size: 0.8em;
+    color: #81a4c7;
+    text-transform: uppercase;
+}
+.login-prompt-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px; /* A smaller gap suitable for these elements */
+    width: 100%; /* Ensures it takes up space to center its contents */
+}
+/* --- New Sidebar Loader and Content Styles --- */
+#sidebar-loader {
+    display: none; /* Hidden until we need it */
+    text-align: center;
+    margin-top: 50px;
+    font-size: 1.1em;
+    color: #81a4c7;
+}
+
+/* A simple CSS spinner animation */
+.spinner {
+    margin: 0 auto 15px auto;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-left-color: #fff;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
+
+#sidebar-content {
+    visibility: hidden; /* Hide the content until it's loaded */
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+#sidebar-content.loaded {
+    visibility: visible;
+    opacity: 1;
+}
+/* --- Toast Notification Styles --- */
+#toast-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none; /* Allows clicks to go "through" the container */
+}
+
+.toast {
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
+  font-size: 1em;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+  animation: fadeInOut 3s ease-in-out forwards;
+  pointer-events: all; /* Toasts themselves can be interacted with if needed */
+}
+
+/* A special style for error messages */
+.toast.error {
+  background-color: #c53a3a;
+  color: white;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  10%, 90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+/* --- FINAL UNIFIED LAYOUT & HEADER STYLES --- */
+
+/* 1. This styles the OUTER, full-width header bars */
+#header-setup {
+  display: none;
+  background-color: #041c27;
+  padding: 5px 10px;
+  border-bottom: 1px solid #06090a;
+  justify-content: center;
+  height:32px;
+}
+
+/* 2. This is the INNER wrapper that constrains the header content */
+.header-content-wrapper {
+  width: 100%;
+  max-width: 500px; /* Adjust this value to match your game board if needed */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 3. This creates the main centered column for your setup form and game */
+#setup,
+#game {
+  max-width: 500px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box; 
+  transition: opacity 0.4s ease-in-out;
+  display: none;
+}
+
+/* 4. This styles the individual sections INSIDE the wrapper (username, host, etc.) */
+.header-content-wrapper > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 5. This unifies the font and padding for text and buttons inside the header */
+.header-content-wrapper p,
+.header-content-wrapper button {
+  font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
+  font-size: 10pt;
+  letter-spacing: 1px;
+  text-shadow: 2px 2px #000000;
+  margin: 0;
+  padding: 4px 8px;
+}
+#setup-form-content {
+  transition: opacity 0.4s ease-in-out;
+}
+#host-credit {
+  font-size:9pt;
+  color: #818384;
+  margin-top: 25px;
+  letter-spacing: 1px;
+  font-family:monospace;
+}
+
 </style>
 </head>
 <body>
-
+<div id="toast-container"></div>
 <div id="mainContent">
 <h1>
   <p><span style="color:rgb(243, 202, 186);">Cross-Germanic</span> WØRTLE</p>
   <div class="h1-button-group">
-    <button id="newGameBtn" aria-label="Create new game" class="help-button custom-tooltip" data-tooltip="New Wørtle">+</button>
-   <button id="helpBtn" aria-label="Show help" data-tooltip="Info" class="help-button custom-tooltip">?</button>
+    <button id="newGameBtn" aria-label="Create New Game" class="help-button custom-tooltip" data-tooltip="New Wørtle">+</button>
+    <button id="helpBtn" aria-label="Show Help" data-tooltip="Info" class="help-button custom-tooltip">?</button>
+    <button id="accountBtn" aria-label="My Account" class="help-button custom-tooltip" data-tooltip="My Account">U</button>
   </div>
 </h1>
-<div id="header-info" style="height:35px;display: flex; justify-content: space-between; align-items: center; max-width: 750px; margin: 10px auto; padding: 0 10px;">
-<div id="username-display-area" style="display:flex; flex-direction:column; justify-content:center; align-items:center; text-align: left; width:180px;">
-  </div>
-  <div id="topStatsDisplay" style="padding:0 5px;">
-    </div>
-  <div id="change-user-button-area" style="width:180px;">
+  <div id="loader" style="margin-top: 100px; font-size: 1.2em;">Loading Wørtle...</div>
+
+<div id="header-setup">
+    <div class="header-content-wrapper">
+      <div id="setup-username-area" class="user-info-area"></div>
     </div>
 </div>
+
 <div id="setup" style="padding-bottom:10px;">
-  <p style="margin-bottom:20px;">Host: Enter a secret word and optional hints for the user to reveal</p>
+  <div id="setup-form-content">
+  <p style="margin-bottom:20px;">Enter a secret word and optional hints for the user to reveal</p>
     
   <div class="input-with-indicator">
     <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" style="border:2px solid rgb(92, 17, 17);" class="word-host-input"/>
@@ -972,12 +1250,12 @@ tr:nth-child(even){
   <textarea id="funFactInput" placeholder="Fun fact about the word (to be shown after the game is over)"></textarea>
   <button onclick="startGame()" style="margin:10px;">Create Game</button>
 </div>
+</div>
 
   
   <p id="message"></p>
 
 <div id="game">
-  <button id="copyBtn" style="display:none; margin:5px;" onclick="copyResult()">Copy Result</button>
   <div id="board" class="board"></div>
 
 <div id="hintButtons" style="display: none;">
@@ -985,6 +1263,7 @@ tr:nth-child(even){
 </div>
 
   <div id="keyboard" class="keyboard"></div>
+  <p id="host-credit"></p>
 </div>
 
 <div id="game-over-overlay" class="modal-overlay">
@@ -999,8 +1278,8 @@ tr:nth-child(even){
       </div>
     </div>
 
-    <div class="modal-content">
       <button id="closeModalBtn" class="close-btn">&times;</button>
+    <div class="modal-content">
       <p id="modal-message"></p>
       <pre id="modal-summary"></pre>
 
@@ -1033,11 +1312,16 @@ tr:nth-child(even){
     <button id="closeHelpBtn" aria-label="Close help" class="close-help-btn">&times;</button>
     <h2 id="helpTitle">How to Wørtle</h2>
     <p>Enter or generate a secret word, as well as any optional hints for the user to reveal. If the word is not accepted, it is either not in the word list or has already been used. Share the URL with players.</p>
-    <p>--------------------</p>
-    <p>WØRTLE is currently enabled for:<br>de, no, sv, da & en</p>
-    <p>Note that each language utilises a limited word list, which vary greatly in how extensive they are.</p>
+    <hr>
+    <p>WØRTLE is currently enabled for:<br>
+    German &mdash; 3902 words<br>
+    Norwegian &mdash; 15651 words<br>
+    Swedish &mdash; 4585 words<br>
+    Danish &mdash; 1392 words<br>
+    English &mdash; 14849 words</p>
+    <p>Each language utilises a limited word list, which vary in how extensive they are.</p>
+    <hr>
     <p><i>Created by lokke@ and bicks@<br>Original idea by aottl@</i></p>
-    <p>--------------------</p>
     <p>Find a bug? Want to add a word to the word list? Or have any other suggestions for improvement?<br>Please write to lokke@google.com</p>
   </div>
 </div>
@@ -1064,7 +1348,32 @@ tr:nth-child(even){
     </div>
 </div>
 
+<div id="account-overlay" class="help-overlay" hidden></div>
+<div id="account-sidebar">
+  <button id="closeAccountBtn" class="close-help-btn">&times;</button>
+  <h2 id="account-sidebar-title">My Account</h2>
+
+  <div id="sidebar-loader">
+    <div class="spinner"></div>
+    Loading account...
+  </div>
+
+  <div id="sidebar-content">
+    <div id="account-stats-section" class="account-section"></div>
+    <div class="account-section">
+        <h3 id="hosted-games-title" class="user-games-title">My Games</h3>
+        <div id="hosted-games-list" class="games-list"></div>
+    </div>
+    <div class="account-section">
+        <h3 id="played-games-title" class="user-games-title">Played Games</h3>
+        <div id="played-games-list" class="games-list"></div>
+    </div>
+  </div>
+</div>
+
 <div id="hintPopupOverlay" class="popup-overlay"></div>
+
+
 
 <script>
 let secret = "";
@@ -1093,6 +1402,7 @@ let hintExpanded2 = false;
 let hintExpanded3 = false;
 let hintExpanded4 = false;
 let scoreboardListener = null;
+let userListener = { ref: null, listener: null };
 const hintTitle = document.getElementById("hintTitle");
 const hintPopup = document.getElementById("hintPopup");
 const hintPopupOverlay = document.getElementById("hintPopupOverlay");
@@ -1130,6 +1440,16 @@ const database = firebase.database();
 let debounceTimer;
 
 /**
+ * Converts a string to uppercase, correctly handling the German Eszett (ß -> ẞ).
+ * The standard .toUpperCase() converts 'ß' to 'SS'.
+ * @param {string} str The string to convert.
+ * @returns {string} The uppercased string.
+ */
+function germanFriendlyUpperCase(str) {
+    return str.replace(/ß/g, 'ẞ').toUpperCase();
+}
+
+/**
  * Validates the secret word in the input field.
  * Checks length, dictionary, and database availability.
  * Updates the UI with a status indicator (✅, ❌, or loading spinner).
@@ -1138,7 +1458,7 @@ let debounceTimer;
 async function validateSecretWord() {
     const secretInput = document.getElementById('secretInput');
     const indicator = document.getElementById('word-status-indicator');
-    const word = secretInput.value.trim().toUpperCase();
+    const word = germanFriendlyUpperCase(secretInput.value.trim());
 
     // Clear previous indicator and state
     indicator.innerHTML = '';
@@ -1290,430 +1610,270 @@ function generateShareURL(word, hint1, hint2, hint3, hint4, funFact) {
   return url.href;
 }
 
-function getStats(username) {
-  const stats = JSON.parse(localStorage.getItem("gerNordleStats") || "{}");
-  return stats[username] || { gamesPlayed: 0, wins: 0, totalGuesses: 0 };
-}
+async function updateStats(username, won, guesses) {
+    if (!username) return;
 
-function saveStats(username, stats) {
-  const allStats = JSON.parse(localStorage.getItem("gerNordleStats") || "{}");
-  allStats[username] = stats;
-  localStorage.setItem("gerNordleStats", JSON.stringify(allStats));
-}
+    const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+    const statsRef = database.ref(`userProfiles/${sanitizedUsername}/stats`);
 
-function updateStats(username, won, guesses) {
-  const user = username || "Player";
-  const stats = getStats(user);
-  stats.gamesPlayed++;
-  if (won) {
-    stats.wins++;
-    stats.totalGuesses += guesses;
-  }
-  saveStats(user, stats);
-}
-
-function displayStats(username) {
-  const user = username || "Player";
-  const stats = getStats(user);
-  let avgGuesses = stats.wins > 0 ? (stats.totalGuesses / stats.wins).toFixed(2) : "-";
-  let winPct = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
-  
-  return [
-    `Stats for ${user}`,
-    `Games Played: ${stats.gamesPlayed}`,
-    `Wins: ${stats.wins}`,
-    `Win %: ${winPct}%`,
-    `Average Guesses: ${avgGuesses}`
-  ];
-}
-
-async function startGame() {
-  // Perform one final, definitive validation before creating the game
-  const isWordAvailable = await validateSecretWord();
-
-  // If the word is not valid and available, stop here.
-  // The indicator (❌) will have already appeared to inform the user.
-  if (!isWordAvailable) {
-    const secretInput = document.getElementById('secretInput');
-    if (secretInput) {
-      secretInput.classList.add('shake');
-      setTimeout(() => secretInput.classList.remove('shake'), 500);
-    }
-    return;
-  }
-
-  // --- Proceed with game creation ---
-  const setupDiv = document.getElementById("setup");
-  const inputWord = document.getElementById("secretInput").value.trim().toUpperCase();
-  const inputHint1 = document.getElementById("hintInput").value.trim();
-  const inputHint2 = document.getElementById("hintInput2").value.trim();
-  const inputHint3 = document.getElementById("hintInput3").value.trim();
-  const inputHint4 = Array.from(document.querySelectorAll(".specialCharCheckbox:checked"))
-                        .map(cb => cb.value)
-                        .join(", ");
-  const inputFunFact = document.getElementById("funFactInput").value.trim();
-
-  secret = inputWord;
-  customHint1 = inputHint1;
-  customHint2 = inputHint2;
-  customHint3 = inputHint3;
-  customHint4 = inputHint4;
-  customFunFact = inputFunFact;
-
-  try {
-    const metadataRef = database.ref('games/' + secret + '/metadata');
-    const metadataToSave = {
-        word: secret,
-        hint1: customHint1, hint2: customHint2, hint3: customHint3,
-        hint4: customHint4, funFact: customFunFact,
-        createdDate: new Date().toISOString()
-    };
-    await metadataRef.set(metadataToSave);
-  } catch (error) {
-    console.error("Firebase save failed:", error);
-    // You could update the indicator here too if the save fails
-    const indicator = document.getElementById('word-status-indicator');
-    indicator.innerHTML = '⚠️';
-    indicator.className = 'invalid';
-    return;
-  }
-  
-  localStorage.removeItem('wurtleSetupState');
-
-  // Generate the original long URL needed for the game to function
-  const longUrl = generateShareURL(secret, customHint1, customHint2, customHint3, customHint4, customFunFact);
-
-  // Get modal elements
-  const shareModal = document.getElementById("share-modal");
-  const shareMessageBox = document.getElementById("share-message-box");
-  const copyBtn = document.getElementById("copy-url-btn");
-  const startBtn = document.getElementById("start-playing-btn");
-  const modalMessage = shareModal.querySelector('p');
-
-  // Show the modal immediately with a loading state
-  modalMessage.textContent = "Share with others:";
-  shareMessageBox.value = "Creating short link...";
-  copyBtn.disabled = true;
-  startBtn.disabled = true;
-  shareModal.classList.add("show");
-  setupDiv.inert = true;
-
-  try {
-    const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`);
-    if (!response.ok) {
-      throw new Error('TinyURL service is not available.');
-    }
-    const shortUrl = await response.text();
-    shareMessageBox.value = `Hi! Play my WØRTLE: ${shortUrl}`;
-  } catch (error) {
-    console.error("Could not shorten URL:", error);
-    modalMessage.innerHTML = "Could not create short link.<br>Please share the full link below:";
-    shareMessageBox.value = `Hi! Play my WØRTLE: ${longUrl}`;
-  } finally {
-    copyBtn.disabled = false;
-    startBtn.disabled = false;
-  }
-
-  copyBtn.onclick = () => {
-      shareMessageBox.select();
-      shareMessageBox.setSelectionRange(0, 99999);
-      navigator.clipboard.writeText(shareMessageBox.value).then(() => {
-          copyBtn.textContent = "Copied!";
-          setTimeout(() => { copyBtn.textContent = "Copy Text"; }, 2000);
-      });
-  };
-
-  startBtn.onclick = () => {
-      shareModal.classList.remove("show");
-      window.history.replaceState({}, "", longUrl);
-      document.getElementById("header-info").style.display = "flex";
-      document.getElementById("setup").style.display = "none";
-      document.getElementById("game").style.display = "flex";
-      checkUserStatus();
-  };
-}
-
-function checkUserStatus() {
-    const savedUsername = localStorage.getItem("gerNordleUsername");
-    const gameElement = document.getElementById("game");
-    const overlay = document.getElementById("game-over-overlay");
-
-    // Clear all header areas at the start
-    document.getElementById("username-display-area").innerHTML = '';
-    document.getElementById("topStatsDisplay").innerHTML = '';
-    document.getElementById("change-user-button-area").innerHTML = '';
-
-    const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
-    const encodedSecret = secret ? base64Encode(secret) : null;
-    const userGameHistory = savedUsername ? allGameData[savedUsername] : undefined;
-    const pastGame = userGameHistory && encodedSecret ? userGameHistory[encodedSecret] : null;
-
-    // 1. Check for a COMPLETED game first.
-    if (pastGame && (pastGame.status === 'won' || pastGame.status === 'lost')) {
-        // 1. Build the basic UI first
-        initBoard();
-        initKeyboard();
-
-        // 2. Set up the header and win/loss message
-        setupHeader(savedUsername);
-        const isSolved = pastGame.status === 'won';
-        document.getElementById("message").textContent = isSolved
-            ? "You already solved this Wordle! 🥳"
-            : "You have already played this Wordle.";
-
-        // 3. Get saved data
-        const savedGuessHistory = pastGame.guessHistory;
-        const savedColorHistory = pastGame.colorHistory;
-        keyColors = pastGame.keyColors || {};
-        const savedHintStatus = pastGame.hintStatus;
-        if (savedHintStatus) {
-            hintUsed1 = savedHintStatus.hintUsed1;
-            hintUsed2 = savedHintStatus.hintUsed2;
-            hintUsed3 = savedHintStatus.hintUsed3;
-            hintUsed4 = savedHintStatus.hintUsed4;
-            hintExpanded1 = savedHintStatus.hintExpanded1 || false;
-            hintExpanded2 = savedHintStatus.hintExpanded2 || false;
-            hintExpanded3 = savedHintStatus.hintExpanded3 || false;
-            hintExpanded4 = savedHintStatus.hintExpanded4 || false;
-        }
-        updateHintButtons();
-
-        // 4. Generate the static guess history and place it directly in the board
-        const board = document.getElementById('board');
-        const historyHtml = generateGuessHistoryHTML(savedGuessHistory, savedColorHistory);
-        board.innerHTML = historyHtml;
-        board.style.gridTemplateRows = 'none'; // Adjust style for static rows
-
-        updateKeyboardColors();
-        // 5. Dim the game area and disable controls
-        gameElement.classList.add("dimmed");
-        disableKeyboard();
-
-        // 6. Set up and show the modal
-        if (isSolved) {
-            document.getElementById("modal-message").innerHTML = `You win! 🎉<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
-        } else {
-            document.getElementById("modal-message").innerHTML = `Game over!<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
-        }
-        document.getElementById("modal-summary").textContent = generateResultText(true, savedGuessHistory, savedColorHistory, isSolved, savedHintStatus);
-        
-        const existingFunFact = document.querySelector("#game-over-modal .fun-fact-section");
-        if (existingFunFact) existingFunFact.remove();
-        if (customFunFact && customFunFact.trim() !== "") {
-            const funFactDiv = document.createElement('div');
-            funFactDiv.classList.add('fun-fact-section');
-            const funFactHeader = document.createElement('h2');
-            funFactHeader.textContent = "Fun fact about today's Wørtle:";
-            const funFactText = document.createElement('p');
-            funFactText.textContent = customFunFact;
-            funFactText.style.margin = "0";
-            funFactDiv.appendChild(funFactHeader);
-            funFactDiv.appendChild(funFactText);
-            document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
-        }
-        const statsContainer = document.getElementById("modal-stats-container");
-        statsContainer.innerHTML = "";
-        displayStats(savedUsername).forEach(line => {
-            const p = document.createElement("p");
-            p.textContent = line;
-            p.classList.add("stats-line");
-            statsContainer.appendChild(p);
+    try {
+        await statsRef.transaction(currentStats => {
+            // If the user has no stats yet, initialize them.
+            if (currentStats === null) {
+                currentStats = { gamesPlayed: 0, wins: 0, totalGuesses: 0 };
+            }
+            
+            // Increment the values
+            currentStats.gamesPlayed++;
+            if (won) {
+                currentStats.wins++;
+                currentStats.totalGuesses += guesses;
+            }
+            
+            return currentStats; // Return the new data to be saved.
         });
+    } catch (error) {
+        console.error("Could not update stats in Firebase:", error);
+    }
+}
 
-        bindModalButtons(savedGuessHistory, savedColorHistory, isSolved, savedHintStatus);
-        overlay.classList.add('show');
-        return;
-    } 
+async function displayStats(username) {
+    const user = username || "Player";
+    const defaultStats = { gamesPlayed: 0, wins: 0, totalGuesses: 0 };
+    let stats = { ...defaultStats }; // Use a copy
+
+    if (username) {
+        try {
+            const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+            const statsRef = database.ref(`userProfiles/${sanitizedUsername}/stats`);
+            const snapshot = await statsRef.once('value');
+            if (snapshot.exists()) {
+                stats = snapshot.val();
+            }
+        } catch (error) {
+            console.error("Could not fetch stats from Firebase:", error);
+        }
+    }
+
+    // Calculate the derived stats
+    const winPct = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
+    const avgGuesses = stats.wins > 0 ? (stats.totalGuesses / stats.wins).toFixed(2) : "-";
     
-    // 2. ELSE, check for an ONGOING game. (This part is correct)
-    else if (pastGame && pastGame.ongoingState) {
-        // Clear any previous game-over messages
-        document.getElementById("message").innerHTML = '';
-        console.log("Found ongoing game, restoring state...");
-        
-        const savedState = pastGame.ongoingState;
-        grid = savedState.grid;
-        currentRow = savedState.currentRow;
-        guessHistory = savedState.guessHistory;
-        colorHistory = savedState.colorHistory;
-        keyColors = savedState.keyColors;
-        hintUsed1 = savedState.hintStatus.hintUsed1;
-        hintUsed2 = savedState.hintStatus.hintUsed2;
-        hintUsed3 = savedState.hintStatus.hintUsed3;
-        hintUsed4 = savedState.hintStatus.hintUsed4;
-        hintExpanded1 = savedState.hintStatus.hintExpanded1 || false;
-        hintExpanded2 = savedState.hintStatus.hintExpanded2 || false;
-        hintExpanded3 = savedState.hintStatus.hintExpanded3 || false;
-        hintExpanded4 = savedState.hintStatus.hintExpanded4 || false;
-        currentCol = 0;
+    // Return a proper JavaScript object with key: value pairs
+    return {
+        username: user,
+        gamesPlayed: stats.gamesPlayed,
+        wins: stats.wins,
+        totalGuesses: stats.totalGuesses,
+        winPct: winPct,
+        avgGuesses: avgGuesses
+    };
+}
+async function startGame() {
+    const hostUsername = localStorage.getItem("gerNordleUsername");
+    if (!hostUsername) {
+        showToast("You must be logged in to host a game.", "error");
+        return;
+    }
+    
+    const isWordAvailable = await validateSecretWord();
+    if (!isWordAvailable) {
+        const secretInput = document.getElementById('secretInput');
+        if (secretInput) {
+            secretInput.classList.add('shake');
+            setTimeout(() => secretInput.classList.remove('shake'), 500);
+        }
+        return;
+    }
 
-        setupHeader(savedUsername);
-        initKeyboard();
-        initBoard();
-        updateBoard();
-        updateKeyboardColors();
+    const setupDiv = document.getElementById("setup");
+    const headerSetup = document.getElementById("header-setup");
+    const inputWord = germanFriendlyUpperCase(document.getElementById("secretInput").value.trim());
+    const inputHint1 = document.getElementById("hintInput").value.trim();
+    const inputHint2 = document.getElementById("hintInput2").value.trim();
+    const inputHint3 = document.getElementById("hintInput3").value.trim();
+    const inputHint4 = Array.from(document.querySelectorAll(".specialCharCheckbox:checked")).map(cb => cb.value).join(", ");
+    const inputFunFact = document.getElementById("funFactInput").value.trim();
 
-        for (let r = 0; r < colorHistory.length; r++) {
-            const colors = colorHistory[r];
-            const rowDiv = document.getElementById("board").children[r];
-            for (let c = 0; c < cols; c++) {
-                if (rowDiv && rowDiv.children[c]) {
-                    rowDiv.children[c].classList.add(colors[c]);
-                }
+    secret = inputWord;
+    customHint1 = inputHint1;
+    customHint2 = inputHint2;
+    customHint3 = inputHint3;
+    customHint4 = inputHint4;
+    customFunFact = inputFunFact;
+
+    const metadataRef = database.ref('games/' + secret + '/metadata');
+    try {
+        const metadataToSave = {
+            word: secret,
+            hint1: customHint1, hint2: customHint2, hint3: customHint3,
+            hint4: customHint4, funFact: customFunFact, host: hostUsername,
+            createdDate: new Date().toISOString()
+        };
+        await metadataRef.set(metadataToSave);
+
+        const sanitizedUsername = hostUsername.replace(/[.#$[\]]/g, '_');
+        const userProfileRef = database.ref('userProfiles/' + sanitizedUsername);
+        const newGameData = {};
+        newGameData[`/hostedGames/${secret}`] = { createdDate: metadataToSave.createdDate };
+        await userProfileRef.update(newGameData);
+
+    } catch (error) {
+        console.error("Firebase save failed:", error);
+        return;
+    }
+    
+    localStorage.removeItem('wurtleSetupState');
+
+    const longUrl = generateShareURL(secret, customHint1, customHint2, customHint3, customHint4, customFunFact);
+    const shareModal = document.getElementById("share-modal");
+    const shareMessageBox = document.getElementById("share-message-box");
+    const copyBtn = document.getElementById("copy-url-btn");
+    const startBtn = document.getElementById("start-playing-btn");
+
+    shareMessageBox.value = "Creating short link...";
+    copyBtn.disabled = true;
+    startBtn.disabled = true;
+    shareModal.classList.add("show");
+    setupDiv.inert = true;
+
+    try {
+        const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`);
+        if (!response.ok) throw new Error('TinyURL service is not available.');
+        const shortUrl = await response.text();
+        shareMessageBox.value = `Hi! Play my WØRTLE: ${shortUrl}`;
+        await metadataRef.update({ shortUrl: shortUrl });
+    } catch (error) {
+        console.error("Could not shorten URL:", error);
+        shareMessageBox.value = `Hi! Play my WØRTLE: ${longUrl}`;
+    } finally {
+        copyBtn.disabled = false;
+        startBtn.disabled = false;
+    }
+
+    copyBtn.onclick = () => {
+        shareMessageBox.select();
+        navigator.clipboard.writeText(shareMessageBox.value).then(() => {
+            copyBtn.textContent = "Copied!";
+            setTimeout(() => { copyBtn.textContent = "Copy Text"; }, 2000);
+        });
+    };
+
+    startBtn.onclick = () => {
+        shareModal.classList.remove("show");
+        window.history.replaceState({}, "", longUrl);
+        
+        const gameDiv = document.getElementById("game");
+        const setupDiv = document.getElementById("setup");
+        
+        // The setup header is already visible, so we just hide the setup form.
+        setupDiv.style.display = "none";
+        
+        // Show the game board. The header remains visible.
+        gameDiv.style.display = "flex";
+        gameDiv.style.flexDirection = "column";
+
+        // This will initialize the game state and ensure the header has the correct content.
+        checkUserStatus();
+    };
+}
+async function checkUserStatus() {
+    let savedUsername = localStorage.getItem("gerNordleUsername");
+    const gameElement = document.getElementById("game");
+    displayHostCredit();
+
+    if (!savedUsername) {
+        window.currentUsername = null;
+        loadGameFromStorage();
+        return;
+    }
+
+    window.currentUsername = savedUsername;
+    listenForUserDeletion(savedUsername);
+
+    try {
+        const sanitizedUsername = savedUsername.replace(/[.#$[\]]/g, '_');
+        const playedGameRef = database.ref(`userProfiles/${sanitizedUsername}/playedGames/${secret}`);
+        const playedGameSnapshot = await playedGameRef.once('value');
+
+        if (playedGameSnapshot.exists()) {
+            const playedGameData = playedGameSnapshot.val();
+            const gameStatus = playedGameData.status;
+
+            if (gameStatus === 'won' || gameStatus === 'lost') {
+                gameElement.classList.add("dimmed");
+                loadCompletedGame(playedGameData);
+                return;
+            } 
+            // ✅ NEW: If the game is found in Firebase with 'ongoing' status, load it.
+            else if (gameStatus === 'ongoing') {
+                loadOngoingGame(playedGameData);
+                return;
             }
         }
-        updateKeyboardColors();
-        updateHintButtons();
+        
+        // If no game is found in Firebase, start a fresh game.
+        loadGameFromStorage();
 
-        window.currentUsername = savedUsername;
-        usernameSet = true;
-        gameElement.classList.remove("dimmed");
-        return;
-    }
-
-    // 3. If neither of the above, proceed as a NEW game. (This part is correct)
-    if (savedUsername) {
-        // Clear any previous game-over messages
-        document.getElementById("message").innerHTML = '';
-        setupHeader(savedUsername);
-        gameElement.classList.remove("dimmed");
-        window.currentUsername = savedUsername;
-        usernameSet = true;
-
-        resetHints();
-        grid = Array(rows).fill(null).map(() => Array(cols).fill(""));
-        guessHistory = [];
-        colorHistory = [];
-        keyColors = {};
-        currentRow = 0;
-        currentCol = 0;
-        isAnimating = false;
-        initBoard();
-        initKeyboard();
-        updateHintButtons();
-
-    } else {
-        initBoard();
-        initKeyboard();
-        updateHintButtons();
-        promptForUsername();
-        gameElement.classList.add("dimmed");
+    } catch (error) {
+        console.error("Firebase completion check failed:", error);
+        loadGameFromStorage();
     }
 }
 
+function loadGameFromStorage() {
+    let savedUsername = localStorage.getItem("gerNordleUsername");
+    const gameElement = document.getElementById("game");
+    const headerSetup = document.getElementById("header-setup");
+    
+    const savedPin = localStorage.getItem("gerNordleUserPin");
+    if (savedUsername && !savedPin) {
+        localStorage.removeItem("gerNordleUsername");
+        savedUsername = null;
+    }
 
-function promptForUsername() {
-  const usernameDisplayArea = document.getElementById("username-display-area");
-  const topStatsDisplay = document.getElementById("topStatsDisplay");
-  const changeUserButtonArea = document.getElementById("change-user-button-area");
+    initBoard();
+    initKeyboard();
 
-  usernameDisplayArea.innerHTML = '';
-  topStatsDisplay.innerHTML = '';
-  changeUserButtonArea.innerHTML = '';
-
-  const usernameInput = document.createElement("input");
-  usernameInput.type = "text";
-  usernameInput.id = "usernameInputGame";
-  usernameInput.placeholder = "Enter username";
-  usernameInput.style.cssText = "padding: 6px; border-radius: 6px; width: 180px;";
-
-  const setButton = document.createElement("button");
-  setButton.textContent = "Set Username";
-  setButton.onclick = setUsername;
-  setButton.classList.add("styled-button");
-
-  topStatsDisplay.style.display = "flex";
-  topStatsDisplay.style.gap = "8px";
-  topStatsDisplay.style.justifyContent = "center";
-  topStatsDisplay.style.alignItems = "center";
-
-  topStatsDisplay.appendChild(usernameInput);
-  topStatsDisplay.appendChild(setButton);
-
-  window.currentUsername = null;
-  usernameSet = false;
-  document.getElementById("topStatsDisplay").style.display = "flex";
+    if (savedUsername) {
+        // Setup for a brand new game for a logged-in user
+        usernameSet = true;
+        grid = Array(rows).fill(null).map(() => Array(cols).fill(""));
+        guessHistory = [];
+        colorHistory = [];
+        keyColors = {};
+        currentRow = 0;
+        currentCol = 0;
+        isAnimating = false;
+        
+        setupUsernameInterface({
+            isGamePage: true,
+            containerId: 'setup-username-area',
+            inputId: 'usernameInputGame',
+            placeholder: 'Enter username'
+        });
+        updateBoard();
+        updateKeyboardColors();
+        updateHintButtons();
+        gameElement.classList.remove("dimmed");
+        headerSetup.style.display = 'flex'; // Show the setup header
+        gameElement.style.display = 'flex';
+    
+    } else {
+        // Setup for a logged-out user
+        updateHintButtons();
+        setupUsernameInterface({
+            isGamePage: true,
+            containerId: 'setup-username-area', // Target the setup header's container
+            inputId: 'usernameInputGame',
+            placeholder: 'Enter username'
+        });
+        
+        headerSetup.style.display = 'flex'; // Show the setup header
+        gameElement.style.display = 'flex';
+        gameElement.classList.add("dimmed");
+    }
 }
-
-// NEW: Helper function to check if a username is already used for the current game by another player.
-async function isUsernameTaken(usernameToCheck) {
-  // We need the secret word to know which game to check.
-  if (!secret) return false;
-
-  const gameRef = database.ref('games/' + secret);
-  const snapshot = await gameRef.once('value');
-  const scores = snapshot.val();
-
-  // If there are no scores for this game yet, the name is available.
-  if (!scores) {
-    return false;
-  }
-
-  const currentPlayerId = getPlayerId();
-  const usernameToCheckUpper = usernameToCheck.toUpperCase();
-
-  // The 'scores' object has keys like 'ENCODED_USERNAME_player_randomid123'
-  for (const compositeKey in scores) {
-    // ---- THIS IS THE CORRECTED LOGIC ----
-    const playerMarker = '_player_';
-    const markerIndex = compositeKey.indexOf(playerMarker);
-
-    // If the key doesn't match our expected format (e.g. USERNAME_player_...), skip it.
-    // markerIndex <= 0 means the username part would be empty.
-    if (markerIndex <= 0) {
-      continue;
-    }
-
-    const encodedUsername = compositeKey.substring(0, markerIndex);
-    const keyPlayerId = compositeKey.substring(markerIndex + 1); // This gets the full 'player_...' string
-    // ---- END OF CORRECTION ----
-    
-    try {
-      const existingUsername = decodeURIComponent(encodedUsername);
-
-      // Check if the username matches AND it belongs to a different player.
-      if (existingUsername.toUpperCase() === usernameToCheckUpper && keyPlayerId !== currentPlayerId) {
-        return true; // The username is taken by someone else.
-      }
-    } catch (e) {
-      // This might happen with legacy or malformed data. It's safe to ignore and continue.
-      console.error("Could not decode username from Firebase key:", encodedUsername, e);
-      continue;
-    }
-  }
-
-  return false; // The username is not taken by another player.
-}
-// MODIFIED: This function now checks Firebase before setting a username.
-async function setUsername() {
-  const usernameInput = document.getElementById("usernameInputGame");
-  let username = usernameInput.value.trim();
-
-  if (!username) {
-    alert("Please enter a username.");
-    return;
-  }
-
-  // Disable the button to prevent multiple clicks while checking
-  const setButton = usernameInput.nextElementSibling;
-  if (setButton) setButton.disabled = true;
-
-  const isTaken = await isUsernameTaken(username);
-
-  if (isTaken) {
-    alert(`The username "${username.toUpperCase()}" is already in use for this Wørtle. Please choose another.`);
-    if (setButton) setButton.disabled = false; // Re-enable the button
-    return;
-  }
-
-  // If the username is available, proceed as before.
-  username = username.toUpperCase();
-  localStorage.setItem("gerNordleUsername", username);
-  resetHints();
-  checkUserStatus();
-  // The UI will be rebuilt by checkUserStatus, so no need to re-enable the button here.
-}
-
 
 function updateBoard() {
   const board = document.getElementById("board");
@@ -1750,7 +1910,7 @@ function handleKeyPress(key) {
     updateBoard();
   } else if (key === "Backspace" && currentCol > 0) {
     currentCol--; grid[currentRow][currentCol] = ""; updateBoard();
-  } else if (key === "Enter" && currentCol === cols) {
+  } else if (key === "Enter") {
     submitGuess();
   }
 }
@@ -1769,49 +1929,44 @@ window.addEventListener("keydown", (e) => {
     handleKeyPress(keyToPass);
   }
 });
-
 function validateHardMode(guess) {
-  for (let i = 0; i < guessHistory.length; i++) {
+  for (let i = 0; i < guessHistory.length; i++) {
     const prevGuess = guessHistory[i];
     const colors = colorHistory[i];
-    
+    
     for (let j = 0; j < cols; j++) {
-      if (colors[j] === "correct" && guess[j] !== prevGuess[j]) {
-        document.getElementById("message").textContent = `Hard mode violation: Letter '${prevGuess[j]}' must be in position ${j+1}`;
-        return false;
-      }
+      if (colors[j] === "correct" && guess[j] !== prevGuess[j]) {
+        return `Hard mode violation: Letter '${prevGuess[j]}' must be in position ${j+1}`;
+      }
     }
 
     const presentLetters = {};
     for (let j = 0; j < cols; j++) {
-      if (colors[j] === "present") {
+      if (colors[j] === "present") {
         presentLetters[prevGuess[j]] = (presentLetters[prevGuess[j]] || 0) + 1;
-      }
+      }
     }
     for (const letter in presentLetters) {
-      const countInGuess = [...guess].filter(l => l === letter).length;
-      if (countInGuess < presentLetters[letter]) {
-        document.getElementById("message").textContent = `Hard mode violation: Guess must include letter '${letter}' at least ${presentLetters[letter]} time(s)`;
-        return false;
-      }
+      const countInGuess = [...guess].filter(l => l === letter).length;
+      if (countInGuess < presentLetters[letter]) {
+        return `Hard mode violation: Guess must include letter '${letter}' at least ${presentLetters[letter]} time(s)`;
+      }
     }
 
     for (let j = 0; j < cols; j++) {
-      if (colors[j] === "absent") {
+      if (colors[j] === "absent") {
         const absentLetter = prevGuess[j];
-        const isElsewherePresentOrCorrect = colors.some((color, idx) => 
-          (color === "correct" || color === "present") && prevGuess[idx] === absentLetter);
+        const isElsewherePresentOrCorrect = colors.some((color, idx) => 
+          (color === "correct" || color === "present") && prevGuess[idx] === absentLetter);
         if (!isElsewherePresentOrCorrect) {
-          if (guess.includes(absentLetter)) {
-            document.getElementById("message").textContent = `Hard mode violation: Letter '${absentLetter}' cannot be used`;
-            return false;
-          }
+          if (guess.includes(absentLetter)) {
+            return `Hard mode violation: Letter '${absentLetter}' cannot be used`;
+          }
         }
-      }
+      }
     }
-  }
-  document.getElementById("message").textContent = "";
-  return true;
+  }
+  return true;
 }
 
 async function loadAllWordLists() {
@@ -1858,171 +2013,165 @@ function isValidWord(word) {
 }
 
 async function submitGuess() {
-  const guess = grid[currentRow].join("");
-  if (guess.length !== cols) {
+    const guess = grid[currentRow].join("");
     const currentRowDiv = document.getElementById("board").children[currentRow];
-    if (currentRowDiv) {
-      currentRowDiv.classList.add("shake");
-      setTimeout(() => {
-        currentRowDiv.classList.remove("shake");
-      }, 500);
-    }
-    document.getElementById("message").textContent = "Not enough letters";
-    return;
-  }
 
-  if (!validateHardMode(guess)) {
-    const currentRowDiv = document.getElementById("board").children[currentRow];
-    if (currentRowDiv) {
-      currentRowDiv.classList.add("shake");
-      setTimeout(() => {
-        currentRowDiv.classList.remove("shake");
-      }, 500);
-    }
-    return;
-  }
-
-  // Check if the guess is in our loaded word lists. This is now instant.
-  if (!isValidWord(guess)) {
-    const currentRowDiv = document.getElementById("board").children[currentRow];
-    if (currentRowDiv) {
-      currentRowDiv.classList.add("shake");
-      setTimeout(() => {
-        currentRowDiv.classList.remove("shake");
-      }, 500);
-    }
-    document.getElementById("message").textContent = "Not in word list";
-    return;
-  }
-
-  // Word is valid, proceed with game logic and animations
-  isAnimating = true; // Lock input during the animation
-  document.getElementById("message").textContent = ""; // Clear any previous messages
-
-  guessHistory.push(guess);
-  const colors = Array(cols).fill("absent");
-  const secretLetters = secret.split("");
-  for (let i = 0; i < cols; i++) {
-    if (guess[i] === secret[i]) {
-      colors[i] = "correct";
-      secretLetters[i] = null;
-    }
-  }
-  for (let i = 0; i < cols; i++) {
-    if (colors[i] === "correct") continue;
-    const index = secretLetters.indexOf(guess[i]);
-    if (index !== -1) {
-      colors[i] = "present";
-      secretLetters[index] = null;
-    }
-  }
-  for (let i = 0; i < cols; i++) {
-    const letter = guess[i];
-    const color = colors[i];
-    if (!keyColors[letter] || (color === "correct") || (color === "present" && keyColors[letter] === "absent")) {
-      keyColors[letter] = color;
-    }
-  }
-
-  updateKeyboardColors();
-
-  colorHistory.push(colors);
-  const board = document.getElementById("board");
-  for (let i = 0; i < cols; i++) {
-    const tile = board.children[currentRow].children[i];
-    setTimeout(() => {
-      tile.classList.add(colors[i]);
-    }, i * 200);
-  }
-
-  setTimeout(() => {
-    if (guess === secret) {
-      endGame(true);
-    } else if (currentRow === rows - 1) {
-      endGame(false);
-    } else {
-      currentRow++;
-      currentCol = 0;
-      isAnimating = false; // Unlock input for the next row
-      saveOngoingGame(window.currentUsername, base64Encode(secret));
-    }
-  }, cols * 200);
-}
-
-function endGame(won) {
-    const gameContainer = document.getElementById('game');
-    const messageEl = document.getElementById("message");
-    const board = document.getElementById('board');
-    const modalOverlay = document.getElementById('game-over-overlay');
-    const username = window.currentUsername;
-    const encodedSecret = base64Encode(secret);
-
-    // --- STEP 1: SIMULTANEOUSLY FADE OUT GAME & FADE IN MODAL ---
-
-    // a. Start fading the active game out
-    gameContainer.style.opacity = '0';
-    
-    // b. Prepare all the modal content first so it's ready to show
-    updateStats(username, won, currentRow + 1);
-    const hintStatusForSummary = { hintUsed1, hintUsed2, hintUsed3, hintUsed4 };
-    document.getElementById("modal-summary").textContent = generateResultText(true, guessHistory, colorHistory, won, hintStatusForSummary);
-    if (won) {
-        document.getElementById("modal-message").innerHTML = `You win! 🎉<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
-    } else {
-        document.getElementById("modal-message").innerHTML = `Game over!<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
-    }
-    const existingFunFact = document.querySelector("#game-over-modal .fun-fact-section");
-    if (existingFunFact) existingFunFact.remove();
-    if (customFunFact && customFunFact.trim() !== "") {
-        const funFactDiv = document.createElement('div');
-        funFactDiv.classList.add('fun-fact-section');
-        funFactDiv.innerHTML = `<h2>Fun fact about today's Wørtle:</h2><p style="margin:0;">${customFunFact}</p>`;
-        document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
-    }
-    const statsContainer = document.getElementById("modal-stats-container");
-    statsContainer.innerHTML = "";
-    displayStats(username).forEach(line => statsContainer.innerHTML += `<p class="stats-line">${line}</p>`);
-    bindModalButtons(guessHistory, colorHistory, won, hintStatusForSummary);
-
-    // c. Now that the modal is ready, start its fade-in animation
-    modalOverlay.classList.add('show');
-
-
-    // --- STEP 2: AFTER A DELAY, UPDATE THE GAME'S CONTENT AND FADE IT IN ---
-    setTimeout(() => {
-        // a. Update game state (non-visual)
-        const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
-        if (!allGameData[username]) allGameData[username] = {};
-        const creationDateToSave = (allGameData[username][encodedSecret] && allGameData[username][encodedSecret].createdDate) ? allGameData[username][encodedSecret].createdDate : (gameCreatedDate ? gameCreatedDate.toISOString() : new Date().toISOString());
-        if (allGameData[username][encodedSecret]) delete allGameData[username][encodedSecret].ongoingState;
-        allGameData[username][encodedSecret] = {
-            status: won ? 'won' : 'lost',
-            guessHistory, colorHistory, keyColors,
-            hintStatus: { hintUsed1, hintUsed2, hintUsed3, hintUsed4, hintExpanded1, hintExpanded2, hintExpanded3, hintExpanded4 },
-            createdDate: creationDateToSave
-        };
-        localStorage.setItem("gerNordleGameData", JSON.stringify(allGameData));
-        saveScoreToFirebase({ username: username || "Anonymous", guesses: won ? currentRow + 1 : -1, timestamp: new Date().toISOString() });
-
-        // b. Update visual elements (message and board)
-        if (won) {
-            messageEl.innerHTML = "You win! 🎉";
-        } else {
-            messageEl.innerHTML = `Game over! The word was ${secret}.`;
+    // This handles all validation checks before proceeding
+    if (guess.length !== cols) {
+        if (currentRowDiv) {
+            currentRowDiv.classList.add("shake");
+            setTimeout(() => { currentRowDiv.classList.remove("shake"); }, 500);
         }
-        messageEl.classList.add('visible');
-        const historyHtml = generateGuessHistoryHTML(guessHistory, colorHistory);
-        board.innerHTML = historyHtml;
-        board.style.gridTemplateRows = 'none';
-        disableKeyboard();
+        showToast("Not enough letters", "error");
+        return;
+    }
 
-        // c. Fade the new dimmed game state in behind the modal
-        gameContainer.style.opacity = '0.5';
-        gameContainer.style.pointerEvents = 'none';
+    if (!isValidWord(guess)) {
+        if (currentRowDiv) {
+            currentRowDiv.classList.add("shake");
+            setTimeout(() => { currentRowDiv.classList.remove("shake"); }, 500);
+        }
+        showToast("Not in word list", "error");
+        return;
+    }
 
-    }, 500); // This delay should match your CSS transition time
+    // ✅ FIX: The hard mode validation and its toast message are now handled correctly.
+    const hardModeViolation = validateHardMode(guess);
+    if (hardModeViolation !== true) { // Check if it returned a string message
+        if (currentRowDiv) {
+            currentRowDiv.classList.add("shake");
+            setTimeout(() => { currentRowDiv.classList.remove("shake"); }, 500);
+        }
+        showToast(hardModeViolation, "error"); // Use the returned message directly
+        return;
+    }
+
+    isAnimating = true;
+    document.getElementById("message").textContent = "";
+
+    guessHistory.push(guess);
+    
+    // ...The rest of the function is correct and remains the same...
+
+    const colors = Array(cols).fill("absent");
+    const secretLetters = secret.split("");
+    for (let i = 0; i < cols; i++) {
+        if (guess[i] === secret[i]) {
+            colors[i] = "correct";
+            secretLetters[i] = null;
+        }
+    }
+    for (let i = 0; i < cols; i++) {
+        if (colors[i] === "correct") continue;
+        const index = secretLetters.indexOf(guess[i]);
+        if (index !== -1) {
+            colors[i] = "present";
+            secretLetters[index] = null;
+        }
+    }
+    for (let i = 0; i < cols; i++) {
+        const letter = guess[i];
+        const color = colors[i];
+        if (!keyColors[letter] || (color === "correct") || (color === "present" && keyColors[letter] === "absent")) {
+            keyColors[letter] = color;
+        }
+    }
+
+    colorHistory.push(colors);
+    updateKeyboardColors();
+
+    const board = document.getElementById("board");
+    for (let i = 0; i < cols; i++) {
+        const tile = board.children[currentRow].children[i];
+        setTimeout(() => {
+            tile.classList.add(colors[i]);
+        }, i * 200);
+    }
+
+    setTimeout(async () => {
+        if (guess === secret) {
+            endGame(true);
+        } else if (currentRow === rows - 1) {
+            endGame(false);
+        } else {
+            currentRow++;
+            currentCol = 0;
+            isAnimating = false;
+            await saveOngoingGame(window.currentUsername, base64Encode(secret));
+        }
+    }, (cols * 200) + 250);
 }
 
+async function endGame(won) {
+    hideHintPopup();
+    const gameContainer = document.getElementById('game');
+    const modalOverlay = document.getElementById('game-over-overlay');
+    
+    gameContainer.style.opacity = '0';
+
+    try {
+        // ✅ The call to updateStats() has been removed from here.
+        // All saving logic is now handled by the more robust function below.
+        await saveCompletedGameData(won);
+
+    } catch (error) {
+        console.error("Failed to save game results to Firebase:", error);
+        alert("Your game result could not be saved, but you can still view your stats for this round.");
+
+    } finally {
+        // This block for showing the modal remains the same and is safe to run.
+        const username = localStorage.getItem("gerNordleUsername");
+        const hintStatusForSummary = { hintUsed1, hintUsed2, hintUsed3, hintUsed4 };
+        document.getElementById("modal-summary").textContent = generateResultText(true, guessHistory, colorHistory, won, hintStatusForSummary);
+        
+        if (won) {
+            document.getElementById("modal-message").innerHTML = `You win! 🎉<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
+        } else {
+            document.getElementById("modal-message").innerHTML = `Game over!<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
+        }
+
+        const existingFunFact = document.querySelector("#game-over-modal .fun-fact-section");
+        if (existingFunFact) existingFunFact.remove();
+        if (customFunFact && customFunFact.trim() !== "") {
+            const funFactDiv = document.createElement('div');
+            funFactDiv.classList.add('fun-fact-section');
+            funFactDiv.innerHTML = `<h2>Fun fact about today's Wørtle:</h2><p style="margin:0;">${customFunFact}</p>`;
+            document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
+        }
+        
+        const statsContainer = document.getElementById("modal-stats-container");
+        statsContainer.innerHTML = "";
+        
+        const stats = await displayStats(username);
+        const statsLines = [ `Stats for ${username}`, `Games Played: ${stats.gamesPlayed}`, `Wins: ${stats.wins}`, `Win %: ${stats.winPct}%`, `Average Guesses: ${stats.avgGuesses}`];
+        statsLines.forEach(line => {
+            const p = document.createElement("p");
+            p.textContent = line;
+            p.classList.add("stats-line");
+            statsContainer.appendChild(p);
+        });
+
+        bindModalButtons(guessHistory, colorHistory, won, hintStatusForSummary);
+        modalOverlay.classList.add('show');
+
+        setTimeout(() => {
+            const messageEl = document.getElementById("message");
+            const board = document.getElementById('board');
+            if (won) {
+                messageEl.innerHTML = "You win! 🎉";
+            } else {
+                messageEl.innerHTML = `Game over! The word was ${secret}.`;
+            }
+            messageEl.classList.add('visible');
+            const historyHtml = generateGuessHistoryHTML(guessHistory, colorHistory);
+            board.innerHTML = historyHtml;
+            board.style.gridTemplateRows = 'none';
+            disableKeyboard();
+            gameContainer.style.opacity = '0.5';
+            gameContainer.style.pointerEvents = 'none';
+        }, 500);
+    }
+}
 
 function disableKeyboard() {
   // Disable all on-screen keys
@@ -2044,26 +2193,21 @@ function getPlayerId() {
 }
 
 function saveScoreToFirebase(resultData) {
-  if (!secret || !window.currentUsername) return;
-  const playerId = getPlayerId(); // e.g., 'player_12345'
-  const username = window.currentUsername; // e.g., 'PLAYER1'
-  // Create a composite key from both the username and the player ID.
-  // We encode the username to make sure it's a valid key in Firebase.
-  const compositeKey = `${encodeURIComponent(username)}_${playerId}`;
-  // --- NEW: Calculate hint count ---
-  let hintCount = 0;
-  if (hintUsed1) hintCount++;
-  if (hintUsed2) hintCount++;
-  if (hintUsed3) hintCount++;
-  if (hintUsed4) hintCount++;
-  
-  // Add hintCount to the data being saved
-  resultData.hintCount = hintCount;
-  // Create a "game room" using the secret word
-  const gameRef = database.ref('games/' + secret);
-  // Use the new composite key to save the score
-  const userScoreRef = gameRef.child(compositeKey);
-  userScoreRef.set(resultData);
+    const username = localStorage.getItem("gerNordleUsername");
+    if (!secret || !username) return;
+
+    const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+
+    let hintCount = 0;
+    if (hintUsed1) hintCount++;
+    if (hintUsed2) hintCount++;
+    if (hintUsed3) hintCount++;
+    if (hintUsed4) hintCount++;
+    resultData.hintCount = hintCount;
+
+    const gameRef = database.ref('games/' + secret);
+    const userScoreRef = gameRef.child(sanitizedUsername);
+    userScoreRef.set(resultData);
 }
 
 function initBoard() {
@@ -2228,113 +2372,126 @@ function resetHints() {
         }
     });
 }
+window.onload = async () => {
+    const loader = document.getElementById('loader');
+    secret = getSecretFromURL();
+    const setupDiv = document.getElementById("setup");
+    const gameDiv = document.getElementById("game");
+    const messageEl = document.getElementById("message");
+    const headerSetup = document.getElementById("header-setup");
+    gameDiv.style.display = "none";
+    headerSetup.style.display = "none";
+    setupDiv.style.display = "none";
 
-// Initial setup on page load
-window.onload = () => {
-  secret = getSecretFromURL();
-  const headerInfo = document.getElementById("header-info");
-  const secretInput = document.getElementById('secretInput');
+    // Case 1: A secret word is present in the URL
+    if (secret) {
+        const gameRef = database.ref('games/' + secret);
+        const snapshot = await gameRef.once('value');
 
-  // This correctly sets up the automatic validation as you type
-  if (secretInput) {
-      secretInput.addEventListener('input', () => {
-          clearTimeout(debounceTimer);
-          const indicator = document.getElementById('word-status-indicator');
-          indicator.innerHTML = ''; // Clear indicator immediately on typing
-          indicator.className = 'loading'; // Show loading spinner
-          debounceTimer = setTimeout(() => {
-              validateSecretWord();
-          }, 500); // Wait 500ms after user stops typing
-      });
-  }
-  
-  // This is the main logic to determine if the page is for a host or player
-  if (secret) {
-    headerInfo.style.display = "flex";
-    document.getElementById("setup").style.display = "none";
-    document.getElementById("game").style.display = "flex";
-    checkUserStatus();
-  } else {
-    // This is the HOST page, so hide the header
-    headerInfo.style.display = "none";
-    
-    // Load any previously saved form data
-    loadSetupState();
-    
-    // Set up event listeners to save data on any change
-    const setupInputs = [
-      document.getElementById('secretInput'),
-      document.getElementById('hintInput'),
-      document.getElementById('hintInput2'),
-      document.getElementById('hintInput3'),
-      document.getElementById('funFactInput')
-    ];
-    setupInputs.forEach(input => input.addEventListener('input', saveSetupState));
-    document.querySelectorAll('.specialCharCheckbox').forEach(cb => cb.addEventListener('change', saveSetupState));
-  }
+        loader.style.display = 'none'; // Hide loader
+
+        if (snapshot.exists()) {
+            // If the game exists, load the game UI
+            headerSetup.style.display = "flex"; // Use the correct header
+            gameDiv.style.display = "flex";
+            gameDiv.style.flexDirection = "column"; 
+            checkUserStatus();
+        } else {
+            // If the game does NOT exist, show the error message
+            messageEl.innerHTML = `The game you are looking for does not exist or has been deleted.<br><br><a href="/wordle.html" style="color: white; text-decoration: underline;">Create a new game</a>`;
+            messageEl.style.marginTop = '50px';
+        }
+
+    } else {
+        // Case 2: No secret word in the URL, show the setup/host page
+        loader.style.display = 'none'; // Hide loader
+        headerSetup.style.display = "flex";
+        setupDiv.style.display = "block";
+    
+        const savedUsername = localStorage.getItem("gerNordleUsername");
+        if (savedUsername) {
+            listenForUserDeletion(savedUsername);
+        }
+        
+        setupUsernameInterface({
+            isGamePage: false,
+            containerId: 'setup-username-area',
+            inputId: 'usernameInputHost',
+            placeholder: 'Enter username'
+        });
+        loadSetupState();
+        
+        const setupInputs = [
+            document.getElementById('secretInput'),
+            document.getElementById('hintInput'),
+            document.getElementById('hintInput2'),
+            document.getElementById('hintInput3'),
+            document.getElementById('funFactInput')
+        ];
+        setupInputs.forEach(input => input.addEventListener('input', saveSetupState));
+        document.querySelectorAll('.specialCharCheckbox').forEach(cb => cb.addEventListener('change', saveSetupState));
+    }
+
+    // This listener is for the host page
+    const secretInput = document.getElementById('secretInput');
+    if (secretInput) {
+        secretInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const indicator = document.getElementById('word-status-indicator');
+            indicator.innerHTML = ''; 
+            indicator.className = 'loading'; 
+            debounceTimer = setTimeout(() => {
+                validateSecretWord();
+            }, 500); 
+        });
+    }
 };
 
-function saveOngoingGame(username, encodedSecret) {
+async function saveOngoingGame(username, encodedSecret) {
     if (!username || !encodedSecret) return;
+    
+    const word = base64Decode(encodedSecret);
+    if (!word) return;
 
-    // Get the main data object from localStorage
-    const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
+    const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+    const playedGameRef = database.ref(`userProfiles/${sanitizedUsername}/playedGames/${word}`);
 
-    // Ensure the structure for the user and secret exists
-    if (!allGameData[username]) {
-        allGameData[username] = {};
-    }
-    if (!allGameData[username][encodedSecret]) {
-        allGameData[username][encodedSecret] = {};
-    }
+    // First, check for an existing record to preserve the original createdDate
+    const snapshot = await playedGameRef.once('value');
+    const existingData = snapshot.val();
+    const createdDate = existingData?.createdDate || new Date().toISOString();
 
-    // Create an object with all the data needed to restore the game
-    const ongoingState = {
-        grid,
-        currentRow,
-        guessHistory,
-        colorHistory,
-        keyColors,
+    // Package the entire current game state
+    const ongoingStateForFirebase = {
+        status: 'ongoing',
+        createdDate: createdDate,
+        lastPlayedDate: new Date().toISOString(), // Useful for sorting later
+        grid: grid,
+        currentRow: currentRow,
+        guessHistory: guessHistory,
+        colorHistory: colorHistory,
+        keyColors: keyColors,
         hintStatus: { hintUsed1, hintUsed2, hintUsed3, hintUsed4, hintExpanded1, hintExpanded2, hintExpanded3, hintExpanded4 }
     };
 
-    // Save this state to the specific user and word
-    allGameData[username][encodedSecret].ongoingState = ongoingState;
+    // Use .set() to save the complete ongoing state to Firebase
+    await playedGameRef.set(ongoingStateForFirebase);
 
-    // Write the updated data back to localStorage
+    // The logic to add a player to the central /games list on their first guess remains
+    const isFirstGuess = guessHistory.length === 1;
+    if (isFirstGuess) {
+        const centralPlayerListRef = database.ref(`games/${word}/players/${sanitizedUsername}`);
+        await centralPlayerListRef.set(true);
+    }
+    
+    // We still save to local storage for quick refreshes on the same device
+    const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
+    if (!allGameData[username]) allGameData[username] = {};
+    allGameData[username][encodedSecret] = {
+        ongoingState: ongoingStateForFirebase, // Save the same object
+        createdDate: createdDate
+    };
     localStorage.setItem("gerNordleGameData", JSON.stringify(allGameData));
-}
-
-function setupHeader(username) {
-    const usernameDisplayArea = document.getElementById("username-display-area");
-    const topStatsDisplay = document.getElementById("topStatsDisplay");
-    const changeUserButtonArea = document.getElementById("change-user-button-area");
-
-    // --- ADD THESE LINES ---
-    // Clear the containers first to prevent duplicates
-    usernameDisplayArea.innerHTML = '';
-    changeUserButtonArea.innerHTML = '';
-    // --- END OF FIX ---
-
-    // Display the username
-    const displayMessage = document.createElement("p");
-    displayMessage.textContent = `Playing as: ${username.toUpperCase()}`;
-    displayMessage.style.cssText = "margin: 0;";
-    usernameDisplayArea.appendChild(displayMessage);
-
-    // Display the "Change User" button
-    const changeButton = document.createElement("button");
-    changeButton.textContent = "Change User";
-    changeButton.onclick = promptForUsername;
-    changeButton.classList.add("styled-button");
-    changeUserButtonArea.appendChild(changeButton);
-
-    // Display the user's stats
-    const stats = getStats(username);
-    let avgGuesses = stats.wins > 0 ? (stats.totalGuesses / stats.wins).toFixed(2) : "-";
-    let winPct = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
-    topStatsDisplay.innerHTML = `Games Played: ${stats.gamesPlayed} | Win %: ${winPct}% | Avg. Guesses: ${avgGuesses}`;
-    topStatsDisplay.style.display = "block";
 }
 
 const helpBtn = document.getElementById("helpBtn");
@@ -2564,10 +2721,12 @@ function bindModalButtons(savedGuessHistory, savedColorHistory, isSolved, savedH
 
 function showHintPopup() {
   hintPopup.classList.add("show");
+  document.addEventListener("keydown", handleTypingToClose);
 }
 
 function hideHintPopup() {
   hintPopup.classList.remove("show");
+  document.removeEventListener("keydown", handleTypingToClose);
 }
 // Event listeners for the hint popup
 if (hintTitle) {
@@ -2596,7 +2755,7 @@ async function generateRandomWord() {
   const indicator = document.getElementById("word-status-indicator");
 
   if (allValidWords.size === 0) {
-    alert("Word lists are still loading. Please wait a moment and try again.");
+    showToast("Word lists are still loading. Please wait a moment and try again.", "error");
     return;
   }
 
@@ -2726,28 +2885,25 @@ function fetchAndDisplayScoreboard() {
             return;
         }
 
-        // --- FIX: Filter out the 'metadata' object before creating the list of scores ---
+        // ✅ Step 1: Get the host's name from the game's metadata.
+        const hostName = scoresData.metadata ? scoresData.metadata.host : null;
+
         const playerScores = Object.keys(scoresData)
-            .filter(key => key !== 'metadata') // Only keep keys that are NOT 'metadata'
-            .map(key => scoresData[key]);      // Create an array of the remaining player objects
+            .filter(key => key !== 'metadata' && key !== 'players') 
+            .map(key => scoresData[key]);
 
         if (playerScores.length === 0) {
             container.innerHTML = '<p>Be the first to set a score!</p>';
+            summaryContainer.innerHTML = ''; 
             return;
         }
-        // --- Use the filtered playerScores array from now on ---
         
         const totalPlayers = playerScores.length;
         const winners = playerScores.filter(score => score.guesses > 0);
         const totalWinners = winners.length;
-
         const solveRate = totalPlayers > 0 ? (totalWinners / totalPlayers) * 100 : 0;
-        
         const totalGuesses = winners.reduce((sum, player) => sum + player.guesses, 0);
         const avgGuesses = totalWinners > 0 ? totalGuesses / totalWinners : 0;
-
-        const totalHints = playerScores.reduce((sum, player) => sum + (player.hintCount || 0), 0);
-        const avgHints = totalPlayers > 0 ? totalHints / totalPlayers : 0;
 
         summaryContainer.innerHTML = `
             <div class="summary-stat">
@@ -2760,12 +2916,6 @@ function fetchAndDisplayScoreboard() {
                 <span class="stat-label">Avg. Guesses</span>
                 <div class="stat-bar-container">
                     <div class="stat-bar" style="width: ${(avgGuesses / 6) * 100}%;">${avgGuesses.toFixed(1)}</div>
-                </div>
-            </div>
-            <div class="summary-stat">
-                <span class="stat-label">Avg. Hints</span>
-                <div class="stat-bar-container">
-                    <div class="stat-bar" style="width: ${(avgHints / 4) * 100}%;">${avgHints.toFixed(1)}</div>
                 </div>
             </div>
         `;
@@ -2786,10 +2936,18 @@ function fetchAndDisplayScoreboard() {
 
         sortedScores.forEach((score, index) => {
             const guessDisplay = score.guesses > 0 ? score.guesses : 'X';
+
+            // ✅ Step 2: Check if the current player is the host and prepare the display name.
+            let nameDisplay = score.username;
+            if (hostName && score.username === hostName) {
+                nameDisplay += ` <span style="color: #951414; font-weight: bold;">H</span>`;
+            }
+
+            // ✅ Step 3: Use the new display name in the table row.
             tableHTML += `
                 <tr>
                     <td>${index + 1}</td>
-                    <td>${score.username}</td>
+                    <td>${nameDisplay}</td>
                     <td>${guessDisplay}</td>
                     <td>${score.hintCount || 0}</td>
                 </tr>`;
@@ -2805,16 +2963,16 @@ function fetchAndDisplayScoreboard() {
     });
 }
 
-
 function closeGameOverModal() {
   const overlay = document.getElementById('game-over-overlay');
   if (overlay) {
     overlay.classList.remove('show');
   }
+  hideScoreboard();
 }
 
 function generateGuessHistoryHTML(guessHistory, colorHistory) {
-  let historyHtml = '<h2>Your Guesses</h2>';
+  let historyHtml = '';
   
   // Loop through each guess
   for (let i = 0; i < guessHistory.length; i++) {
@@ -2831,6 +2989,882 @@ function generateGuessHistoryHTML(guessHistory, colorHistory) {
     historyHtml += '</div>';
   }
   return historyHtml;
+}
+
+async function loginUser(inputId, pinInputId, config) {
+    const usernameInput = document.getElementById(inputId);
+    const pinInput = document.getElementById(pinInputId);
+    const username = usernameInput.value.trim().toUpperCase();
+    const pin = pinInput.value.trim();
+
+    if (!username || !pin) {
+        showToast("Please enter both a username and a PIN.", "error");
+        return;
+    }
+    if (username.length > 10) {
+        showToast("Username cannot be more than 10 characters long.", "error");
+        return;
+    }
+
+    const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+    const userRef = database.ref('users/' + sanitizedUsername);
+
+    try {
+        const snapshot = await userRef.once('value');
+        if (snapshot.exists()) {
+            const userData = snapshot.val();
+            if (userData.pin === pin) {
+                // PIN is correct! Log the user in.
+                localStorage.setItem("gerNordleUsername", username);
+                localStorage.setItem("gerNordleUserPin", pin); 
+                window.location.reload();
+                // Refresh the UI
+                if (config.isGamePage) {
+                    checkUserStatus();
+                } else {
+                    setupUsernameInterface(config);
+                }
+            } else {
+                showToast("Incorrect PIN. Please try again.", "error");
+            }
+        } else {
+            showToast(`Username "${username}" does not exist. Please register first.`, "error");
+        }
+    } catch (error) {
+        console.error("Login error:", error);
+        showToast("Could not log in. Please check your connection.", "error");
+    }
+}
+
+async function registerUser(inputId, pinInputId, config) {
+    const usernameInput = document.getElementById(inputId);
+    const pinInput = document.getElementById(pinInputId);
+    const username = usernameInput.value.trim().toUpperCase();
+    const pin = pinInput.value.trim();
+
+    if (!username || !pin) {
+        showToast("Please enter both a username and a PIN.", "error");
+        return;
+    }
+    if (username.length < 3) {
+        showToast("Username must be at least 3 characters long.", "error");
+        return;
+    }
+    if (username.length > 10) {
+        showToast("Username cannot be more than 10 characters long.", "error");
+        return;
+    }
+    if (pin.length !== 4 || isNaN(pin)) {
+        showToast("Your PIN must be 4 digits.", "error");
+        return;
+    }
+
+    const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+    const userRef = database.ref('users/' + sanitizedUsername);
+
+    try {
+        const snapshot = await userRef.once('value');
+        if (snapshot.exists()) {
+            showToast(`The username "${username}" is already taken. Please try logging in or choose another name.`, "error");
+        } else {
+            // Username is available, register it with the PIN.
+            await userRef.set({
+                original: username,
+                pin: pin, // Store the PIN
+                registeredAt: firebase.database.ServerValue.TIMESTAMP
+            });
+
+            // Automatically log the user in after registration.
+            localStorage.setItem("gerNordleUsername", username);
+            localStorage.setItem("gerNordleUserPin", pin);
+            window.location.reload();
+            
+            // Refresh the UI
+            if (config.isGamePage) {
+                checkUserStatus();
+            } else {
+                setupUsernameInterface(config);
+            }
+        }
+    } catch (error) {
+        console.error("Registration error:", error);
+        showToast("Could not register username. Please try again.", "error");
+    }
+}
+
+function setupUsernameInterface(config) {
+    const { isGamePage, containerId, inputId, placeholder } = config;
+    const pinInputId = inputId + '-pin';
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const savedUsername = localStorage.getItem("gerNordleUsername");
+    
+    // Clear the specific container we're working with.
+    container.innerHTML = ''; 
+    // Remove any special layout classes before we start
+    container.classList.remove('login-prompt-container');
+
+    if (savedUsername) {
+        // This block now correctly handles the display for a LOGGED-IN user on BOTH pages.
+        const displayMessage = document.createElement("p");
+        displayMessage.textContent = `Logged in as: ${savedUsername.toUpperCase()}`;
+
+        const changeButton = document.createElement("button");
+        changeButton.textContent = "Change User";
+        changeButton.onclick = () => {
+                document.getElementById('game').classList.add('dimmed');
+                document.getElementById('setup-form-content').classList.add('dimmed');
+                stopUserDeletionListener();
+                localStorage.removeItem("gerNordleUsername");
+                localStorage.removeItem("gerNordleUserPin");
+                setupUsernameInterface(config);
+            };
+        changeButton.classList.add("styled-button");
+
+        container.appendChild(displayMessage);
+        container.appendChild(changeButton);
+
+        // Only interact with the setup form if we are on the setup page.
+        if (!isGamePage) {
+            document.getElementById('setup-form-content').classList.remove('dimmed');
+        }
+    } else {
+        // This block handles the display for a LOGGED-OUT user.
+        if (!isGamePage) {
+            document.getElementById('setup-form-content').classList.add('dimmed');
+        }
+
+        // ✨ APPLY THE NEW CLASS to the container
+        container.classList.add('login-prompt-container');
+        
+        const usernameInput = document.createElement("input");
+        usernameInput.type = "text";
+        usernameInput.id = inputId;
+        usernameInput.placeholder = placeholder;
+        usernameInput.maxLength = 10; 
+        usernameInput.style.cssText = "padding: 3px 6px; border-radius: 6px; margin: 0px;";
+
+        const pinInput = document.createElement("input");
+        pinInput.type = "password";
+        pinInput.id = pinInputId;
+        pinInput.placeholder = "4-digit PIN";
+        pinInput.maxLength = 4;
+        pinInput.style.cssText = "padding: 3px 6px; border-radius: 6px; margin: 0px; width: 100px;";
+
+        const loginButton = document.createElement("button");
+        loginButton.textContent = "Login";
+        loginButton.classList.add("styled-button");
+        loginButton.onclick = () => loginUser(inputId, pinInputId, config);
+
+        const registerButton = document.createElement("button");
+        registerButton.textContent = "Register";
+        registerButton.classList.add("styled-button");
+        registerButton.onclick = () => registerUser(inputId, pinInputId, config);
+
+        const handleEnterKey = (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                loginButton.click(); 
+            }
+        };
+        usernameInput.addEventListener('keydown', handleEnterKey);
+        pinInput.addEventListener('keydown', handleEnterKey);
+        
+        // Append the new login elements to the container.
+        container.appendChild(usernameInput);
+        container.appendChild(pinInput);
+        container.appendChild(loginButton);
+        container.appendChild(registerButton);
+        
+        window.currentUsername = null;
+        usernameSet = false;
+    }
+}
+
+// This helper function displays the game-over modal with the correct information.
+async function showGameOverModal(isSolved, guessHistory, colorHistory, hintStatus) {
+    const overlay = document.getElementById("game-over-overlay");
+    
+    // Set win/loss message
+    if (isSolved) {
+        document.getElementById("modal-message").innerHTML = `You win! 🎉<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
+    } else {
+        document.getElementById("modal-message").innerHTML = `Game over!<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
+    }
+
+    // Generate and display the shareable summary
+    document.getElementById("modal-summary").textContent = generateResultText(true, guessHistory, colorHistory, isSolved, hintStatus);
+
+    // Display the fun fact, if one exists
+    const existingFunFact = document.querySelector("#game-over-modal .fun-fact-section");
+    if (existingFunFact) existingFunFact.remove();
+    if (customFunFact && customFunFact.trim() !== "") {
+        const funFactDiv = document.createElement('div');
+        funFactDiv.classList.add('fun-fact-section');
+        funFactDiv.innerHTML = `<h2>Fun fact about today's Wørtle:</h2><p style="margin:0;">${customFunFact}</p>`;
+        document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
+    }
+
+    // Display user stats
+    const statsContainer = document.getElementById("modal-stats-container");
+    statsContainer.innerHTML = "";
+    const username = localStorage.getItem("gerNordleUsername");
+    const stats = await displayStats(username);
+    const statsLines = [
+        `Stats for ${username}`,
+        `Games Played: ${stats.gamesPlayed}`,
+        `Wins: ${stats.wins}`,
+        `Win %: ${stats.winPct}%`,
+        `Average Guesses: ${stats.avgGuesses}`
+    ];
+
+    statsLines.forEach(line => {
+        const p = document.createElement("p");
+        p.textContent = line;
+        p.classList.add("stats-line");
+        statsContainer.appendChild(p);
+    });
+
+    // Bind buttons and show the modal
+    bindModalButtons(guessHistory, colorHistory, isSolved, hintStatus);
+    overlay.classList.add('show');
+}
+// --- Account Sidebar Logic ---
+const accountBtn = document.getElementById('accountBtn');
+const accountSidebar = document.getElementById('account-sidebar');
+const accountOverlay = document.getElementById('account-overlay');
+const closeAccountBtn = document.getElementById('closeAccountBtn');
+const hostedGamesList = document.getElementById('hosted-games-list');
+const playedGamesList = document.getElementById('played-games-list');
+let resolveHostedGames = null;
+let resolvePlayedGames = null;
+
+// Define references in a higher scope to manage them across open/close actions
+let hostedGamesRef = null;
+let playedGamesRef = null;
+
+function renderHostedGames(snapshot) {
+    hostedGamesList.innerHTML = '';
+    const titleElement = document.getElementById('hosted-games-title');
+
+    if (!snapshot.exists()) {
+        if (titleElement) titleElement.textContent = 'Hosted Games (0)';
+        hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
+        // ✅ Signal that loading is complete, even if the list is empty.
+        if (resolveHostedGames) {
+            resolveHostedGames();
+            resolveHostedGames = null;
+        }
+        return;
+    }
+
+    const gamesObject = snapshot.val();
+    const games = [];
+    for (const word in gamesObject) {
+        games.push({ word: word, ...gamesObject[word] });
+    }
+    
+    if (titleElement) titleElement.textContent = `My Games (${games.length})`;
+
+    if (games.length === 0) {
+        hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
+        // ✅ Signal that loading is complete for an empty list.
+        if (resolveHostedGames) {
+            resolveHostedGames();
+            resolveHostedGames = null;
+        }
+        return;
+    }
+
+    games.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+    const metaPromises = games.map(game => database.ref(`games/${game.word}/metadata`).once('value'));
+
+    Promise.all(metaPromises).then(metaSnapshots => {
+        const fragment = document.createDocumentFragment();
+        metaSnapshots.forEach((metaSnap, idx) => {
+            if (metaSnap.exists()) {
+                const meta = metaSnap.val();
+                const listItem = document.createElement('div');
+                listItem.className = 'game-list-item';
+                const gameLink = document.createElement('a');
+                const fullUrl = generateShareURL(meta.word, meta.hint1, meta.hint2, meta.hint3, meta.hint4, meta.funFact);
+                gameLink.href = fullUrl;
+                gameLink.textContent = meta.word;
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'game-item-actions';
+                const copyBtn = document.createElement('button');
+                copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
+                copyBtn.title = 'Copy Link';
+                copyBtn.onclick = () => {
+                    const urlToCopy = meta.shortUrl || fullUrl;
+                    navigator.clipboard.writeText(urlToCopy).then(() => {
+                        copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                        setTimeout(() => {
+                            copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
+                        }, 2000);
+                    });
+                };
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+                deleteBtn.title = 'Delete Game';
+                deleteBtn.onclick = () => deleteGame(meta.word);
+                actionsDiv.appendChild(copyBtn);
+                actionsDiv.appendChild(deleteBtn);
+                listItem.appendChild(gameLink);
+                listItem.appendChild(actionsDiv);
+                fragment.appendChild(listItem);
+            }
+        });
+        hostedGamesList.appendChild(fragment);
+
+        // ✅ Signal that loading is complete after rendering the list.
+        if (resolveHostedGames) {
+            resolveHostedGames();
+            resolveHostedGames = null; // Set to null so we only do this on the initial load.
+        }
+    });
+}
+
+function renderPlayedGames(snapshot) {
+    playedGamesList.innerHTML = '';
+    const titleElement = document.getElementById('played-games-title');
+
+    if (!snapshot.exists()) {
+        if (titleElement) titleElement.textContent = 'Played Games (0)';
+        playedGamesList.innerHTML = '<p style="padding: 10px;">You have not played any games.</p>';
+        if (resolvePlayedGames) {
+            resolvePlayedGames();
+            resolvePlayedGames = null;
+        }
+        return;
+    }
+
+    const gamesObject = snapshot.val();
+    const games = [];
+    for (const word in gamesObject) {
+        games.push({ word: word, ...gamesObject[word] });
+    }
+
+    if (titleElement) titleElement.textContent = `Played Games (${games.length})`;
+
+    if (games.length === 0) {
+        playedGamesList.innerHTML = '<p style="padding: 10px;">You have not played any games.</p>';
+        if (resolvePlayedGames) {
+            resolvePlayedGames();
+            resolvePlayedGames = null;
+        }
+        return;
+    }
+    
+    // ✅ Get the current user's name to check against the host.
+    const currentUsername = localStorage.getItem("gerNordleUsername");
+
+    games.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+    const metaPromises = games.map(game => database.ref(`games/${game.word}/metadata`).once('value'));
+
+    Promise.all(metaPromises).then(metaSnapshots => {
+        const fragment = document.createDocumentFragment();
+        metaSnapshots.forEach((metaSnap, idx) => {
+            if (metaSnap.exists()) {
+                const meta = metaSnap.val();
+                const gameData = games[idx];
+                const gameLink = document.createElement('a');
+                gameLink.href = generateShareURL(meta.word, meta.hint1, meta.hint2, meta.hint3, meta.funFact);
+                
+                const wordSpan = document.createElement('span');
+                let wordText = (gameData.status === 'won' || gameData.status === 'lost') ? meta.word : '?????';
+
+                // ✅ Check if the current user was the host of this game.
+                if (meta.host && meta.host === currentUsername) {
+                    wordText += ` <span style="color: #951414; font-weight: bold;">H</span>`;
+                }
+                wordSpan.innerHTML = wordText;
+
+                const statusSpan = document.createElement('span');
+                statusSpan.className = 'game-status';
+                if (gameData.status === 'won') statusSpan.textContent = `Won (${gameData.guesses}/6)`;
+                else if (gameData.status === 'lost') statusSpan.textContent = 'Lost';
+                else statusSpan.textContent = 'In progress';
+                
+                gameLink.appendChild(wordSpan);
+                gameLink.appendChild(statusSpan);
+                fragment.appendChild(gameLink);
+            }
+        });
+        playedGamesList.appendChild(fragment);
+
+        if (resolvePlayedGames) {
+            resolvePlayedGames();
+            resolvePlayedGames = null;
+        }
+    });
+}
+
+// Replace your existing closeAccountSidebar function
+function closeAccountSidebar() {
+    accountSidebar.classList.remove('show');
+    accountOverlay.hidden = true;
+    mainContent.inert = false;
+
+    // Detach the game list listeners
+    if (hostedGamesRef) {
+        hostedGamesRef.off('value', renderHostedGames);
+    }
+    if (playedGamesRef) {
+        playedGamesRef.off('value', renderPlayedGames);
+    }
+
+    // ✅ NEW: Detach the stats listener when the sidebar is closed.
+    if (statsRef && statsListener) {
+        statsRef.off('value', statsListener);
+    }
+
+    // Reset all sidebar titles to their default state
+    const sidebarTitle = document.getElementById('account-sidebar-title');
+    const hostedTitle = document.getElementById('hosted-games-title');
+    const playedTitle = document.getElementById('played-games-title');
+    
+    if (sidebarTitle) sidebarTitle.textContent = 'My Account';
+    if (hostedTitle) hostedTitle.textContent = 'Hosted Games';
+    if (playedTitle) playedTitle.textContent = 'Played Games';
+}
+
+let statsRef = null;
+let statsListener = null;
+
+async function openAccountSidebar() {
+    const username = localStorage.getItem("gerNordleUsername");
+    if (!username) {
+        showToast("Please log in to view your account.", "error");
+        return;
+    }
+
+    const sidebarTitle = document.getElementById('account-sidebar-title');
+    if (sidebarTitle) sidebarTitle.textContent = username.toUpperCase();
+
+    const sidebarLoader = document.getElementById('sidebar-loader');
+    const sidebarContent = document.getElementById('sidebar-content');
+    
+    accountSidebar.classList.add('show');
+    accountOverlay.hidden = false;
+    mainContent.inert = true;
+    sidebarLoader.style.display = 'block';
+    sidebarContent.classList.remove('loaded');
+
+    try {
+        const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+
+        const hostedGamesLoaded = new Promise(resolve => { resolveHostedGames = resolve; });
+        const playedGamesLoaded = new Promise(resolve => { resolvePlayedGames = resolve; });
+
+        // Attach live listeners for the game lists
+        hostedGamesRef = database.ref(`userProfiles/${sanitizedUsername}/hostedGames`);
+        hostedGamesRef.on('value', renderHostedGames);
+
+        playedGamesRef = database.ref(`userProfiles/${sanitizedUsername}/playedGames`);
+        playedGamesRef.on('value', renderPlayedGames);
+        
+        // ✅ NEW: Attach a real-time listener for the stats section.
+        // This will update the stats initially and every time they change.
+        statsRef = database.ref(`userProfiles/${sanitizedUsername}/stats`);
+        statsListener = statsRef.on('value', renderAccountStats);
+        
+        await Promise.all([hostedGamesLoaded, playedGamesLoaded]);
+
+        sidebarLoader.style.display = 'none';
+        sidebarContent.classList.add('loaded');
+
+    } catch (error) {
+        sidebarLoader.style.display = 'none';
+        sidebarContent.classList.add('loaded');
+        console.error("Error loading account sidebar:", error);
+    }
+}
+
+accountBtn.addEventListener('click', openAccountSidebar);
+closeAccountBtn.addEventListener('click', closeAccountSidebar);
+accountOverlay.addEventListener('click', closeAccountSidebar);
+
+// This function starts listening for changes to the current user's record
+function listenForUserDeletion(username) {
+    stopUserDeletionListener(); // Stop any previous listeners first
+
+    const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+    const userRef = database.ref('users/' + sanitizedUsername);
+
+    const listener = userRef.on('value', (snapshot) => {
+        // If snapshot.exists() is false, the user was deleted from the database
+        if (!snapshot.exists()) {
+            console.log("Current user was deleted from the database. Logging out.");
+            
+            // Stop the listener before we reload
+            stopUserDeletionListener();
+
+            // Clear local session and refresh the page
+            localStorage.removeItem("gerNordleUsername");
+            localStorage.removeItem("gerNordleUserPin");
+            window.location.reload();
+        }
+    });
+
+    // Store the reference and the listener so we can detach it later
+    userListener = { ref: userRef, listener: listener };
+}
+
+// This function stops the listener to prevent memory leaks
+function stopUserDeletionListener() {
+    if (userListener.ref && userListener.listener) {
+        userListener.ref.off('value', userListener.listener);
+        userListener = { ref: null, listener: null };
+    }
+}
+
+async function saveCompletedGameData(won) {
+    const username = localStorage.getItem("gerNordleUsername");
+    if (!username || !secret) return;
+
+    const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+    
+    // Step 1: Prepare all the data that needs to be written.
+    const creationDateToSave = new Date().toISOString();
+    const hintStatusToSave = { hintUsed1, hintUsed2, hintUsed3, hintUsed4 };
+    const guesses = won ? (currentRow + 1) : -1;
+
+    // Data for the user's private profile in Firebase
+    const finalPlayedGameData = {
+        status: won ? 'won' : 'lost',
+        guesses: guesses,
+        createdDate: creationDateToSave,
+        guessHistory: guessHistory,
+        colorHistory: colorHistory,
+        hintStatus: hintStatusToSave
+    };
+    
+    // Data for the public game scoreboard
+    const finalScoreData = {
+        username: username,
+        guesses: guesses,
+        timestamp: new Date().toISOString(),
+        hintCount: (hintUsed1 ? 1:0) + (hintUsed2 ? 1:0) + (hintUsed3 ? 1:0) + (hintUsed4 ? 1:0)
+    };
+
+    // Step 2: Create a single multi-path update object.
+    const updates = {};
+    updates[`/userProfiles/${sanitizedUsername}/playedGames/${secret}`] = finalPlayedGameData;
+    updates[`/games/${secret}/${sanitizedUsername}`] = finalScoreData;
+    updates[`/games/${secret}/players/${sanitizedUsername}`] = null;
+    
+    // Step 3: Perform the atomic write and then update stats.
+    try {
+        await database.ref().update(updates);
+        // ONLY if the write succeeds, update the stats.
+        await updateStats(username, won, guesses);
+
+        // ✅ FIX: The local storage update is now correctly placed inside the 'try' block.
+        const encodedSecret = base64Encode(secret);
+        const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
+        if (!allGameData[username]) allGameData[username] = {};
+        
+        // ✅ FIX: Corrected the object syntax and added the missing createdDate.
+        const finalGameRecord = {
+            status: won ? 'won' : 'lost',
+            guessHistory: guessHistory, 
+            colorHistory: colorHistory, 
+            keyColors: keyColors,
+            hintStatus: { 
+                hintUsed1: hintUsed1, 
+                hintUsed2: hintUsed2, 
+                hintUsed3: hintUsed3, 
+                hintUsed4: hintUsed4, 
+                hintExpanded1: hintExpanded1, 
+                hintExpanded2: hintExpanded2, 
+                hintExpanded3: hintExpanded3, 
+                hintExpanded4: hintExpanded4 
+            },
+            createdDate: creationDateToSave // This was missing
+        };
+        
+        delete finalGameRecord.ongoingState;
+        allGameData[username][encodedSecret] = finalGameRecord;
+        localStorage.setItem("gerNordleGameData", JSON.stringify(allGameData));
+
+    } catch (error) {
+        console.error("Failed to save final game data:", error);
+        throw error;
+    }
+}
+
+async function deleteGame(wordToDelete) {
+    if (!confirm(`Are you sure you want to permanently delete the game "${wordToDelete}"? This will remove it from every player's history and stats.`)) {
+        return;
+    }
+
+    const hostUsername = localStorage.getItem("gerNordleUsername");
+    if (!hostUsername) {
+        alert("Could not verify user. Deletion failed.");
+        return;
+    }
+    const sanitizedHostUsername = hostUsername.replace(/[.#$[\]]/g, '_');
+
+    try {
+        const gameSnapshot = await database.ref('games/' + wordToDelete).once('value');
+        const gameData = gameSnapshot.val();
+
+        const allPlayerNames = new Set();
+
+        // --- FIX START ---
+        // Unconditionally add the host to the list of players to be cleaned up.
+        // This ensures the game is removed from the host's "playedGames" list
+        // even if data is inconsistent.
+        allPlayerNames.add(sanitizedHostUsername);
+
+        // Now, find all OTHER players from the central game record.
+        if (gameData) {
+            Object.keys(gameData).forEach(key => {
+                if (key !== 'metadata' && key !== 'players') {
+                    allPlayerNames.add(key);
+                }
+            });
+            if (gameData.players) {
+                Object.keys(gameData.players).forEach(playerName => {
+                    allPlayerNames.add(playerName);
+                });
+            }
+        }
+        // --- FIX END ---
+
+        const updates = {};
+        updates[`/games/${wordToDelete}`] = null;
+        updates[`/userProfiles/${sanitizedHostUsername}/hostedGames/${wordToDelete}`] = null;
+
+        allPlayerNames.forEach(sanitizedPlayerName => {
+            updates[`/userProfiles/${sanitizedPlayerName}/playedGames/${wordToDelete}`] = null;
+        });
+
+        await database.ref().update(updates);
+
+        // This check is needed because we might not have gameData if the record was already partially deleted.
+        if (gameData) {
+            const statPromises = [];
+            allPlayerNames.forEach(sanitizedPlayerName => {
+                const scoreData = gameData[sanitizedPlayerName];
+                if (scoreData) {
+                    const wasWin = scoreData.guesses > 0;
+                    const guessesInGame = wasWin ? scoreData.guesses : 0;
+
+                    const statRef = database.ref(`/userProfiles/${sanitizedPlayerName}/stats`);
+                    const statPromise = statRef.transaction(currentStats => {
+                        if (currentStats) {
+                            currentStats.gamesPlayed = (currentStats.gamesPlayed || 0) - 1;
+                            if (currentStats.gamesPlayed < 0) currentStats.gamesPlayed = 0;
+
+                            if (wasWin) {
+                                currentStats.wins = (currentStats.wins || 0) - 1;
+                                if (currentStats.wins < 0) currentStats.wins = 0;
+
+                                currentStats.totalGuesses = (currentStats.totalGuesses || 0) - guessesInGame;
+                                if (currentStats.totalGuesses < 0) currentStats.totalGuesses = 0;
+                            }
+                        }
+                        return currentStats;
+                    });
+                    statPromises.push(statPromise);
+                }
+            });
+
+            if (statPromises.length > 0) {
+                await Promise.all(statPromises);
+            }
+        }
+
+        if (wordToDelete === secret) {
+            window.location.reload();
+        }
+
+    } catch (error) {
+        console.error("Comprehensive deletion failed:", error);
+        alert("An error occurred while trying to delete the game. Please try again.");
+    }
+}
+
+// This function handles closing the popup when the user starts typing a guess.
+function handleTypingToClose(event) {
+    // Check if the key pressed is a valid letter for the game.
+    if (/^[a-zA-ZÄÖÜäöüßẞÆØÅæøå]$/.test(event.key)) {
+        hideHintPopup();
+    }
+}
+
+function loadCompletedGame(playedGameData) {
+    const savedUsername = localStorage.getItem("gerNordleUsername");
+    if (!savedUsername) return;
+
+    const headerSetup = document.getElementById("header-setup");
+    const gameElement = document.getElementById("game");
+
+    // Use the new unified header logic
+    setupUsernameInterface({
+        isGamePage: true,
+        containerId: 'setup-username-area',
+        inputId: 'usernameInputGame',
+        placeholder: 'Enter username'
+    });
+
+    initBoard();
+    initKeyboard();
+
+    const isSolved = playedGameData.status === 'won';
+    document.getElementById("message").textContent = isSolved ? "You already solved this Wørtle! 🥳" : "You have already played this Wørtle.";
+
+    const reconstructedKeyColors = {};
+    if (playedGameData.guessHistory && playedGameData.colorHistory) {
+        for (let i = 0; i < playedGameData.guessHistory.length; i++) {
+            const guess = playedGameData.guessHistory[i];
+            const colors = playedGameData.colorHistory[i];
+            for (let j = 0; j < guess.length; j++) {
+                const letter = guess[j];
+                const color = colors[j];
+                if (!reconstructedKeyColors[letter] || (color === 'correct') || (color === 'present' && reconstructedKeyColors[letter] === 'absent')) {
+                    reconstructedKeyColors[letter] = color;
+                }
+            }
+        }
+    }
+    keyColors = reconstructedKeyColors;
+    updateKeyboardColors();
+    updateHintButtons();
+
+    const board = document.getElementById('board');
+    board.innerHTML = generateGuessHistoryHTML(playedGameData.guessHistory, playedGameData.colorHistory);
+    board.style.gridTemplateRows = 'none';
+
+    showGameOverModal(isSolved, playedGameData.guessHistory, playedGameData.colorHistory, playedGameData.hintStatus);
+    disableKeyboard(); 
+
+    headerSetup.style.display = 'flex';
+    gameElement.style.display = 'flex';
+}
+
+function loadOngoingGame(playedGameData) {
+    const savedUsername = localStorage.getItem("gerNordleUsername");
+    if (!savedUsername) return;
+
+    const headerSetup = document.getElementById("header-setup");
+    const gameElement = document.getElementById("game");
+
+    // Use the new unified header logic
+    setupUsernameInterface({
+        isGamePage: true,
+        containerId: 'setup-username-area',
+        inputId: 'usernameInputGame',
+        placeholder: 'Enter username'
+    });
+
+    initBoard();
+    initKeyboard();
+
+    // Restore all game variables from the passed-in Firebase data.
+    usernameSet = true;
+    grid = playedGameData.grid;
+    currentRow = playedGameData.currentRow;
+    guessHistory = playedGameData.guessHistory || [];
+    colorHistory = playedGameData.colorHistory || [];
+    keyColors = playedGameData.keyColors || {};
+    
+    const hintStatus = playedGameData.hintStatus || {};
+    hintUsed1 = hintStatus.hintUsed1;
+    hintUsed2 = hintStatus.hintUsed2;
+    hintUsed3 = hintStatus.hintUsed3;
+    hintUsed4 = hintStatus.hintUsed4;
+    hintExpanded1 = hintStatus.hintExpanded1 || false;
+    hintExpanded2 = hintStatus.hintExpanded2 || false;
+    hintExpanded3 = hintStatus.hintExpanded3 || false;
+    hintExpanded4 = hintStatus.hintExpanded4 || false;
+    currentCol = 0;
+    
+    // Apply the restored state to the UI.
+    updateBoard();
+    if (Array.isArray(colorHistory)) {
+        for (let r = 0; r < colorHistory.length; r++) {
+            const colors = colorHistory[r];
+            const rowDiv = document.getElementById("board").children[r];
+            if (Array.isArray(colors) && rowDiv) {
+                for (let c = 0; c < cols; c++) {
+                    if (rowDiv.children[c] && typeof colors[c] === 'string') {
+                        rowDiv.children[c].classList.add(colors[c]);
+                    }
+                }
+            }
+        }
+    }
+    updateKeyboardColors();
+    updateHintButtons();
+    
+    gameElement.classList.remove("dimmed");
+    headerSetup.style.display = 'flex';
+    gameElement.style.display = 'flex';
+}
+
+function renderAccountStats(snapshot) {
+    const statsSection = document.getElementById('account-stats-section');
+    if (!statsSection) return;
+
+    const stats = snapshot.val() || { gamesPlayed: 0, wins: 0, totalGuesses: 0 };
+    const winPct = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
+    
+    statsSection.innerHTML = `
+        <div class="stat-item">
+            <span class="stat-value">${stats.gamesPlayed}</span>
+            <span class="stat-label">Played</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">${stats.wins}</span>
+            <span class="stat-label">Wins</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">${winPct}%</span>
+            <span class="stat-label">Win %</span>
+        </div>
+    `;
+}
+
+function showToast(message, type = '') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    // Create the toast element
+    const toastElement = document.createElement('div');
+    toastElement.className = 'toast';
+    if (type) {
+        toastElement.classList.add(type);
+    }
+    toastElement.textContent = message;
+
+    // Add it to the container
+    container.appendChild(toastElement);
+
+    // Set a timer to remove the toast after its animation finishes
+    setTimeout(() => {
+        toastElement.remove();
+    }, 3000); // 3000ms = 3 seconds
+}
+
+async function displayHostCredit() {
+    const creditElement = document.getElementById('host-credit');
+    if (!secret || !creditElement) return;
+
+    try {
+        const hostRef = database.ref(`games/${secret}/metadata/host`);
+        const snapshot = await hostRef.once('value');
+
+        if (snapshot.exists()) {
+            const hostName = snapshot.val();
+            creditElement.textContent = `Wørtle by: ${hostName}`;
+        }
+    } catch (error) {
+        console.error("Could not fetch host name for credit:", error);
+    }
 }
 
 </script>
