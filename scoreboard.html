@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Sansita:ital,wght@1,700&display=swap" rel="stylesheet">
+    <title>WØRTLE - Global Scoreboard</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="scoreboard.js"></script>
+    <script src="definitions.js"></script>
+    <script src="theme.js"></script>
+    <link id="theme-stylesheet" rel="stylesheet" href="style-light.css">
+</head>
+<body>
+<h1>
+  <p><span style="color:var(--accent-color);">Cross-Germanic</span> WØRTLE</p>
+</h1>
+<div id="header-setup" style="display: flex;">
+<a href="/wordle.html" class="back-link">← Back to WØRTLE</a>
+</div>
+<h2>Global Scoreboard</h2>
+
+    <div id="scoreboard-container">
+        <p class="loader">Loading global rankings...</p>
+    </div>
+
+<style>
+.back-link {
+    display: inline-block;
+    color: var(--text-primary);
+    vertical-align: middle;
+    text-decoration: none;
+    font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    letter-spacing: 1px;
+    padding: 8px;
+}
+
+#scoreboard-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+#scoreboard-container .loader {
+    font-size: 1.2em;
+    color: var(--text-primary);
+}
+    p {
+        margin-bottom:0;
+    }
+  h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    text-transform: lowercase;
+    font-family: 'Sansita', cursive;
+    position: relative;
+    display: inline-block;
+    letter-spacing: 1px;
+  }
+  h2::before {
+    content: "";
+    position: absolute;
+    background-color: var(--correct-bg);
+    height: 9px;
+    width: 105%;
+    left: -3%;
+    bottom: -2px; 
+    z-index: -1;
+    opacity: 0.8;
+  }
+thead {
+    border-bottom:2px solid var(--border-subtle);
+}
+thead th:first-child {
+    border-top-left-radius: 5px;
+}
+thead th:last-child {
+    border-top-right-radius: 5px;
+}
+th, td {
+    padding:10px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-subtle);
+}
+th {
+    background-color: var(--bg-panel);
+    color: var(--text-primary);
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    font-size: 16pt;
+}
+tr {
+    color: var(--text-primary);
+    transition: 0.3s ease-in-out;
+}
+tbody tr:nth-child(even) {
+    background-color: var(--bg-panel);
+}
+tbody tr:hover {
+    background-color: var(--border-subtle);
+}
+
+  tr>:nth-child(2), tr>:nth-child(1), tr>:nth-child(4),tr>:nth-child(3) {
+    max-width:none;
+    min-width:0;
+  }
+  td, th {
+    border: none;
+    border-style: none;
+    max-width: none;
+  }
+  tr:first-child td:first-child { border-top-left-radius: 0; }
+  tr:first-child td:last-child { border-top-right-radius: 0; }
+  tr:last-child td:first-child { border-bottom-left-radius: 0; }
+  tr:last-child td:last-child { border-bottom-right-radius: 0; }
+  tr:first-child td { border-top-style: none; }
+  tr td:first-child { border-left-style: none; }
+
+
+.badge-icon {
+    display: inline-block;
+    margin: 0 2px;
+    font-size: 1em;
+    cursor: help; /* Shows a question mark cursor on hover */
+}
+.scoreboard-table {
+    width: 100%;
+    /* This is the key to making widths work predictably */
+    table-layout: fixed; 
+    border-collapse: collapse;
+    font-size: 1em;
+    font-family: 'VT323', monospace;
+    letter-spacing: 1px;
+    font-size: 13pt;
+    margin-bottom: 50px;
+}
+
+/* Set the width for each column */
+.col-rank {
+    width: 8%;
+    text-align: center;
+}
+
+.col-player {
+    width: 22%;
+}
+
+.col-badges {
+    width: 20%;
+}
+
+/* A shared class for the smaller stat columns */
+.col-stats {
+    width: 10%;
+    text-align: center;
+}
+
+/* You can still override a shared class for a specific column */
+.col-avg-guesses {
+    width: 20%;
+}
+
+/* This will truncate player names that are too long with "..." */
+.col-player {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+</style>
+</body>
+</html>
