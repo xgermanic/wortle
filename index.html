@@ -3,1207 +3,36 @@
 <head>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<script src="definitions.js"></script>
+<script src="theme.js"></script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="https://fonts.googleapis.com/css2?family=Sansita:ital,wght@1,700&display=swap" rel="stylesheet">
 <title>WØRTLE</title>
-<style>
-  body {
-    font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
-    text-align: center;
-    background-color: #01222e;
-    color: white;
-    margin:0 auto;
-  }
 
-  .dimmed {
-    opacity: 0.5;
-    pointer-events: none; /* Disables interaction with dimmed elements */
-}
-  .board {
-    display: grid;
-    grid-template-rows: repeat(6, 1fr);
-    gap: 5px;
-    margin: 20px;
-    transition: opacity 0.4s ease-in-out;
-  }
-  .row {
-  display: grid;
-  /* ✅ FIX: Columns are now explicitly sized to fit the 60px tiles. */
-  grid-template-columns: repeat(5, 60px);
-  gap: 10px; /* You can still adjust this value if you want */
+  <link id="theme-stylesheet" rel="stylesheet" href="style-light.css">
+  <style>
+    #mainContent { visibility: hidden; }
+  </style>
   
-  /* ✅ ADD: This centers the entire group of 5 tiles within the row. */
-  justify-content: center;
-}
-  .tile {
-    box-shadow: 2px 2px 2px #732b2b;
-    width: 60px;
-    height: 60px;
-    border: 3px solid #041c47;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2em;
-    font-weight: bold;
-    text-transform: uppercase;
-    background-color: #121213;
-    color: white;
-    border-radius:5px;
-    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-  }
-  .correct { background-color: #538d4e !important; }
-  .present { background-color: #b59f3b !important; }
-  .absent { background-color: #3a3a3c !important; }
-  .keyboard {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    max-width: 600px;
-    margin-top:20px;
-    margin-bottom:20px;
-  }
-  .key-row {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-  }
-  .key {
-    padding: 10px;
-    background-color: #818384;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    font-weight: bold;
-    color: white;
-    user-select: none;
-  }
-  #hintBtn1, #hintBtn2, #hintBtn3, #hintBtn4 {
-    height: 68px;
-    background: transparent;
-    text-align: left;
-    border: 0px;
-    border-radius:5px;
-    margin-bottom: 5px;
-    cursor: pointer;
-    padding: 0 0 0 10px;
-    color: #214a5a;
-    font-size: 10pt;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.3s ease;
-  border-bottom: 2px solid #81a4c7;
-  }
-#hintTitle {
-  width:200px;
-  text-align: center; 
-  text-transform: lowercase;
-  margin:0 auto;
-  font-weight: 700; 
-  font-style:italic;
-  font-family: 'Sansita', cursive;
-  margin-bottom: 10px; 
-  font-size: 1.3em; 
-  letter-spacing: 2pt;
-  position: relative; 
-}
-#hintTitle::before {
-  content: ""; /* Required for pseudo-elements */
-  position: absolute;
-  background-color: #4f1868; /* Your desired "offset" color */
-  width: 148px; /* Or specific width/height */
-  height: 9px; /* Or specific width/height */
-  top: 18px; /* Offset from the top */
-  left: 25px; /* Offset from the left */
-  z-index: -1; /* Place it behind the parent content */
-}
-#hintTitle:hover::before {
-  background-color: #1e0729; /* Your desired "offset" color */
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-}
-.hint-button {
-  display: none;
-}
-#hintButtons button {
-  width: 180px;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 4px;
-  padding: 5px 0;
-  letter-spacing: 1pt;
-  font-weight: bold;
-  background: rgb(3, 39, 93);
-  border: 2px solid rgb(14, 12, 43);
-  border-left: 4px solid rgb(14, 12, 43);
-  box-shadow: 0 0.2rem rgb(14, 12, 43);
-  border-radius: 10px;
-  margin: 4px 2px;
-  cursor: pointer;
-  color: #c7d1d5;
-  font-size: 10pt;
-  white-space: normal;
-  overflow: hidden;
-  height: auto;
-  transition: background-color 0.3s ease;
-}
-
-  #hintButtons button.expanded {
-  opacity: 1;
-  max-height: 220px;
-  }
-  #hintButtons button:disabled {
-  cursor: default;
-  opacity: 1;
-}
-.hint-label {
-    text-transform: lowercase;
-    padding-bottom: 2px;
-    font-size: 11pt;
-    width: 100%;
-    letter-spacing: 1pt;
-    margin: 0;
-    font-family: 'Sansita', cursive;
-}
-  
-  .hint-label.hidden {
-      margin-right: 10px;
-  }
-
-.hint-text {
-  display: block;
-  font-weight: normal;
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-              opacity 0.5s ease, 
-              overflow 0s linear 0.5s;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.hint-text.visible {
-  opacity: 1;
-  padding: 7px 15px 7px 7px;
-  width: 435px;
-  text-transform: uppercase;
-  overflow: auto;
-  max-height: 68px;
-  font-size: 11pt;
-  text-align:right;
-  font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
-}
-#hintBtn1:hover, #hintBtn2:hover, #hintBtn3:hover, #hintBtn4:hover,
-#hintBtn1.clicked-hint, #hintBtn2.clicked-hint, #hintBtn3.clicked-hint, #hintBtn4.clicked-hint {
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-  background-color: #b3c4e0;
-  border-bottom: 2px solid #81a4c7;
-}
-.styled-button {
-    background-color: transparent;
-    border: none;
-    width: auto;
-    color: rgb(255, 255, 255);
-    text-shadow: 2px 2px #000000;
-    font-size: 10pt;
-    font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
-    cursor: pointer;
-    margin: 0;
-    letter-spacing: 1px;
-}
-  #modalCopyBtn, #showStatsBtn, #showScoreboardBtn, #copy-url-btn, #start-playing-btn {
-    background-color: #e4e4e4;
-    border: none;
-    padding: 10px;
-    font-weight: bold;
-    font-size: 10pt;
-    width: 10em;
-    border-radius: 1rem;
-    color: rgb(35, 35, 35);
-    box-shadow: 0 0.4rem #1d1d1d;
-    border: 2px solid #1d1d1d;
-    cursor: pointer;
-    margin: 5px auto;
-    z-index: 100;
-  }
-  #modalCopyBtn:hover, #showStatsBtn:hover, #showScoreboardBtn:hover, #copy-url-btn:hover, #start-playing-btn:hover {
-    background-color: #e97251;
-    color: #e9e9e9;
-    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
-  }
-  #modal-stats-display {
-    text-align: center;
-  }
-  h1 { 
-    letter-spacing: 1pt; 
-    border-bottom:1px solid rgb(34, 65, 78);
-    padding:1.4rem;
-    margin:0;
-    background-color:rgb(3, 22, 27);
-    font-family: monospace;
-    position: relative;
-    text-align: center;
-    box-sizing: border-box;
-  }
-h1 p {
-  margin: 0;
-  }
-
-.h1-button-group {
-  position: absolute;
-  top: 50%;
-  right: 30px;
-  border-radius: 5px;
-  transform: translateY(-50%); /* Vertically center the buttons */
-}
-/* Styling for the simple share modal */
-.share-popup {
-  /* Use the classic centering method for this modal */
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1001;
-  width: 360px;
-  
-  /* Hiding and transition */
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-/* Rule to show the share modal */
-.share-popup.show {
-  opacity: 1;
-  visibility: visible;
-}
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  z-index: 1000;
-
-  /* Flexbox properties for centering */
-  display: flex;
-  align-items: center;     /* Vertical centering */
-  justify-content: center; /* Horizontal centering */
-  
-  /* Hiding and transition */
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-.modal {
-  position: relative;
-  width: 360px;
-  
-  /* The animation for the modal itself */
-  transform: scale(0.95);
-  opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  transition-delay: 0.1s; /* Small delay to let the overlay fade in first */
-}
-
-
-
-/* This class now controls the visibility of the overlay and the modal inside it */
-.modal-overlay.show {
-  opacity: 1;
-  visibility: visible;
-}
-/* When the overlay is shown, also animate the modal */
-.modal-overlay.show .modal {
-  transform: scale(1);
-  opacity: 1;
-}
-  #modal-message { font-size: 16pt; width:auto; font-family:monospace; }
-  .modal-content {
-  position: relative; 
-  width:300px;
-  max-height:80%;
-  background-color: #e1dbd9;
-  border-top:20px solid rgb(206, 86, 17);
-  border-radius:10px;
-  padding: 15px 30px 30px 30px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 0px;
-  color: rgb(33, 33, 33);
-  max-height: 85vh;      /* Set a max height relative to the screen */
-  overflow-y: auto;      /* Add a vertical scrollbar ONLY when needed */
-  }
-  #modal-summary {
-    white-space: pre-wrap;
-    font-family: monospace;
-    font-size: 1.2em;
-    color: rgb(33, 33, 33);
-    letter-spacing: 2pt;
-  }
-  #hintButtonsContainer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 3px;
-    margin-top: 30px;
-  }
-  #secretWordColor {
-  color: #cd1616; /* Example: a bright orange color */
-}
-.word-host-input {
-  background: #021a24;
-  font-size:11pt;
-  color: #c7d1d5;
-  border: none;
-  padding: 7px;
-  border-radius: 6px;
-  min-width: 197px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  margin-left: 30px;
-  text-align: center;
-  transition: background 0.2s ease; /* Smooth color change */
-}
-.host-input {
-  background: #021a24;
-  font-size:11pt;
-  color: #c7d1d5;
-  border: none;
-  padding: 8px;
-  border-radius: 6px;
-  width: 200px;
-  display: block;
-  margin: auto;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  text-align: center;
-  transition: background 0.2s ease; /* Smooth color change */
-}
-
-.host-input::placeholder, .word-host-input::placeholder, #funFactInput::placeholder {
-  color: #6f8a94;
-}
-.host-input:not(:placeholder-shown), .word-host-input:not(:placeholder-shown), #funFactInput:not(:placeholder-shown) {
-  background: #010f15;
-}
-#hintInput4Container {
-  margin: auto;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  display: block;
-  background: #021a24;
-  padding: 8px;
-  width: 200px;
-  border-radius: 6px;
-  text-align:center;
-  transition: background 0.2s ease; /* Smooth color change */
-}
-
-#hintInput4Container.darkened {
-  background: #010f15;
-}
-#secretInput {
-  text-transform: uppercase;
-}
-
-#modal-stats-container {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-in-out, margin-top 0.5s ease-in-out;
-    background-color: #d8d8d8;
-    color: #333;
-    padding: 0 10px;
-    border-radius: 8px;
-  }
-
-  #modal-stats-container.expanded {
-    max-height: 500px;
-  }
-
-  .stats-line {
-    margin: 5px 0;
-    font-family: monospace;
-  }
-
-  .button-group {
-    display: inline-block;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-    align-items: center;
-  }
-  
-  .key:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  /* Add the class to apply the animation */
-  .shake {
-    animation: shake 0.5s ease-in-out;
-  }
-  #funFactInput {
-  background: #021a24;
-  color: #c7d1d5;
-  border: none;
-  padding: 8px 28px;
-  min-height: 70px;
-  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  border-radius: 6px;
-  font-size: 11pt;
-  width: 300px;
-  display: block;
-  margin: auto;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  text-align: center;
-  transition: background 0.2s ease;
-  resize: vertical; /* Let users adjust height if they want */
-  line-height: 1.4;
-  }
-  .fun-fact-section {
-    background-color: #d8d8d8; /* A dark blue-gray background */
-    color: #333; /* A light off-white font color */
-    font-size: 11pt; /* Slightly larger font size */
-    box-shadow: 0 0.4rem #5d849f;
-    border:2px solid #5d849f;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 10px;
-    min-height:60px;
-    max-height:120px;
-    overflow:scroll;
-  }
-  .fun-fact-section h2 {
-    font-size:12pt;
-    margin:4px 0 6px 0;
-  }
-  .fun-fact-section::-webkit-scrollbar {
-  width: 10px; /* Width of the vertical scrollbar */
-}
-/* Scrollbar thumb */
-.fun-fact-section::-webkit-scrollbar-thumb {
-  background-color: #a14612; /* Color of the thumb */
-  border-radius: 0px 6px; /* Rounded corners for the thumb */
-}
-/* Track */
-.fun-fact-section::-webkit-scrollbar-corner {
-  background: #4e1919;
-  border-radius: 6px 0px;
-}
-.help-button {
-  background: #07548a;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 29px;
-  height: 29px;
-  font-weight: bold;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-  vertical-align: middle;
-  user-select: none;
-  transition: background-color 0.3s ease;
-}
-
-.help-button:hover {
-  background-color: #0a73c2;
-}
-.help-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #e1dbd9;
-  color: #212121;
-  max-width: 380px;
-  border-radius: 10px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.5);
-  z-index: 9999;
-  display: flex; /* Use flex by default */
-  flex-direction: column;
-  outline: 2px solid orange;
-  padding: 2px 6px;
-}/* Hide when hidden attribute is present */
-.help-popup[hidden] {
-  display: none;
-}
-.help-popup:focus {
-  outline: 2px solid orange;
-}
-.help-popup-content {
-  position: relative;
-  padding: 20px 45px;
-    overflow: scroll;
-    max-height: 550px;
-    font-size: 11.5pt;
-}
-.close-btn {
-  position: absolute;
-  top: -8px;
-  right: 0px;
-  width: 25px;
-  height: 25px;
-  border: none;
-  background: transparent;
-  z-index: 1000;
-  border-radius: 50%;
-  font-size: 17pt;
-  cursor: pointer;
-  color: #5e2603;
-  font-family: 'Sansita', cursive;
-}
-.close-btn:hover {
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-  color: #000;
-}
-.close-help-btn, .close-hint-btn {
-    position: absolute;
-    top: 0px;
-    right: 1px;
-    width: 30px;
-    height: 30px;
-    border: none;
-    background: transparent;
-    z-index: 1000;
-    border-radius: 50%;
-    font-size: 19pt;
-    cursor: pointer;
-    color: #707070;
-    font-family: 'Sansita', cursive;
-}
-.close-help-btn:hover, .close-hint-btn:hover {
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-  color: #000;
-}
-.close-hint-btn {
-  top:-3px;
-}
-.help-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.4); /* dim background */
-  z-index: 9998; /* just below the popup */
-}
-/* The dark background overlay */
-#hintPopupOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* This z-index is crucial. It must be high. */
-  z-index: 999;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0s 0.3s;
-}
-
-/* The popup box itself */
-.hint-popup {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 10px;
-  background-color: #d0d9dc;
-  border-radius: 10px;
-  border: 2px solid #b3c4e0;
-  /* This must have a HIGHER z-index than the overlay. */
-  z-index: 1000;
-  transform: translateY(100%);
-  opacity: 0;
-  visibility: hidden;
-  transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s 0.3s;
-}
-
-/* --- The rest of the CSS remains the same --- */
-
-/* Active (visible) state for the popup */
-.hint-popup.show {
-  transform: translateY(0);
-  opacity: 1;
-  visibility: visible;
-  transition-delay: 0s;
-}
-
-/* When the popup is shown, also show the overlay */
-.hint-popup.show ~ #hintPopupOverlay {
-  opacity: 1;
-  visibility: visible;
-  transition-delay: 0s;
-}
-#share-message-box {
-    width: 100%;
-    height: 80px;
-    padding: 10px;
-    box-sizing: border-box;
-    background-color: #d8d8d8;
-    border: 2px dashed #ccc;
-    border-radius: 15px;
-    color: #4b819d;
-    font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
-    font-size: 1em;
-    resize: none;
-}
-#share-message-box:focus {
-    outline: none;
-}
-/* Container for the custom tooltip */
-.custom-tooltip {
-  position: relative; /* This is required for positioning the tooltip */
-  cursor: pointer;
-}
-/* The tooltip itself, created with a pseudo-element */
-.custom-tooltip::after {
-  content: attr(data-tooltip); /* Grabs the text from the data-tooltip attribute */
-  position: absolute;
-  top: 100%; /* Position it above the button */
-  left: 50%;
-  transform: translateX(-50%);
-  margin-top: 10px; /* Space between button and tooltip */
-  /* Appearance */
-  background-color: #d8d8d8;
-  color: #4b819d;
-  font-weight:400;
-  padding: 8px;
-  border-radius: 4px;
-  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  font-size: 14px;
-  white-space: nowrap; /* Prevent the text from wrapping */
-  /* Visibility and instant transition */
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.1s ease, visibility 0.1s ease;
-  transition-delay: 0s; /* No delay on hiding */
-}
-
-/* Show the tooltip on hover */
-.custom-tooltip:hover::after {
-  opacity: 1;
-  visibility: visible;
-  transition-delay: 0s; /* No delay on showing */
-}
-
-table {
-  font-family: monospace;
-  font-size:10pt;
-  border-collapse: collapse;
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-tr>:nth-child(2){
-  min-width: 35px;
-}
-tr>:nth-child(1), tr>:nth-child(4) {
-  max-width:20px;
-  text-align:center;
-}
-tr>:nth-child(3) {
-  max-width:30px;
-  text-align:center;
-}
-tr {
-  text-transform: uppercase;
-}
-td, th {
-  border: 1px #ddd;
-  border-style: none solid solid none;
-  padding: 5px;
-  text-align:left;
-}
-td {
-  max-width: 10px;
-  overflow: scroll;
-}
-th {
-  border:0px;
-  text-transform: capitalize;
-}
-tr:first-child td:first-child { border-top-left-radius: 10px; }
-tr:first-child td:last-child { border-top-right-radius: 10px; }
-
-tr:last-child td:first-child { border-bottom-left-radius: 10px; }
-tr:last-child td:last-child { border-bottom-right-radius: 10px; }
-
-tr:first-child td { border-top-style: solid; }
-tr td:first-child { border-left-style: solid; }
-tr:nth-child(even){
-  background-color: #01222e;
-}
-#game-over-modal {
-  position: relative; /* Establishes a stacking context */ /* Acts as the positioning anchor */
-}
-.side-panel {
-  position: absolute;
-  top: 35px;
-  left: 360px;
-  z-index: 1;
-  /* --- MODIFIED --- */
-  width: 0;
-  overflow: hidden; /* This now hides the static inner content */
-  transition: width 0.4s ease-in-out;
-  padding: 0; /* Padding is now on the inner wrapper */
-  /* Your other styles */
-  height: 90%;
-  background-color: #021a24;
-  color: #fff;
-  border-radius: 0 12px 12px 0;
-  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
-  pointer-events: none;
-}
-.side-panel.show {
-  width: 280px; /* The outer container still expands to this width */
-  pointer-events: auto;
-}
-/* --- ADD THIS NEW RULE --- */
-.side-panel-content {
-  /* This container has a fixed width, so the text inside doesn't reflow */
-  width: 280px;
-  padding: 20px;
-  height: 100%;
-  overflow: auto; /* Adds a scrollbar if content is too tall */
-  box-sizing: border-box; /* Keeps padding inside the defined width/height */
-}
-    /* Add these new styles for the scoreboard summary */
-    #scoreboard-summary-container {
-        padding: 10px 15px;
-        border-bottom: 1px solid #444; /* A separator line */
-        margin-bottom: 10px;
-    }
-
-    .summary-stat {
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 14px;
-    }
-
-    .summary-stat:last-child {
-        margin-bottom: 0;
-    }
-
-    .stat-label {
-        width: 90px; /* Helps align the labels */
-        text-align: center;
-        color: #c7d1d5;
-        flex-shrink: 0;
-    }
-
-    .stat-bar-container {
-        flex-grow: 1;
-        height: 20px;
-        border-right: 3px dotted #384d58;
-        overflow: hidden;
-    }
-
-    .stat-bar {
-        height: 100%;
-        background-color: rgb(92, 17, 17); /* A color that fits your theme */
-        border-radius: 5px;
-        transition: width 0.5s ease-in-out;
-        text-align: center;
-    text-shadow: 1px 2px #000000;
-    color: #e5e8ea;
-        font-weight: bold;
-        line-height: 20px; /* Vertically center text */
-        white-space: nowrap;
-    }
-.modal-button-container {
-  display: flex;
-  flex-direction: column; /* Stacks items vertically */
-  align-items: center;   /* Centers the buttons horizontally */
-  gap: 0px;             /* Adds some space between each button */
-  width: 100%;           /* Ensures the container takes up the available space */
-}
-
-/* Add this CSS to your stylesheet */
-
-#word-status-indicator {
-    font-size: 8pt;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    font-family: sans-serif;
-    height: 20px;
-    margin-left: 10px;
-    box-sizing: border-box;
-}
-
-#word-status-indicator.valid {
-    color: #10d63d;
-    border-radius: 15px;
-    border: 2px solid #05a400;
-    background-color: #116517;
-}
-
-#word-status-indicator.invalid {
-    color: #ff4127;
-    border-radius: 15px;
-    border: 2px solid #db1c02;
-    background-color: #8d1d1d;
-}
-
-/* Simple loading spinner */
-#word-status-indicator.loading::after {
-  content: '';
-  display: block;
-  width: 15px;
-  height: 15px;
-  border: 3px solid #7f8c8d;
-  border-top-color: #ecf0f1;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Shake animation for the input field on error */
-.shake {
-  animation: shake 0.5s;
-}
-
-@keyframes shake {
-  10%, 90% { transform: translateX(-1px); }
-  20%, 80% { transform: translateX(2px); }
-  30%, 50%, 70% { transform: translateX(-4px); }
-  40%, 60% { transform: translateX(4px); }
-}
-/* Add this new CSS rule */
-.input-with-indicator {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* --- Account Sidebar Styles --- */
-#account-sidebar {
-    font-family: monospace;
-    position: fixed;
-    top: 0;
-    right: -320px; /* Start off-screen */
-    width: 300px;
-    height: 100%;
-    background-color: #01222e;
-    border-left: 2px solid rgb(34, 65, 78);
-    box-shadow: -5px 0 15px rgba(0,0,0,0.4);
-    z-index: 9999;
-    padding: 10px;
-    transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    color: #c7d1d5;
-    overflow-y: auto;
-}
-
-#account-sidebar.show {
-    right: 0; /* Slide into view */
-}
-
-#account-sidebar h2 {
-    text-align: center;
-    margin-top: 25px;
-    text-transform: lowercase;
-    font-family: 'Sansita', cursive;
-    position: relative; /* Establishes a positioning context for the ::before element */
-    display: inline-block; /* Makes the h2 only as wide as the text inside it */
-}
-
-#account-sidebar h2::before {
-    content: "";
-    position: absolute;
-    background-color: #4f1868;
-    height: 9px;
-    width: 110%; /* Makes the element as wide as the text */
-    left: -5%;     /* Aligns it to the start of the text */
-    bottom: -2px; 
-    z-index: -1;
-}
-
-.account-section {
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-.user-games-title {
-    font-weight: 400;
-    text-transform: lowercase;
-}
-.games-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0px;
-    border-radius: 8px;
-    padding: 10px;
-    min-height: 30px;
-}
-
-.games-list a {
-    color: #81a4c7;
-    text-decoration: none;
-    background-color: transparent;
-    padding: 8px;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.2s ease;
-}
-
-.game-status {
-    font-size: 0.8em;
-    font-style: italic;
-    color: #c7d1d5;
-    opacity: 0.8;
-}
-
-.game-list-item {
-    background-color: transparent;
-    padding: 2px;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.2s ease;
-}
-
-.game-list-item:hover {
-    background-color: #060e12;
-}
-
-.game-list-item a {
-    color: #edf6ff;
-    text-decoration: none;
-    letter-spacing: 1px;
-    font-size:9pt;
-}
-
-.game-item-actions {
-    display: flex;
-    gap: 0px;
-}
-
-.game-item-actions button {
-    background: transparent;
-    border: none;
-    color: #c7d1d5;
-    border-radius: 50%;
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
-    font-size: 12pt;
-    margin-top:2px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.game-item-actions button svg {
-    color: #1898cb;
-}
-.game-item-actions button:hover svg {
-    transition: background-color 0.2s ease, color 0.2s ease;
-    stroke: #E57373; /* A nice red color for the hover state */
-}
-.game-item-actions button:hover {
-    color: #fff;
-}
-#account-stats-section {
-    display: flex;
-    justify-content: space-around;
-    text-align: center;
-    padding: 15px 10px;
-    /* background-color: #021a24; */
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.stat-item {
-    display: flex;
-    flex-direction: column;
-}
-
-.stat-value {
-    font-size: 1.4em;
-    font-weight: bold;
-    color: #fff;
-}
-
-.stat-label {
-    font-size: 0.8em;
-    color: #81a4c7;
-    text-transform: uppercase;
-}
-.login-prompt-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px; /* A smaller gap suitable for these elements */
-    width: 100%; /* Ensures it takes up space to center its contents */
-}
-/* --- New Sidebar Loader and Content Styles --- */
-#sidebar-loader {
-    display: none; /* Hidden until we need it */
-    text-align: center;
-    margin-top: 50px;
-    font-size: 1.1em;
-    color: #81a4c7;
-}
-
-/* A simple CSS spinner animation */
-.spinner {
-    margin: 0 auto 15px auto;
-    border: 4px solid rgba(255, 255, 255, 0.2);
-    border-left-color: #fff;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-}
-
-#sidebar-content {
-    visibility: hidden; /* Hide the content until it's loaded */
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-}
-
-#sidebar-content.loaded {
-    visibility: visible;
-    opacity: 1;
-}
-/* --- Toast Notification Styles --- */
-#toast-container {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  pointer-events: none; /* Allows clicks to go "through" the container */
-}
-
-.toast {
-  background-color: #f0f0f0;
-  color: #333;
-  padding: 12px 20px;
-  border-radius: 25px;
-  font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
-  font-size: 1em;
-  font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  animation: fadeInOut 3s ease-in-out forwards;
-  pointer-events: all; /* Toasts themselves can be interacted with if needed */
-}
-
-/* A special style for error messages */
-.toast.error {
-  background-color: #c53a3a;
-  color: white;
-}
-
-@keyframes fadeInOut {
-  0% {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  10%, 90% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-}
-/* --- FINAL UNIFIED LAYOUT & HEADER STYLES --- */
-
-/* 1. This styles the OUTER, full-width header bars */
-#header-setup {
-  display: none;
-  background-color: #041c27;
-  padding: 5px 10px;
-  border-bottom: 1px solid #06090a;
-  justify-content: center;
-  height:32px;
-}
-
-/* 2. This is the INNER wrapper that constrains the header content */
-.header-content-wrapper {
-  width: 100%;
-  max-width: 500px; /* Adjust this value to match your game board if needed */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-}
-
-/* 3. This creates the main centered column for your setup form and game */
-#setup,
-#game {
-  max-width: 500px;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  box-sizing: border-box; 
-  transition: opacity 0.4s ease-in-out;
-  display: none;
-}
-
-/* 4. This styles the individual sections INSIDE the wrapper (username, host, etc.) */
-.header-content-wrapper > div {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
-/* 5. This unifies the font and padding for text and buttons inside the header */
-.header-content-wrapper p,
-.header-content-wrapper button {
-  font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
-  font-size: 10pt;
-  letter-spacing: 1px;
-  text-shadow: 2px 2px #000000;
-  margin: 0;
-  padding: 4px;
-}
-#setup-form-content {
-  transition: opacity 0.4s ease-in-out;
-}
-#host-credit {
-  font-size:9pt;
-  color: #818384;
-  margin-top: 25px;
-  letter-spacing: 1px;
-  font-family:monospace;
-}
-
-</style>
 </head>
 <body>
 <div id="toast-container"></div>
-<div id="mainContent">
 <h1>
-  <p><span style="color:rgb(243, 202, 186);">Cross-Germanic</span> WØRTLE</p>
-  <div class="h1-button-group">
+  <div class="h1-button-group-left">
+    <!-- <button id="practiceBtn" aria-label="Practice Mode" class="help-button custom-tooltip" data-tooltip="Practice Mode">🎯</button>-->
+    <button id="globalScoreboardBtn" aria-label="Global Scoreboard" class="help-button custom-tooltip" data-tooltip="Global Scoreboard">🌐</button>
+    <button id="themeToggleBtn" aria-label="Toggle Theme" class="help-button custom-tooltip" data-tooltip="Switch Theme">🌙</button>
+  </div>
+  <p><span style="color:var(--accent-color);">Cross-Germanic</span> WØRTLE</p>
+  <div class="h1-button-group-right">
     <button id="newGameBtn" aria-label="Create New Game" class="help-button custom-tooltip" data-tooltip="New Wørtle">+</button>
     <button id="helpBtn" aria-label="Show Help" data-tooltip="Info" class="help-button custom-tooltip">?</button>
     <button id="accountBtn" aria-label="My Account" class="help-button custom-tooltip" data-tooltip="My Account">U</button>
   </div>
 </h1>
-  <div id="loader" style="margin-top: 100px; font-size: 1.2em;">Loading Wørtle...</div>
+<div id="loader">Loading Wørtle...</div>
+<div id="mainContent">
 
 <div id="header-setup">
     <div class="header-content-wrapper">
@@ -1216,7 +45,7 @@ tr:nth-child(even){
   <p style="margin-bottom:20px;">Enter a secret word and optional hints for the user to reveal</p>
     
   <div class="input-with-indicator">
-    <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" style="border:2px solid rgb(92, 17, 17);" class="word-host-input"/>
+    <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" class="word-host-input"/>
     <span id="word-status-indicator"></span>
   </div>
   
@@ -1225,7 +54,7 @@ tr:nth-child(even){
   <input type="text" id="hintInput2" placeholder="Part of speech" class="host-input"/>
   <input type="text" id="hintInput3" placeholder="Context clue" class="host-input"/>
 <div id="hintInput4Container">
-  <p style="margin:0 0 5px 0; font-size:11pt; color:#c7d1d5;">Special character(s)</p>
+  <p>Special character(s)</p>
   <label style="display:block; margin-bottom:4px; cursor:pointer;">
     <input type="checkbox" value="Ä" class="specialCharCheckbox"> Ä
   </label>
@@ -1264,6 +93,7 @@ tr:nth-child(even){
 </div>
 
   <div id="keyboard" class="keyboard"></div>
+  <button id="giveUpBtn">I Give Up</button>
   <p id="host-credit"></p>
 </div>
 
@@ -1307,7 +137,7 @@ tr:nth-child(even){
 </div>
 </div>
 
-<div id="helpOverlay" class="help-overlay" hidden></div>
+<div id="helpOverlay" class="overlay"></div>
 <div id="helpPopup" class="help-popup" role="dialog" aria-modal="true" aria-labelledby="helpTitle" tabindex="-1" hidden>
   <div class="help-popup-content">
     <button id="closeHelpBtn" aria-label="Close help" class="close-help-btn">&times;</button>
@@ -1349,18 +179,18 @@ tr:nth-child(even){
     </div>
 </div>
 
-<div id="account-overlay" class="help-overlay" hidden></div>
+<div id="account-overlay" class="overlay"></div>
 <div id="account-sidebar">
   <button id="closeAccountBtn" class="close-help-btn">&times;</button>
   <h2 id="account-sidebar-title">My Account</h2>
-
+  <div id="account-badges-container"></div>
   <div id="sidebar-loader">
     <div class="spinner"></div>
     Loading account...
   </div>
-
   <div id="sidebar-content">
     <div id="account-stats-section" class="account-section"></div>
+    <div id="account-graph-container" class="account-section"></div>
     <div class="account-section">
         <h3 id="hosted-games-title" class="user-games-title">My Games</h3>
         <div id="hosted-games-list" class="games-list"></div>
@@ -1411,9 +241,20 @@ const closeHintPopupBtn = document.getElementById("closeHintPopupBtn");
 const game = document.getElementById("game");
 const SUPPORTED_LANGUAGES = ['german', 'norwegian', 'english', 'swedish', 'danish']; // <-- Add all your file names here (without .txt)
 const allValidWords = new Set();
-
-
-// Add this corrected block to the top of your script
+const practiceBtn = document.getElementById('practiceBtn');
+if (practiceBtn) {
+    practiceBtn.addEventListener('click', () => {
+        // This will take the user to your new practice page
+        window.location.href = 'practice.html';
+    });
+}
+const globalScoreboardBtn = document.getElementById('globalScoreboardBtn');
+if (globalScoreboardBtn) {
+    globalScoreboardBtn.addEventListener('click', () => {
+        // This will take the user to your new scoreboard page
+        window.location.href = 'scoreboard.html';
+    });
+}
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -1619,21 +460,36 @@ async function updateStats(username, won, guesses) {
 
     try {
         await statsRef.transaction(currentStats => {
-            // If the user has no stats yet, initialize them.
+            // If stats object doesn't exist at all, create a default one.
             if (currentStats === null) {
                 currentStats = { gamesPlayed: 0, wins: 0, totalGuesses: 0 };
             }
-            
-            // Increment the values
+
+            // ✅ ADD THIS BLOCK: This is the key fix.
+            // It ensures each property is a number before we use it.
+            currentStats.gamesPlayed = currentStats.gamesPlayed || 0;
+            currentStats.wins = currentStats.wins || 0;
+            currentStats.totalGuesses = currentStats.totalGuesses || 0;
+
+            // Now we can safely do the math
             currentStats.gamesPlayed++;
             if (won) {
                 currentStats.wins++;
                 currentStats.totalGuesses += guesses;
             }
             
-            return currentStats; // Return the new data to be saved.
+            return currentStats;
         });
+
+        // The badge check can remain here, it's correct.
+        const newStatsSnapshot = await statsRef.once('value');
+        const newStats = newStatsSnapshot.val();
+        if (newStats && newStats.gamesPlayed >= 25) {
+            awardBadge(username, 'social_butterfly');
+        }
+
     } catch (error) {
+        // This will now catch the NaN error if it ever happens again.
         console.error("Could not update stats in Firebase:", error);
     }
 }
@@ -1670,6 +526,7 @@ async function displayStats(username) {
         avgGuesses: avgGuesses
     };
 }
+
 async function startGame() {
     const hostUsername = localStorage.getItem("gerNordleUsername");
     if (!hostUsername) {
@@ -1714,6 +571,24 @@ async function startGame() {
         await metadataRef.set(metadataToSave);
 
         const sanitizedUsername = hostUsername.replace(/[.#$[\]]/g, '_');
+        // 1. Check for 'Master Hintsmith' badge
+        if (inputHint1 && inputHint2 && inputHint3 && inputHint4 && inputFunFact) {
+            awardBadge(hostUsername, 'master_hintsmith');
+        }
+
+        // 2. Check for 'Prolific Host' and 'Community Pillar' badges
+        const hostedGamesRef = database.ref(`userProfiles/${sanitizedUsername}/hostedGames`);
+        const hostedSnapshot = await hostedGamesRef.once('value');
+        const hostedCount = hostedSnapshot.numChildren();
+
+        if (hostedCount + 1 >= 10) {
+            awardBadge(hostUsername, 'prolific_host');
+        }
+        if (hostedCount + 1 >= 25) {
+            awardBadge(hostUsername, 'community_pillar');
+        }
+        // --- END OF NEW LOGIC ---
+
         const userProfileRef = database.ref('userProfiles/' + sanitizedUsername);
         const newGameData = {};
         newGameData[`/hostedGames/${secret}`] = { createdDate: metadataToSave.createdDate };
@@ -1778,6 +653,7 @@ async function startGame() {
         checkUserStatus();
     };
 }
+
 async function checkUserStatus() {
     let savedUsername = localStorage.getItem("gerNordleUsername");
     const gameElement = document.getElementById("game");
@@ -2103,75 +979,84 @@ async function submitGuess() {
     }, (cols * 200) + 250);
 }
 
+// REPLACE your old endGame function with this one
 async function endGame(won) {
     hideHintPopup();
-    const gameContainer = document.getElementById('game');
-    const modalOverlay = document.getElementById('game-over-overlay');
     
-    gameContainer.style.opacity = '0';
+    // ✅ This line RESTORES the initial fade-out of the active game board.
+    document.getElementById('game').style.opacity = '0';
 
     try {
-        // ✅ The call to updateStats() has been removed from here.
-        // All saving logic is now handled by the more robust function below.
         await saveCompletedGameData(won);
-
     } catch (error) {
         console.error("Failed to save game results to Firebase:", error);
         alert("Your game result could not be saved, but you can still view your stats for this round.");
+    }
 
-    } finally {
-        // This block for showing the modal remains the same and is safe to run.
-        const username = localStorage.getItem("gerNordleUsername");
-        const hintStatusForSummary = { hintUsed1, hintUsed2, hintUsed3, hintUsed4 };
-        document.getElementById("modal-summary").textContent = generateResultText(true, guessHistory, colorHistory, won, hintStatusForSummary);
-        
-        if (won) {
-            document.getElementById("modal-message").innerHTML = `You win! 🎉<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
-        } else {
-            document.getElementById("modal-message").innerHTML = `Game over!<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
-        }
+    await showEndGameUI(won);
+}
 
-        const existingFunFact = document.querySelector("#game-over-modal .fun-fact-section");
-        if (existingFunFact) existingFunFact.remove();
-        if (customFunFact && customFunFact.trim() !== "") {
-            const funFactDiv = document.createElement('div');
-            funFactDiv.classList.add('fun-fact-section');
-            funFactDiv.innerHTML = `<h2>Fun fact about today's Wørtle:</h2><p style="margin:0;">${customFunFact}</p>`;
-            document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
-        }
-        
-        const statsContainer = document.getElementById("modal-stats-container");
-        statsContainer.innerHTML = "";
-        
-        const stats = await displayStats(username);
-        const statsLines = [ `Stats for ${username}`, `Games Played: ${stats.gamesPlayed}`, `Wins: ${stats.wins}`, `Win %: ${stats.winPct}%`, `Average Guesses: ${stats.avgGuesses}`];
-        statsLines.forEach(line => {
-            const p = document.createElement("p");
-            p.textContent = line;
-            p.classList.add("stats-line");
-            statsContainer.appendChild(p);
-        });
+// ADD THIS NEW HELPER FUNCTION
+async function showEndGameUI(won) {
+    const username = localStorage.getItem("gerNordleUsername");
+    const modalOverlay = document.getElementById('game-over-overlay');
+    const hintStatusForSummary = { hintUsed1, hintUsed2, hintUsed3, hintUsed4 };
 
-        bindModalButtons(guessHistory, colorHistory, won, hintStatusForSummary);
-        modalOverlay.classList.add('show');
+    // 1. Populate the modal content
+    document.getElementById("modal-summary").textContent = generateResultText(true, guessHistory, colorHistory, won, hintStatusForSummary);
+    
+    if (won) {
+        document.getElementById("modal-message").innerHTML = `You win! 🎉<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
+    } else {
+        document.getElementById("modal-message").innerHTML = `Game over!<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
+    }
 
-        setTimeout(() => {
-            const messageEl = document.getElementById("message");
-            const board = document.getElementById('board');
+    const existingFunFact = document.querySelector("#game-over-modal .fun-fact-section");
+    if (existingFunFact) existingFunFact.remove();
+    if (customFunFact && customFunFact.trim() !== "") {
+        const funFactDiv = document.createElement('div');
+        funFactDiv.classList.add('fun-fact-section');
+        funFactDiv.innerHTML = `<h2>Fun fact about today's Wørtle:</h2><p style="margin:0;">${customFunFact}</p>`;
+        document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
+    }
+    
+    // 2. Populate the stats and graph
+    const statsContainer = document.getElementById("modal-stats-container");
+    statsContainer.innerHTML = "";
+    
+    const stats = await displayStats(username);
+    const statsLines = [`Stats for ${username}`, `Games Played: ${stats.gamesPlayed}`, `Wins: ${stats.wins}`, `Win %: ${stats.winPct}%`, `Average Guesses: ${stats.avgGuesses}`];
+    statsLines.forEach(line => {
+        const p = document.createElement("p");
+        p.textContent = line;
+        p.classList.add("stats-line");
+        statsContainer.appendChild(p);
+    });
+
+    // 3. Show the modal and update the game board
+    bindModalButtons(guessHistory, colorHistory, won, hintStatusForSummary);
+    modalOverlay.classList.add('show');
+
+    setTimeout(() => {
+        const gameContainer = document.getElementById('game')
+        const board = document.getElementById('board');
+            const messageEl = document.getElementById('message'); // Get the message element
+
+            // ✅ RESTORED: This displays the on-screen win/loss message
             if (won) {
-                messageEl.innerHTML = "You win! 🎉";
+                messageEl.textContent = "You win! 🎉";
             } else {
-                messageEl.innerHTML = `Game over! The word was ${secret}.`;
+                messageEl.textContent = `Game over! The word was ${secret}.`;
             }
             messageEl.classList.add('visible');
-            const historyHtml = generateGuessHistoryHTML(guessHistory, colorHistory);
-            board.innerHTML = historyHtml;
-            board.style.gridTemplateRows = 'none';
-            disableKeyboard();
-            gameContainer.style.opacity = '0.5';
-            gameContainer.style.pointerEvents = 'none';
-        }, 400);
-    }
+
+        const historyHtml = generateGuessHistoryHTML(guessHistory, colorHistory);
+        board.innerHTML = historyHtml;
+        board.style.gridTemplateRows = 'none';
+        disableKeyboard();
+        gameContainer.style.opacity = '0.5';
+        gameContainer.style.pointerEvents = 'none';
+    }, 400);
 }
 
 function disableKeyboard() {
@@ -2179,6 +1064,7 @@ function disableKeyboard() {
   document.querySelectorAll('.key').forEach(keyBtn => {
     keyBtn.disabled = true;
   });
+  document.getElementById('giveUpBtn').disabled = true;
   // Use the existing isAnimating flag to block physical keyboard input
   isAnimating = true; 
 }
@@ -2347,6 +1233,10 @@ function resetHints() {
 }
 window.onload = async () => {
     const loader = document.getElementById('loader');
+    const mainContent = document.getElementById('mainContent');
+    
+    // --- Step 1: Show the loader immediately ---
+    loader.style.display = 'block';
     secret = getSecretFromURL();
     const setupDiv = document.getElementById("setup");
     const gameDiv = document.getElementById("game");
@@ -2371,7 +1261,7 @@ window.onload = async () => {
             checkUserStatus();
         } else {
             // If the game does NOT exist, show the error message
-            messageEl.innerHTML = `The game you are looking for does not exist or has been deleted.<br><br><a href="/wordle.html" style="color: white; text-decoration: underline;">Create a new game</a>`;
+            messageEl.innerHTML = `The game you are looking for does not exist or has been deleted.<br><br><a href="/wordle.html" style="text-decoration: underline;">Create a new game</a>`;
             messageEl.style.marginTop = '50px';
         }
 
@@ -2404,6 +1294,9 @@ window.onload = async () => {
         setupInputs.forEach(input => input.addEventListener('input', saveSetupState));
         document.querySelectorAll('.specialCharCheckbox').forEach(cb => cb.addEventListener('change', saveSetupState));
     }
+
+    loader.style.display = 'none';
+    mainContent.classList.add('loaded');
 
     // This listener is for the host page
     const secretInput = document.getElementById('secretInput');
@@ -2472,10 +1365,15 @@ const helpPopup = document.getElementById("helpPopup");
 const closeHelpBtn = document.getElementById("closeHelpBtn");
 const helpOverlay = document.getElementById("helpOverlay");
 const mainContent = document.getElementById("mainContent");
+// Add this to your script
+const giveUpBtn = document.getElementById('giveUpBtn');
+if (giveUpBtn) {
+    giveUpBtn.addEventListener('click', handleGiveUp);
+}
 
 function showHelpPopup() {
   helpPopup.hidden = false;
-  helpOverlay.hidden = false;
+  helpOverlay.classList.add('show');
   mainContent.inert = true;
   mainContent.setAttribute('aria-hidden', 'true');
   setInputsDisabled(true);
@@ -2484,7 +1382,7 @@ function showHelpPopup() {
 
 function hideHelpPopup() {
   helpPopup.hidden = true;
-  helpOverlay.hidden = true;
+  helpOverlay.classList.remove('show');
   mainContent.inert = false;
   mainContent.removeAttribute('aria-hidden');
   setInputsDisabled(false);
@@ -2932,7 +1830,7 @@ function fetchAndDisplayScoreboard() {
     }, (error) => {
         console.error("Firebase listener error:", error);
         container.innerHTML = '<p>Could not load scores due to an error.</p>';
-        summaryContainer.innerHTML = '<p style="text-align:center; color:#c7d1d5;">Could not load stats.</p>';
+        summaryContainer.innerHTML = '<p style="text-align:center;">Could not load stats.</p>';
     });
 }
 
@@ -3377,7 +2275,7 @@ function renderPlayedGames(snapshot) {
 // Replace your existing closeAccountSidebar function
 function closeAccountSidebar() {
     accountSidebar.classList.remove('show');
-    accountOverlay.hidden = true;
+    accountOverlay.classList.remove('show');
     mainContent.inert = false;
 
     // Detach the game list listeners
@@ -3406,6 +2304,7 @@ function closeAccountSidebar() {
 let statsRef = null;
 let statsListener = null;
 
+// This is the improved openAccountSidebar function
 async function openAccountSidebar() {
     const username = localStorage.getItem("gerNordleUsername");
     if (!username) {
@@ -3420,7 +2319,7 @@ async function openAccountSidebar() {
     const sidebarContent = document.getElementById('sidebar-content');
     
     accountSidebar.classList.add('show');
-    accountOverlay.hidden = false;
+    accountOverlay.classList.add('show');
     mainContent.inert = true;
     sidebarLoader.style.display = 'block';
     sidebarContent.classList.remove('loaded');
@@ -3428,20 +2327,39 @@ async function openAccountSidebar() {
     try {
         const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
 
+        // Fetch and render badges (this is fine as is)
+        const badgesRef = database.ref(`userProfiles/${sanitizedUsername}/badges`);
+        const badgesSnapshot = await badgesRef.once('value');
+        const badgesContainer = document.getElementById('account-badges-container');
+        badgesContainer.innerHTML = ''; 
+
+        if (badgesSnapshot.exists()) {
+            const earnedBadges = badgesSnapshot.val();
+            for (const badgeId in earnedBadges) {
+                if (earnedBadges[badgeId] === true && BADGE_DEFINITIONS[badgeId]) {
+                    const badgeInfo = BADGE_DEFINITIONS[badgeId];
+                    const badgeElement = document.createElement('div');
+                    badgeElement.className = 'badge';
+                    badgeElement.textContent = badgeInfo.name;
+                    badgeElement.title = badgeInfo.description;
+                    badgesContainer.appendChild(badgeElement);
+                }
+            }
+        }
+
         const hostedGamesLoaded = new Promise(resolve => { resolveHostedGames = resolve; });
         const playedGamesLoaded = new Promise(resolve => { resolvePlayedGames = resolve; });
 
-        // Attach live listeners for the game lists
+        // Attach listeners for game lists
         hostedGamesRef = database.ref(`userProfiles/${sanitizedUsername}/hostedGames`);
         hostedGamesRef.on('value', renderHostedGames);
 
         playedGamesRef = database.ref(`userProfiles/${sanitizedUsername}/playedGames`);
         playedGamesRef.on('value', renderPlayedGames);
         
-        // ✅ NEW: Attach a real-time listener for the stats section.
-        // This will update the stats initially and every time they change.
+        // ✅ This ONE listener will now handle ALL stats rendering.
         statsRef = database.ref(`userProfiles/${sanitizedUsername}/stats`);
-        statsListener = statsRef.on('value', renderAccountStats);
+        statsListener = statsRef.on('value', renderAccountStats); // This now renders the graph too
         
         await Promise.all([hostedGamesLoaded, playedGamesLoaded]);
 
@@ -3454,6 +2372,7 @@ async function openAccountSidebar() {
         console.error("Error loading account sidebar:", error);
     }
 }
+
 
 accountBtn.addEventListener('click', openAccountSidebar);
 closeAccountBtn.addEventListener('click', closeAccountSidebar);
@@ -3527,9 +2446,109 @@ async function saveCompletedGameData(won) {
     updates[`/userProfiles/${sanitizedUsername}/playedGames/${secret}`] = finalPlayedGameData;
     updates[`/games/${secret}/${sanitizedUsername}`] = finalScoreData;
     updates[`/games/${secret}/players/${sanitizedUsername}`] = null;
+
+    const userProfileRef = database.ref(`userProfiles/${sanitizedUsername}`);
+    const hostNameRef = database.ref(`games/${secret}/metadata/host`);
     
     // Step 3: Perform the atomic write and then update stats.
     try {
+        // --- This block handles complex badge logic ---
+        const [profileSnapshot, hostSnapshot] = await Promise.all([
+            userProfileRef.once('value'),
+            hostNameRef.once('value')
+        ]);
+        const userProfile = profileSnapshot.val() || {};
+        const hostName = hostSnapshot.val();
+
+        // Check Play Streak ('Daily Dedication')
+        const today = new Date().toDateString();
+        const yesterday = new Date(Date.now() - 864e5).toDateString();
+        let playStreak = userProfile.playStreak || 0;
+        let lastPlayed = userProfile.lastPlayedDate;
+
+        if (lastPlayed !== today) {
+            playStreak = (lastPlayed === yesterday) ? playStreak + 1 : 1;
+            userProfileRef.child('playStreak').set(playStreak);
+            userProfileRef.child('lastPlayedDate').set(today);
+        }
+        if (playStreak >= 7) {
+            awardBadge(username, 'daily_dedication');
+        }
+
+        // Check Win Streaks and other win-based badges
+        if (won) {
+            // 1. Get the number of guesses for this win
+            const guessCount = guessHistory.length; 
+            
+            // 2. Create a reference to the specific guess number in the user's profile
+            const guessDistRef = userProfileRef.child('stats/guessDistribution').child(String(guessCount));
+
+            // 3. Atomically increment the count for that number of guesses
+            await guessDistRef.transaction(currentCount => {
+                return (currentCount || 0) + 1;
+            });
+            // Win Streak Logic
+            let winStreak = userProfile.winStreak || 0;
+            let lastWin = userProfile.lastWinDate;
+            if (lastWin !== today) {
+                 winStreak = (lastWin === yesterday) ? winStreak + 1 : 1;
+                 userProfileRef.child('winStreak').set(winStreak);
+                 userProfileRef.child('lastWinDate').set(today);
+            }
+            if (winStreak >= 3) awardBadge(username, 'on_a_roll');
+            if (winStreak >= 10) awardBadge(username, 'dominating');
+
+            // ✅ ADDED BACK: All other win-based badges belong here.
+            if (guessHistory.length === 1) awardBadge(username, 'prodigy');
+            if (guessHistory.length <= 2) awardBadge(username, 'genius');
+            if (currentRow === 5) awardBadge(username, 'clutch_victory');
+            const hasAbsentLetters = colorHistory.flat().includes('absent');
+            if (!hasAbsentLetters) awardBadge(username, 'flawless');
+            const hintsAvailable = customHint1 || customHint2 || customHint3 || customHint4;
+            const hintsUsed = hintUsed1 || hintUsed2 || hintUsed3 || hintUsed4;
+            if (hintsAvailable && !hintsUsed) awardBadge(username, 'natural_talent');
+            if (/[ÄÖÜ]/.test(secret)) awardBadge(username, 'umlaut_enthusiast');
+            if (/[ÆØÅ]/.test(secret)) awardBadge(username, 'nordic_explorer');
+            const uniqueVowels = new Set(secret.toUpperCase().match(/[AEIOU]/g));
+            if (uniqueVowels && uniqueVowels.size >= 4) awardBadge(username, 'vowel_virtuoso');
+            const currentHour = new Date().getHours();
+            if (currentHour >= 0 && currentHour <= 4) awardBadge(username, 'night_owl');
+            if (currentHour >= 5 && currentHour <= 8) awardBadge(username, 'early_bird');
+
+        } else {
+            // Reset win streak on a loss
+            userProfileRef.child('winStreak').set(0);
+        }
+
+        // Check community badges
+        if (hostName && hostName !== username) {
+            const playedHostsRef = userProfileRef.child('playedHosts').child(hostName);
+            await playedHostsRef.set(true);
+            const playedHostsSnapshot = await userProfileRef.child('playedHosts').once('value');
+            if (playedHostsSnapshot.numChildren() >= 10) {
+                awardBadge(username, 'wortle_wanderer');
+            }
+            const gamePlayersRef = database.ref(`games/${secret}`);
+            const gamePlayersSnapshot = await gamePlayersRef.once('value');
+            const data = gamePlayersSnapshot.val() || {};
+            const playerCount = Object.keys(data).filter(key => key !== 'metadata' && key !== 'players').length;
+            if (playerCount >= 10) {
+                awardBadge(hostName, 'crowd_pleaser');
+            }
+        }
+
+        // Check Polyglot badge
+        if (customHint1) {
+            const lang = customHint1.trim().toLowerCase();
+            if (SUPPORTED_LANGUAGES.includes(lang)) {
+                 await userProfileRef.child('playedLanguages').child(lang).set(true);
+                 const playedLangSnapshot = await userProfileRef.child('playedLanguages').once('value');
+                 if (playedLangSnapshot.numChildren() >= 5) {
+                     awardBadge(username, 'polyglot');
+                 }
+            }
+        }
+
         await database.ref().update(updates);
         // ONLY if the write succeeds, update the stats.
         await updateStats(username, won, guesses);
@@ -3638,6 +2657,16 @@ async function deleteGame(wordToDelete) {
 
                                 currentStats.totalGuesses = (currentStats.totalGuesses || 0) - guessesInGame;
                                 if (currentStats.totalGuesses < 0) currentStats.totalGuesses = 0;
+                                
+                                // ✅ ADD THIS BLOCK TO UPDATE THE GUESS DISTRIBUTION
+                                const guessCountKey = String(guessesInGame);
+                                if (
+                                    currentStats.guessDistribution &&
+                                    currentStats.guessDistribution[guessCountKey] &&
+                                    currentStats.guessDistribution[guessCountKey] > 0
+                                ) {
+                                    currentStats.guessDistribution[guessCountKey]--;
+                                }
                             }
                         }
                         return currentStats;
@@ -3781,18 +2810,20 @@ function loadOngoingGame(playedGameData) {
 
 function renderAccountStats(snapshot) {
     const statsSection = document.getElementById('account-stats-section');
-    if (!statsSection) return;
+    const graphContainer = document.getElementById('account-graph-container');
+    if (!statsSection || !graphContainer) return;
 
-    const stats = snapshot.val() || { gamesPlayed: 0, wins: 0, totalGuesses: 0 };
-    const winPct = stats.gamesPlayed > 0 ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
+    const stats = snapshot.val() || {};
+    const winPct = (stats.gamesPlayed > 0) ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
     
+    // Render the main stats (Played, Wins, etc.)
     statsSection.innerHTML = `
         <div class="stat-item">
-            <span class="stat-value">${stats.gamesPlayed}</span>
+            <span class="stat-value">${stats.gamesPlayed || 0}</span>
             <span class="stat-label">Played</span>
         </div>
         <div class="stat-item">
-            <span class="stat-value">${stats.wins}</span>
+            <span class="stat-value">${stats.wins || 0}</span>
             <span class="stat-label">Wins</span>
         </div>
         <div class="stat-item">
@@ -3800,6 +2831,9 @@ function renderAccountStats(snapshot) {
             <span class="stat-label">Win %</span>
         </div>
     `;
+
+    // ✅ Call the reusable function to render the graph. That's all you need!
+    renderGuessDistribution(graphContainer, stats.guessDistribution, null);
 }
 
 function showToast(message, type = '') {
@@ -3828,15 +2862,101 @@ async function displayHostCredit() {
     if (!secret || !creditElement) return;
 
     try {
-        const hostRef = database.ref(`games/${secret}/metadata/host`);
-        const snapshot = await hostRef.once('value');
+        // ✅ Change the reference to get all metadata, not just the host
+        const metadataRef = database.ref(`games/${secret}/metadata`);
+        const snapshot = await metadataRef.once('value');
 
         if (snapshot.exists()) {
-            const hostName = snapshot.val();
+            const metadata = snapshot.val();
+            const hostName = metadata.host;
+            const shortUrl = metadata.shortUrl; // Get the shortUrl
+
+            // Clear any previous content
+            creditElement.innerHTML = ''; 
+
+            // Display the host credit
             creditElement.textContent = `Wørtle by: ${hostName}`;
+
+            // ✅ If a TinyURL exists, create and display the link
+            if (shortUrl) {
+                const urlElement = document.createElement('div'); // Use a div for a new line
+                urlElement.style.marginTop = '5px';
+                urlElement.innerHTML = `Share this game: <a href="${shortUrl}" target="_blank" style="color: #5c7a98;">${shortUrl}</a>`;
+                creditElement.appendChild(urlElement);
+            }
         }
     } catch (error) {
-        console.error("Could not fetch host name for credit:", error);
+        console.error("Could not fetch host credit:", error);
+    }
+}
+/**
+ * Awards a badge to a user if they haven't already earned it.
+ * @param {string} username The user who earned the badge.
+ * @param {string} badgeId The ID of the badge (e.g., 'genius').
+ */
+async function awardBadge(username, badgeId) {
+    if (!username || !BADGE_DEFINITIONS[badgeId]) return;
+
+    const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+    const badgeRef = database.ref(`userProfiles/${sanitizedUsername}/badges/${badgeId}`);
+
+    try {
+        const snapshot = await badgeRef.once('value');
+        if (!snapshot.exists()) {
+            await badgeRef.set(true);
+            // Show a notification to the user!
+            const badgeName = BADGE_DEFINITIONS[badgeId].name;
+            showToast(`Badge Unlocked: ${badgeName}`);
+        }
+    } catch (error) {
+        console.error(`Could not award badge ${badgeId}:`, error);
+    }
+}
+/**
+ * Renders a Wordle-style guess distribution graph inside a given container.
+ * @param {HTMLElement} containerElement - The div where the graph should be drawn.
+ * @param {object} distributionData - The user's guessDistribution stats.
+ * @param {number|null} highlightRow - The row number (1-6) to highlight (optional).
+ */
+function renderGuessDistribution(containerElement, distributionData, highlightRow = null) {
+    if (!containerElement) return;
+
+    containerElement.innerHTML = '<h3>My Guesses</h3>';
+
+    const distribution = distributionData || {};
+    const values = Object.values(distribution);
+    const maxValue = values.length > 0 ? Math.max(...values) : 1;
+
+    for (let i = 1; i <= 6; i++) {
+        const count = distribution[i] || 0;
+        const row = document.createElement('div');
+        row.className = 'graph-row';
+
+        let barHtml = '';
+        if (count > 0) {
+            const percentage = (count / maxValue) * 100;
+            const highlightClass = (i === highlightRow) ? 'highlight' : '';
+            barHtml = `<div class="graph-bar ${highlightClass}" style="width: ${percentage}%">${count}</div>`;
+        } else {
+            barHtml = `<div class="zero-count">0</div>`;
+        }
+
+        row.innerHTML = `<div class="graph-label">${i}</div>${barHtml}`;
+        containerElement.appendChild(row);
+    }
+}
+function handleGiveUp() {
+    if (isAnimating) return;
+
+    // ✅ This new block checks if a guess has been made
+    if (guessHistory.length === 0) {
+        showToast("You must make at least one guess before giving up.", "error");
+        return; // Stop the function here
+    }
+
+    // This part now only runs if the player has made a guess
+    if (window.confirm("Are you sure you want to end the game?")) {
+        endGame(false);
     }
 }
 
