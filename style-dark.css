@@ -388,7 +388,7 @@ h1 > p {
   border: none;
   padding: 7px;
   border-radius: 6px;
-  min-width: 200px;
+  width: 200px;
   margin-top: 5px;
   margin-bottom: 5px;
   margin-left: 30px;
