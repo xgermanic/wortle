@@ -5,6 +5,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 <script src="definitions.js"></script>
 <script src="theme.js"></script>
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="https://fonts.googleapis.com/css2?family=Sansita:ital,wght@1,700&display=swap" rel="stylesheet">
@@ -558,6 +559,8 @@ let hintExpanded2 = false;
 let hintExpanded3 = false;
 let hintExpanded4 = false;
 let scoreboardListener = null;
+let badgesRef = null;      // <-- Ensure this line exists
+let badgesListener = null;
 let userListener = { ref: null, listener: null };
 let availableLanguagesForWord = [];
 let currentLanguageIndex = 0;
