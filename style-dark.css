@@ -1,9 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
   :root {
     --bg-panel: #011a23;
+    --bg-keyboard: #818384;
     --border-subtle: #1f0471; /* A darker shade of the background */
     --correct-bg: #4f1868; /* Muted terracotta */
     --accent-color: rgb(243, 202, 186);
+    --text-primary: #fff;
+    --text-secondary: #214a5a;
     }
   body {
     font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
@@ -42,7 +45,7 @@
   .tile {
     box-shadow: 2px 2px 2px #732b2b;
     width: 60px;
-    height: 60px;
+    height: 50px;
     border: 3px solid #041c47;
     display: flex;
     align-items: center;
@@ -401,8 +404,8 @@ h1 > p {
   width: 200px;
   display: block;
   margin: auto;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin-top: 2px;
+  margin-bottom: 2px;
   text-align: center;
   transition: background 0.2s ease; /* Smooth color change */
 }
@@ -415,8 +418,8 @@ h1 > p {
 }
 #hintInput4Container {
   margin: auto;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin-top: 3px;
+  margin-bottom: 3px;
   display: block;
   background: #021a24;
   padding: 8px;
@@ -480,8 +483,7 @@ h1 > p {
   width: 300px;
   display: block;
   margin: auto;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin: 5px auto;
   text-align: center;
   transition: background 0.2s ease;
   resize: vertical; /* Let users adjust height if they want */
@@ -652,6 +654,7 @@ h1 > p {
   opacity: 1;
   visibility: visible;
   transition-delay: 0s;
+  bottom:10px;
 }
 
 /* When the popup is shown, also show the overlay */
