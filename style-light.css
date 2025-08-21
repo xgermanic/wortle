@@ -4,7 +4,6 @@
     --bg-main: #DEE8CE;
     --bg-panel: #FFF8E8;
     --bg-keyboard: #cccccc;
-    --bg-scoreboard: #4c5f3d;
     --text-primary: #5D4037; /* A soft, dark brown for readability */
     --text-secondary: #5D4037;
     --text-on-color: #FFF8E8; /* Creamy text for colored tiles */
@@ -383,11 +382,12 @@ h1 > p {
     transition: background 0.2s ease;
   }
   .word-host-input {
-    min-width: 197px;
+    min-width: 200px;
     margin: 5px 0 5px 30px;
   }
   .host-input {
     width: 200px;
+  height:22px;
     display: block;
     margin: 2px auto;
   }
@@ -406,7 +406,8 @@ h1 > p {
     margin: 3px auto;
     display: block;
     background: var(--bg-panel);
-    padding: 8px;
+    border: 1px solid var(--border-subtle);
+    padding: 7px;
     width: 200px;
     border-radius: 6px;
     text-align:center;
@@ -708,7 +709,7 @@ h1 > p {
   tr:first-child td { border-top-style: solid; }
   tr td:first-child { border-left-style: solid; }
   tr:nth-child(even){
-    background-color: var(--text-primary);
+    background-color: var(--border-subtle);
   }
   #game-over-modal {
     position: relative;
@@ -723,8 +724,8 @@ h1 > p {
     transition: width 0.4s ease-in-out;
     padding: 0;
     height: 90%;
-    background-color:var(--bg-scoreboard); 
-    color:var(--bg-panel);
+    background-color:var(--bg-main); 
+    color:var(--text-primary);
     border-radius: 0 12px 12px 0;
     box-shadow: 5px 0 15px var(--shadow);
     pointer-events: none;
@@ -762,7 +763,7 @@ h1 > p {
     flex-shrink: 0;
   }
   #scoreboard-summary-container .stat-label {
-    color:white;
+    color:var(--present-bg);
   }
   .stat-bar-container {
     flex-grow: 1;
