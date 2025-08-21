@@ -13,11 +13,305 @@
   <link id="theme-stylesheet" rel="stylesheet" href="style-light.css">
   <style>
     #mainContent { visibility: hidden; }
+    /* ADD THIS RULE FOR DISABLED INPUTS */
+  input:disabled {
+    opacity: 1;
+    cursor: not-allowed;
+  }
+  .disabled-container, .disabled-container * {
+  opacity: 1;
+  cursor: not-allowed !important;
+}
+/* ADD THESE RULES FOR THE MINI-KEYBOARD */
+  .mini-keyboard {
+    display: none;
+    margin: 2px 0 !important;
+    max-width: 500px; /* Limit width */
+    align-self: center; /* Center it */
+  }
+  .mini-keyboard .key {
+    width: 22px; /* Adjust key size */
+    height: 28px;
+    font-size: 11pt;
+    padding: 0;
+    background-color: var(--bg-keyboard);
+    border: 0px solid var(--border-subtle);
+  }
+/* --- ADD THIS ENTIRE BLOCK FOR THE TOOLTIP --- */
+  
+  /* This container allows us to position the '?' icon relative to the input */
+  .input-with-tooltip-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding:2px 0;
+    max-width: 500px; /* Ensures it matches other inputs */
+  }
+
+  /* The '?' icon itself */
+  .tooltip-trigger {
+    position: absolute;
+    top: 50%;
+    right: 23%; /* Position it just outside the container */
+    transform: translateY(-50%);
+    background-color: #888;
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: help;
+    user-select: none; /* Prevents selecting the '?' text */
+  }
+
+  /* The tooltip text box (hidden by default) */
+  .tooltip-trigger .tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    width: 240px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 10;
+    bottom: 150%; /* Position it above the '?' */
+    left: 50%;
+    transform: translateX(-50%);
+    transition: opacity 0.2s;
+    font-weight: normal;
+    line-height: 1.4;
+  }
+
+  /* Creates the small arrow pointing down from the tooltip */
+  .tooltip-trigger .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+  }
+
+  /* Show the tooltip when hovering over the '?' icon */
+  .tooltip-trigger:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  /* Make the label a container for our custom checkbox */
+  label.custom-checkbox-label {
+    position: relative;
+    padding-left: 0px; /* Leave space for the custom checkbox */
+    line-height: 18px;  /* Align text vertically */
+  }
+
+  /* Hide the default browser checkbox */
+  label.custom-checkbox-label .specialCharCheckbox {
+    position: absolute;
+    opacity: 0;
+    height: 0;
+    width: 0;
+  }
+
+  /* Create a new, stylable checkbox box */
+  .custom-checkmark {
+    position: absolute;
+    top: 0;
+    left: 35%;
+    height: 16px;
+    width: 16px;
+    background-color: #eee;
+    border: 1px solid #888888;
+    border-radius: 3px;
+  }
+  
+  /* When the hidden checkbox is checked, color our custom box blue */
+  label.custom-checkbox-label .specialCharCheckbox:checked ~ .custom-checkmark {
+    background-color: #2196F3; /* This is our blue color */
+    border-color: #2196F3;
+  }
+
+  /* Create the checkmark (hidden by default) */
+  .custom-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+
+  /* Show the checkmark when the box is checked */
+  label.custom-checkbox-label .specialCharCheckbox:checked ~ .custom-checkmark:after {
+    display: block;
+  }
+
+  /* Style the checkmark itself */
+  label.custom-checkbox-label .custom-checkmark:after {
+    left: 5px;
+    top: 2px;
+    width: 4px;
+    height: 8px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  /* --- END OF CUSTOM CHECKBOX BLOCK --- */
+/* --- START: CSS FOR NATIVE LANGUAGE POPUP --- */
+
+/* The dark background overlay */
+.language-popup-overlay {
+  visibility: hidden;
+  opacity: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  transition: opacity 0.3s ease;
+}
+
+/* The popup window itself */
+.language-popup {
+    width:300px;
+    background-color: var(--bg-panel);
+    border-top:20px solid var(--present-bg);
+    border-radius:10px;
+    padding: 30px;
+    color: var(--text-primary);
+    box-shadow: 0 5px 15px var(--shadow);
+  visibility: hidden;
+  opacity: 0;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  z-index: 101;
+  text-align: center;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* The class that makes the popup visible */
+.language-popup-overlay.show,
+.language-popup.show {
+  visibility: visible;
+  opacity: 1;
+}
+.language-popup.show {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+
+/* Styling for elements inside the popup */
+.language-popup-title {
+  color: var(--text-primary);
+  font-size: 16pt;
+  font-weight:400;
+  margin-top:0;
+  font-family:monospace;
+}
+.language-popup-text {
+    color: var(--text-primary);
+    font-size: 11pt;
+  margin-bottom: 20px;
+  font-family:monospace;
+}
+.language-popup-input {
+  width: 80%;
+  box-sizing: border-box; /* Important for padding */
+}
+.language-popup-button {
+  margin-top: 20px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+/* REPLACE your old #account-sidebar-header and #account-sidebar-flag rules with these */
+/* REPLACE your old #account-sidebar-title and #account-sidebar-flag rules with these */
+
+/* This container is still just for alignment */
+#account-sidebar-header {
+  text-align: center;
+}
+
+/* Make the title the positioning container */
+#account-sidebar-title {
+  position: relative;
+  display: inline-block;
+  /* Add padding on BOTH sides to make space for the flag while keeping the text centered */
+  padding: 0; 
+}
+
+/* Position the flag absolutely within the right padding of the title */
+#account-sidebar-flag {
+  position: absolute;
+  right: -35px; /* Position inside the right padding */
+    top: 60%;
+    transform: translateY(-50%);
+    font-size: 1.4rem;
+}
+/* ADD THIS RULE FOR THE NEW HINT MESSAGE */
+  .hint-popup p, #hint-unlock-next-message {
+    font-size: 0.9rem;
+    font-style: italic;
+    opacity: 0.8;
+    margin-top: 15px;
+    color: var(--text-secondary);
+  }
+/* ADD THESE RULES FOR THE LANGUAGE SWITCHER */
+  .language-input-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 500px; /* Ensures it matches other inputs */
+  }
+
+  #switch-language-btn {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 48%;
+    right: 23.5%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    border: none;
+    color: #888888;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 26px;
+    font-weight: bold;
+    line-height: 15px;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  #switch-language-btn:hover {
+    color: #555555;
+  }
+
   </style>
   
 </head>
 <body>
 <div id="toast-container"></div>
+
+<div id="language-popup-overlay" class="language-popup-overlay"></div>
+
+<div id="language-popup" class="language-popup" role="dialog" aria-modal="true" aria-labelledby="language-popup-title">
+  <h2 id="language-popup-title" class="language-popup-title">Welcome!</h2>
+  <p class="language-popup-text">To finish setting up your profile, can you tell us what your native language is?</p>
+  <input type="text" id="language-popup-input" class="language-popup-input" placeholder="e.g., Danish, Swedish, German, etc.">
+  <button id="language-popup-save-btn" class="language-popup-button">Save and Continue</button>
+</div>
+
 <h1>
   <div class="h1-button-group-left">
     <!-- <button id="practiceBtn" aria-label="Practice Mode" class="help-button custom-tooltip" data-tooltip="Practice Mode">🎯</button>-->
@@ -32,6 +326,7 @@
   </div>
 </h1>
 <div id="loader">Loading Wørtle...</div>
+
 <div id="mainContent">
 
 <div id="header-setup">
@@ -42,40 +337,65 @@
 
 <div id="setup" style="padding-bottom:10px;">
   <div id="setup-form-content">
-  <p style="margin-bottom:20px;">Enter a secret word and optional hints for the user to reveal</p>
-    
-  <div class="input-with-indicator">
+  <p style="margin-bottom:20px;">Enter a secret word, hints and an optional fun fact</p>
+      <div class="input-with-indicator">
     <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" class="word-host-input"/>
     <span id="word-status-indicator"></span>
   </div>
-  
     <button id="generateWordBtn" style="margin:5px 0 7px 0;">Pick Random Word</button>
-    <input type="text" id="hintInput" placeholder="Language" class="host-input"/>
+    <div id="special-char-keyboard" class="keyboard mini-keyboard">
+    <div class="key-row">
+      <button class="key" onclick="insertSpecialChar('Ä')">Ä</button>
+      <button class="key" onclick="insertSpecialChar('Ö')">Ö</button>
+      <button class="key" onclick="insertSpecialChar('Ü')">Ü</button>
+      <button class="key" onclick="insertSpecialChar('ẞ')">ẞ</button>
+      <button class="key" onclick="insertSpecialChar('Æ')">Æ</button>
+      <button class="key" onclick="insertSpecialChar('Ø')">Ø</button>
+      <button class="key" onclick="insertSpecialChar('Å')">Å</button>
+    </div>
+  </div>
+
+<div class="language-input-container">
+  <input type="text" id="hintInput" placeholder="Language" class="host-input" disabled/>
+  <button id="switch-language-btn" onclick="switchLanguage()">›</button>
+</div>
+
+
   <input type="text" id="hintInput2" placeholder="Part of speech" class="host-input"/>
-  <input type="text" id="hintInput3" placeholder="Context clue" class="host-input"/>
-<div id="hintInput4Container">
+
+    <div class="input-with-tooltip-container">
+    <input type="text" id="hintInput3" placeholder="Context clue" style="margin:0px;" class="host-input"/>
+    <span class="tooltip-trigger">?
+      <span class="tooltip-text">
+        Guessing a word from another language is difficult! 
+        Provide a helpful clue, such as a sentence that uses the secret word, replacing the word itself with underscores (e.g., "A Viking longship is powered by a large rectangular ____.").
+      </span>
+    </span>
+  </div>
+
+  <div id="hintInput4Container" class="disabled-container">
   <p>Special character(s)</p>
-  <label style="display:block; margin-bottom:4px; cursor:pointer;">
-    <input type="checkbox" value="Ä" class="specialCharCheckbox"> Ä
-  </label>
-  <label style="display:block; margin-bottom:4px; cursor:pointer;">
-    <input type="checkbox" value="Ö" class="specialCharCheckbox"> Ö
-  </label>
-  <label style="display:block; margin-bottom:4px; cursor:pointer;">
-    <input type="checkbox" value="Ü" class="specialCharCheckbox"> Ü
-  </label>
-  <label style="display:block; margin-bottom:4px; cursor:pointer;">
-    <input type="checkbox" value="ẞ" class="specialCharCheckbox"> ẞ
-  </label>
-  <label style="display:block; margin-bottom:4px; cursor:pointer;">
-    <input type="checkbox" value="Æ" class="specialCharCheckbox"> Æ
-  </label>
-  <label style="display:block; margin-bottom:4px; cursor:pointer;">
-    <input type="checkbox" value="Ø" class="specialCharCheckbox"> Ø
-  </label>
-  <label style="display:block; margin-bottom:4px; cursor:pointer;">
-    <input type="checkbox" value="Å" class="specialCharCheckbox"> Å
-  </label>
+  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
+  <input type="checkbox" value="Ä" class="specialCharCheckbox" disabled>
+  <span class="custom-checkmark"></span>Ä</label>
+  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
+  <input type="checkbox" value="Ö" class="specialCharCheckbox" disabled>
+  <span class="custom-checkmark"></span>Ö</label>
+  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
+  <input type="checkbox" value="Ü" class="specialCharCheckbox" disabled>
+  <span class="custom-checkmark"></span>Ü</label>
+  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
+  <input type="checkbox" value="ẞ" class="specialCharCheckbox" disabled>
+  <span class="custom-checkmark"></span>ẞ</label>
+  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
+  <input type="checkbox" value="Æ" class="specialCharCheckbox" disabled>
+  <span class="custom-checkmark"></span>Æ</label>
+  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
+  <input type="checkbox" value="Ø" class="specialCharCheckbox" disabled>
+  <span class="custom-checkmark"></span>Ø</label>
+  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
+  <input type="checkbox" value="Å" class="specialCharCheckbox" disabled>
+  <span class="custom-checkmark"></span>Å</label>
 </div>
   <textarea id="funFactInput" placeholder="Fun fact about the word (to be shown after the game is over)"></textarea>
   <button onclick="startGame()" style="margin:10px;">Create Game</button>
@@ -142,7 +462,7 @@
   <div class="help-popup-content">
     <button id="closeHelpBtn" aria-label="Close help" class="close-help-btn">&times;</button>
     <h2 id="helpTitle">How to Wørtle</h2>
-    <p>Enter or generate a secret word, as well as any optional hints for the user to reveal. If the word is not accepted, it is either not in the word list or has already been used. Share the URL with players.</p>
+    <p>Enter or generate a secret word, as well as hints for the user to reveal. If the word is not accepted, it is either not in the word list or has already been used. Share the URL with players.</p>
     <hr>
     <p>WØRTLE is currently enabled for:<br>
     German &mdash; 3902 words<br>
@@ -159,6 +479,7 @@
 
 <div id="hintPopup" class="hint-popup" role="dialog" aria-modal="true" aria-labelledby="hintPopupTitle">
     <button id="closeHintPopupBtn" aria-label="Close hint popup" class="close-hint-btn">&times;</button>
+    <p id="hint-unlock-message" style="display: none;"></p>
     <div id="hintButtonsContainer">
         <button id="hintBtn1" class="hint-button" onclick="showHint(1)">
             <span class="hint-label">Language</span>
@@ -177,12 +498,18 @@
             <span class="hint-text"></span>
         </button>
     </div>
+    <p id="hint-unlock-next-message" style="display: none;"></p>
 </div>
 
 <div id="account-overlay" class="overlay"></div>
 <div id="account-sidebar">
   <button id="closeAccountBtn" class="close-help-btn">&times;</button>
-  <h2 id="account-sidebar-title">My Account</h2>
+<div id="account-sidebar-header">
+  <h2 id="account-sidebar-title">
+    <span id="account-username-text">My Account</span>
+    <span id="account-sidebar-flag"></span>
+  </h2>
+</div>
   <div id="account-badges-container"></div>
   <div id="sidebar-loader">
     <div class="spinner"></div>
@@ -192,7 +519,7 @@
     <div id="account-stats-section" class="account-section"></div>
     <div id="account-graph-container" class="account-section"></div>
     <div class="account-section">
-        <h3 id="hosted-games-title" class="user-games-title">My Games</h3>
+        <h3 id="hosted-games-title" class="user-games-title">Hosted Games</h3>
         <div id="hosted-games-list" class="games-list"></div>
     </div>
     <div class="account-section">
@@ -203,8 +530,6 @@
 </div>
 
 <div id="hintPopupOverlay" class="popup-overlay"></div>
-
-
 
 <script>
 let secret = "";
@@ -219,7 +544,7 @@ let hintUsed3 = false;
 let hintUsed4 = false;
 let currentRow = 0;
 let currentCol = 0;
-const rows = 6;
+const rows = 8;
 const cols = 5;
 let grid = [];
 let keyColors = {};
@@ -234,13 +559,31 @@ let hintExpanded3 = false;
 let hintExpanded4 = false;
 let scoreboardListener = null;
 let userListener = { ref: null, listener: null };
+let availableLanguagesForWord = [];
+let currentLanguageIndex = 0;
 const hintTitle = document.getElementById("hintTitle");
 const hintPopup = document.getElementById("hintPopup");
 const hintPopupOverlay = document.getElementById("hintPopupOverlay");
 const closeHintPopupBtn = document.getElementById("closeHintPopupBtn");
 const game = document.getElementById("game");
+const validLanguages = new Set([
+    'bulgarian', 'croatian', 'czech', 'danish', 'dutch', 'english', 
+    'estonian', 'finnish', 'french', 'german', 'greek', 'hungarian', 
+    'irish', 'italian', 'latvian', 'lithuanian', 'maltese', 'polish', 
+    'portuguese', 'romanian', 'slovak', 'slovenian', 'spanish', 
+    'swedish', 'norwegian', 'russian', 'turkish'
+]);
+const languageToCountryCode = {
+  bulgarian: 'BG', croatian: 'HR', czech: 'CZ', danish: 'DK',
+  dutch: 'NL', english: 'GB', estonian: 'EE', finnish: 'FI',
+  french: 'FR', german: 'DE', greek: 'GR', hungarian: 'HU',
+  irish: 'IE', italian: 'IT', latvian: 'LV', lithuanian: 'LT',
+  maltese: 'MT', polish: 'PL', portuguese: 'PT', romanian: 'RO',
+  slovak: 'SK', slovenian: 'SI', spanish: 'ES', swedish: 'SE',
+  norwegian: 'NO', russian: 'RU', turkish: 'TR'
+};
 const SUPPORTED_LANGUAGES = ['german', 'norwegian', 'english', 'swedish', 'danish']; // <-- Add all your file names here (without .txt)
-const allValidWords = new Set();
+const wordLists = new Map();
 const practiceBtn = document.getElementById('practiceBtn');
 if (practiceBtn) {
     practiceBtn.addEventListener('click', () => {
@@ -273,11 +616,6 @@ firebase.initializeApp(firebaseConfig);
 // Create a database reference for your other functions to use
 const database = firebase.database();
 
-(async () => {
-  await loadAllWordLists();
-  // You can enable the "Create Game" button here after lists are loaded
-})();
-
 // --- NEW: Debounce timer for live validation ---
 let debounceTimer;
 
@@ -292,6 +630,35 @@ function germanFriendlyUpperCase(str) {
 }
 
 /**
+ * Inserts a special character into the secret word input field.
+ * @param {string} char The character to insert.
+ */
+function insertSpecialChar(char) {
+    const secretInput = document.getElementById('secretInput');
+    const maxLength = parseInt(secretInput.maxLength, 10);
+    
+    // Do nothing if the input is already full
+    if (secretInput.value.length >= maxLength) {
+        return;
+    }
+
+    const currentPos = secretInput.selectionStart;
+    const currentValue = secretInput.value;
+
+    // Insert the character at the current cursor position
+    const newValue = currentValue.slice(0, currentPos) + char + currentValue.slice(currentPos);
+    secretInput.value = newValue;
+
+    // Move the cursor to after the inserted character
+    secretInput.selectionStart = secretInput.selectionEnd = currentPos + 1;
+
+    // Trigger the input event to run validation and auto-population
+    secretInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+    // Return focus to the input field
+    secretInput.focus();
+}
+/**
  * Validates the secret word in the input field.
  * Checks length, dictionary, and database availability.
  * Updates the UI with a status indicator (✅, ❌, or loading spinner).
@@ -300,29 +667,36 @@ function germanFriendlyUpperCase(str) {
 async function validateSecretWord() {
     const secretInput = document.getElementById('secretInput');
     const indicator = document.getElementById('word-status-indicator');
+    const switchBtn = document.getElementById('switch-language-btn');
+    const langInput = document.getElementById('hintInput');
     const word = germanFriendlyUpperCase(secretInput.value.trim());
 
-    // Clear previous indicator and state
+    // --- Reset state on every validation check ---
     indicator.innerHTML = '';
     indicator.className = '';
+    switchBtn.style.display = 'none';
+    availableLanguagesForWord = [];
+    currentLanguageIndex = 0;
 
     if (!word) {
+        langInput.value = ''; // Clear language if word is cleared
         return false;
     }
 
     if (word.length !== 5 || !/^[A-ZÄÖÜßẞÆØÅ]+$/i.test(word)) {
         indicator.innerHTML = 'X';
         indicator.className = 'invalid';
+        langInput.value = ''; // Clear language if word is invalid
         return false;
     }
 
-    if (!allValidWords.has(word.toLowerCase())) {
+    if (!isValidWord(word)) {
         indicator.innerHTML = 'X';
         indicator.className = 'invalid';
+        langInput.value = ''; // Clear language if word is not in list
         return false;
     }
 
-    // Show loading spinner while we check the database
     indicator.className = 'loading';
 
     try {
@@ -330,24 +704,56 @@ async function validateSecretWord() {
         const snapshot = await gameRef.once('value');
 
         if (snapshot.exists()) {
-            // Word is taken
             indicator.innerHTML = 'X';
             indicator.className = 'invalid';
+            langInput.value = ''; // Clear language if word is taken
             return false;
         } else {
-            // Word is available and valid
             indicator.innerHTML = 'Y';
             indicator.className = 'valid';
+
+            // --- START: MODIFIED LANGUAGE LOGIC ---
+            const languages = findWordLanguages(word.toLowerCase());
+            availableLanguagesForWord = languages; // Store all found languages
+
+                        if (languages.length > 0) {
+                // --- START: MODIFIED LOGIC ---
+                // This block now prevents the language from being reset if the
+                // current selection is still valid for the entered word.
+                const currentLangValue = langInput.value.trim().toLowerCase();
+                const isCurrentLangValid = languages.includes(currentLangValue);
+
+                if (!langInput.value || !isCurrentLangValid) {
+                    // Only auto-populate if the input is empty or the language is no longer valid
+                    const displayLanguage = languages[0];
+                    langInput.value = displayLanguage.charAt(0).toUpperCase() + displayLanguage.slice(1);
+                    currentLanguageIndex = 0; // Reset index to the start
+                }
+                // --- END: MODIFIED LOGIC ---
+
+                if (languages.length > 1) {
+                    switchBtn.style.display = 'block';
+                }
+            }
+
+            // Auto-populate special characters
+            const specialCharsInWord = new Set([...word].filter(c => "ÄÖÜẞÆØÅ".includes(c)));
+            document.querySelectorAll(".specialCharCheckbox").forEach(cb => {
+                cb.checked = specialCharsInWord.has(cb.value);
+            });
+            updateHintContainerBackground();
+            saveSetupState();
+
             return true;
         }
     } catch (error) {
         console.error("Firebase check failed:", error);
-        indicator.innerHTML = '⚠️'; // Network error symbol
+        indicator.innerHTML = '⚠️';
         indicator.className = 'invalid';
+        langInput.value = '';
         return false;
     }
 }
-
 
 // Base64 helpers
 function base64Encode(str) { return btoa(unescape(encodeURIComponent(str))); }
@@ -550,6 +956,10 @@ async function startGame() {
     const inputHint1 = document.getElementById("hintInput").value.trim();
     const inputHint2 = document.getElementById("hintInput2").value.trim();
     const inputHint3 = document.getElementById("hintInput3").value.trim();
+    if (!inputHint1 || !inputHint2 || !inputHint3) {
+        showToast("Hints must be filled out.", "error");
+        return; // Stop the function if any required hints are missing
+    }
     const inputHint4 = Array.from(document.querySelectorAll(".specialCharCheckbox:checked")).map(cb => cb.value).join(", ");
     const inputFunFact = document.getElementById("funFactInput").value.trim();
 
@@ -847,46 +1257,63 @@ function validateHardMode(guess) {
 }
 
 async function loadAllWordLists() {
-  console.log("Loading all word lists...");
+    console.log("Loading all word lists...");
 
-  // Create an array of fetch promises
-  const promises = SUPPORTED_LANGUAGES.map(lang => {
-    const filePath = `${lang}.txt`; // e.g., "german.txt"
-    return fetch(filePath)
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Failed to fetch ${filePath}`);
-        }
-        return response.text();
-      });
-  });
-
-  try {
-    // Wait for all files to be fetched and returned as an array of text content
-    const allTexts = await Promise.all(promises);
-
-    // Process each text file's content
-    allTexts.forEach(text => {
-      const words = text.split(/\s+/); // Splits by any whitespace
-      words.forEach(word => {
-        if (word) { // Ensure we don't add empty strings
-          allValidWords.add(word.trim().toLowerCase());
-        }
-      });
+    const promises = SUPPORTED_LANGUAGES.map(lang => {
+        const filePath = `${lang}.txt`; // e.g., "german.txt"
+        return fetch(filePath)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch ${filePath}`);
+                }
+                return response.text();
+            })
+            .then(text => ({ lang, text })); // Pass language name along with text
     });
 
-    console.log(`All word lists loaded! Total valid words: ${allValidWords.size}`);
+    try {
+        const results = await Promise.all(promises);
 
-  } catch (error) {
-    console.error("Could not load one or more word lists:", error);
-    // Handle the error, maybe show a message to the user
-  }
+        results.forEach(({ lang, text }) => {
+            const words = text.split(/\s+/);
+            const wordSet = new Set();
+            words.forEach(word => {
+                if (word) {
+                    wordSet.add(word.trim().toLowerCase());
+                }
+            });
+            wordLists.set(lang, wordSet); // Add the language-specific set to our Map
+        });
+
+        const totalWords = Array.from(wordLists.values()).reduce((sum, set) => sum + set.size, 0);
+        console.log(`All word lists loaded! Total valid words: ${totalWords}`);
+
+    } catch (error) {
+        console.error("Could not load one or more word lists:", error);
+    }
+}
+
+// ADD these two new functions right after 'loadAllWordLists'
+
+/**
+ * Finds the language a given word belongs to.
+ * @param {string} word The word to search for (should be lowercase).
+ * @returns {string|null} The name of the language or null if not found.
+ */
+function findWordLanguages(word) {
+    const foundLanguages = []; // Initialize an empty array
+    // Loop through all languages without stopping at the first match
+    for (const [language, wordSet] of wordLists.entries()) {
+        if (wordSet.has(word)) {
+            foundLanguages.push(language); // Add every match to the array
+        }
+    }
+    return foundLanguages; // Return the array of all languages found
 }
 
 function isValidWord(word) {
-  // The check is now a simple, fast lookup in the Set.
-  // We convert the guessed word to lowercase to ensure case-insensitivity.
-  return allValidWords.has(word.toLowerCase());
+    // A word is valid if the array of languages is not empty.
+    return findWordLanguages(word.toLowerCase()).length > 0;
 }
 
 async function submitGuess() {
@@ -973,6 +1400,7 @@ async function submitGuess() {
         } else {
             currentRow++;
             currentCol = 0;
+            updateHintButtons(); 
             isAnimating = false;
             await saveOngoingGame(window.currentUsername, base64Encode(secret));
         }
@@ -1174,7 +1602,7 @@ function generateResultText(isForDisplay, history, colors, won, hintStatus) {
     const dateString = dateToUse.toLocaleDateString('en-GB', options);
 
     // The first line of the result text
-    let text = `WØRTLE (${won ? history.length : 'X'}/6)\n`;
+    let text = `WØRTLE (${won ? history.length : 'X'}/${rows})\n`;
     
     // Add the formatted date on the next line
     text += `${dateString}\n`;
@@ -1232,87 +1660,198 @@ function resetHints() {
     });
 }
 window.onload = async () => {
-    const loader = document.getElementById('loader');
+    await loadAllWordLists();
+
+    const loader = document.getElementById('loader');
     const mainContent = document.getElementById('mainContent');
     
-    // --- Step 1: Show the loader immediately ---
+    secret = getSecretFromURL();
+    const setupDiv = document.getElementById("setup");
+    const gameDiv = document.getElementById("game");
+    const messageEl = document.getElementById("message");
+    const headerSetup = document.getElementById("header-setup");
+
+    // Default state
+    gameDiv.style.display = "none";
+    headerSetup.style.display = "none";
+    setupDiv.style.display = "none";
     loader.style.display = 'block';
-    secret = getSecretFromURL();
-    const setupDiv = document.getElementById("setup");
-    const gameDiv = document.getElementById("game");
-    const messageEl = document.getElementById("message");
-    const headerSetup = document.getElementById("header-setup");
-    gameDiv.style.display = "none";
-    headerSetup.style.display = "none";
-    setupDiv.style.display = "none";
 
-    // Case 1: A secret word is present in the URL
-    if (secret) {
-        const gameRef = database.ref('games/' + secret);
-        const snapshot = await gameRef.once('value');
+    const params = new URLSearchParams(window.location.search);
+    const isScoreboardView = params.get('view') === 'scoreboard';
 
-        loader.style.display = 'none'; // Hide loader
+    if (secret && isScoreboardView) {
+        // This block runs ONLY if the URL has &view=scoreboard
+        headerSetup.style.display = "none";
+        gameDiv.style.display = "flex";
+        gameDiv.style.opacity = '0.5';
+        gameDiv.style.pointerEvents = 'none';
+        document.getElementById('giveUpBtn').style.display = 'none';
+        const modalContent = document.querySelector('#game-over-modal .modal-content');
+        if (modalContent) {
+            modalContent.style.minHeight = '400px'; // You can adjust this value
+        }
 
-        if (snapshot.exists()) {
-            // If the game exists, load the game UI
-            headerSetup.style.display = "flex"; // Use the correct header
-            gameDiv.style.display = "flex";
-            gameDiv.style.flexDirection = "column"; 
-            checkUserStatus();
-        } else {
-            // If the game does NOT exist, show the error message
-            messageEl.innerHTML = `The game you are looking for does not exist or has been deleted.<br><br><a href="/wordle.html" style="text-decoration: underline;">Create a new game</a>`;
-            messageEl.style.marginTop = '50px';
-        }
+        const modalOverlay = document.getElementById('game-over-overlay');
+        modalOverlay.classList.add('show');
+        showScoreboard();
 
-    } else {
-        // Case 2: No secret word in the URL, show the setup/host page
-        loader.style.display = 'none'; // Hide loader
-        headerSetup.style.display = "flex";
-        setupDiv.style.display = "block";
-    
-        const savedUsername = localStorage.getItem("gerNordleUsername");
-        if (savedUsername) {
-            listenForUserDeletion(savedUsername);
-        }
-        
-        setupUsernameInterface({
-            isGamePage: false,
-            containerId: 'setup-username-area',
-            inputId: 'usernameInputHost',
-            placeholder: 'Enter username'
-        });
-        loadSetupState();
-        
-        const setupInputs = [
-            document.getElementById('secretInput'),
-            document.getElementById('hintInput'),
-            document.getElementById('hintInput2'),
-            document.getElementById('hintInput3'),
-            document.getElementById('funFactInput')
-        ];
-        setupInputs.forEach(input => input.addEventListener('input', saveSetupState));
-        document.querySelectorAll('.specialCharCheckbox').forEach(cb => cb.addEventListener('change', saveSetupState));
-    }
+        // --- START: ADDED FIX ---
+        // Manually attach the event handler for the close button in this view
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        if (closeModalBtn) {
+            closeModalBtn.onclick = closeGameOverModal;
+        }
+
+        document.getElementById('modal-message').innerHTML = `Viewing Scoreboard...`;
+        document.getElementById('modal-summary').style.display = 'none';
+        document.getElementById('modalCopyBtn').style.display = 'none';
+        document.getElementById('showStatsBtn').style.display = 'none';
+        document.getElementById('showScoreboardBtn').style.display = 'none';
+        
+        loader.style.display = 'none';
+        mainContent.classList.add('loaded');
+        return;
+    }
+
+    if (secret) {
+        // This is the normal game-playing logic
+        const gameRef = database.ref('games/' + secret);
+        const snapshot = await gameRef.once('value');
+
+        loader.style.display = 'none';
+
+        if (snapshot.exists()) {
+            headerSetup.style.display = "flex";
+            gameDiv.style.display = "flex";
+            gameDiv.style.flexDirection = "column"; 
+            checkUserStatus();
+        } else {
+            messageEl.innerHTML = `The game you are looking for does not exist or has been deleted.<br><br><a href="/wortle" style="text-decoration: underline;">Create a new game</a>`;
+            messageEl.style.marginTop = '50px';
+        }
+
+    } else {
+        // This is the normal setup/host page logic
+        loader.style.display = 'none';
+        headerSetup.style.display = "flex";
+        setupDiv.style.display = "block";
+    
+        const savedUsername = localStorage.getItem("gerNordleUsername");
+        if (savedUsername) {
+            listenForUserDeletion(savedUsername);
+        }
+        
+        setupUsernameInterface({
+            isGamePage: false,
+            containerId: 'setup-username-area',
+            inputId: 'usernameInputHost',
+            placeholder: 'Enter username'
+        });
+
+        loadSetupState();
+        validateSecretWord();
+        
+        const setupInputs = [
+            document.getElementById('secretInput'),
+            document.getElementById('hintInput'),
+            document.getElementById('hintInput2'),
+            document.getElementById('hintInput3'),
+            document.getElementById('funFactInput')
+        ];
+        setupInputs.forEach(input => input.addEventListener('input', saveSetupState));
+        // --- THIS LINE IS NOW CORRECTED ---
+        document.querySelectorAll('.specialCharCheckbox').forEach(cb => cb.addEventListener('change', saveSetupState));
+    }
 
     loader.style.display = 'none';
     mainContent.classList.add('loaded');
 
-    // This listener is for the host page
-    const secretInput = document.getElementById('secretInput');
-    if (secretInput) {
-        secretInput.addEventListener('input', () => {
-            clearTimeout(debounceTimer);
-            const indicator = document.getElementById('word-status-indicator');
-            indicator.innerHTML = ''; 
-            indicator.className = 'loading'; 
-            debounceTimer = setTimeout(() => {
-                validateSecretWord();
-            }, 500); 
-        });
-    }
+    const secretInput = document.getElementById('secretInput');
+    if (secretInput) {
+        secretInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            const indicator = document.getElementById('word-status-indicator');
+            indicator.innerHTML = ''; 
+            indicator.className = 'loading'; 
+            debounceTimer = setTimeout(() => {
+                validateSecretWord();
+            }, 500); 
+        });
+    }
 };
+function renderPlayedGames(snapshot) {
+    playedGamesList.innerHTML = '';
+    const titleElement = document.getElementById('played-games-title');
 
+    if (!snapshot.exists()) {
+        if (titleElement) titleElement.textContent = 'Played Games (0)';
+        playedGamesList.innerHTML = '<p style="padding: 10px;">You have not played any games.</p>';
+        if (resolvePlayedGames) {
+            resolvePlayedGames();
+            resolvePlayedGames = null;
+        }
+        return;
+    }
+
+    const gamesObject = snapshot.val();
+    const games = [];
+    for (const word in gamesObject) {
+        games.push({ word: word, ...gamesObject[word] });
+    }
+
+    if (titleElement) titleElement.textContent = `Played Games (${games.length})`;
+
+    if (games.length === 0) {
+        playedGamesList.innerHTML = '<p style="padding: 10px;">You have not played any games.</p>';
+        if (resolvePlayedGames) {
+            resolvePlayedGames();
+            resolvePlayedGames = null;
+        }
+        return;
+    }
+    
+    const currentUsername = localStorage.getItem("gerNordleUsername");
+
+    games.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+    const metaPromises = games.map(game => database.ref(`games/${game.word}/metadata`).once('value'));
+
+    Promise.all(metaPromises).then(metaSnapshots => {
+        const fragment = document.createDocumentFragment();
+        metaSnapshots.forEach((metaSnap, idx) => {
+            if (metaSnap.exists()) {
+                const meta = metaSnap.val();
+                const gameData = games[idx];
+                const gameLink = document.createElement('a');
+                gameLink.href = generateShareURL(meta.word, meta.hint1, meta.hint2, meta.hint3, meta.hint4, meta.funFact);
+                
+                const wordSpan = document.createElement('span');
+                let wordText = (gameData.status === 'won' || gameData.status === 'lost') ? meta.word : '?????';
+
+                if (meta.host && meta.host === currentUsername) {
+                    wordText += ` <span style="color: #951414; font-weight: bold;">H</span>`;
+                }
+                wordSpan.innerHTML = wordText;
+
+                const statusSpan = document.createElement('span');
+                statusSpan.className = 'game-status';
+                if (gameData.status === 'won') statusSpan.textContent = `Won (${gameData.guesses}/${rows})`;
+                else if (gameData.status === 'lost') statusSpan.textContent = 'Lost';
+                else statusSpan.textContent = 'In progress';
+                
+                gameLink.appendChild(wordSpan);
+                gameLink.appendChild(statusSpan);
+                fragment.appendChild(gameLink);
+            }
+        });
+        playedGamesList.appendChild(fragment);
+
+        if (resolvePlayedGames) {
+            resolvePlayedGames();
+            resolvePlayedGames = null;
+        }
+    });
+}
 async function saveOngoingGame(username, encodedSecret) {
     if (!username || !encodedSecret) return;
     
@@ -1480,27 +2019,55 @@ function setInputsDisabled(state) {
     }
   });
 }
+
 function updateHintButtons() {
-    const hintBtn1 = document.getElementById("hintBtn1");
-    const hintBtn2 = document.getElementById("hintBtn2");
-    const hintBtn3 = document.getElementById("hintBtn3");
-    const hintBtn4 = document.getElementById("hintBtn4");
+    const hintButtons = [
+        document.getElementById("hintBtn1"),
+        document.getElementById("hintBtn2"),
+        document.getElementById("hintBtn3"),
+        document.getElementById("hintBtn4")
+    ];
+    const hintUnlockMessage = document.getElementById('hint-unlock-message');
+    const hintUnlockNextMessage = document.getElementById('hint-unlock-next-message'); // Get the new message element
+    const hintButtonsContainer = document.getElementById('hintButtonsContainer');
 
-    // Hide all hint buttons by default.
-    hintBtn1.style.display = "none";
-    hintBtn2.style.display = "none";
-    hintBtn3.style.display = "none";
-    hintBtn4.style.display = "none";
+    const hints = [customHint1, customHint2, customHint3, customHint4];
+    const hintUsedFlags = [hintUsed1, hintUsed2, hintUsed3, hintUsed4];
+    const hintExpandedFlags = [hintExpanded1, hintExpanded2, hintExpanded3, hintExpanded4];
 
-    let hasAnyHints = false; // Track if any hints are available
+    const guessCount = guessHistory.length;
+    let hasAnyAvailableHints = hints.some(hint => hint && hint.trim() !== "");
+    
+    document.getElementById("hintButtons").style.display = hasAnyAvailableHints ? "block" : "none";
 
-    // Helper function to restore a single hint button's state
-    function restoreHintButton(btn, hintContent, used, expanded) {
-        if (hintContent && hintContent.trim() !== "") {
-            hasAnyHints = true; // Mark that we have at least one hint
+    if (guessCount < 2) {
+        hintUnlockMessage.textContent = "Enter at least 2 guesses to start unlocking hints.";
+        hintUnlockMessage.style.display = 'block';
+        hintButtonsContainer.style.display = 'none';
+        hintUnlockNextMessage.style.display = 'none'; // Ensure next-hint message is hidden
+        return;
+    }
 
-            // Show the button in the pop-up.
-            btn.style.display = "inline-flex";
+    hintUnlockMessage.style.display = 'none';
+    hintButtonsContainer.style.display = 'flex';
+
+    const unlockThresholds = [2, 3, 4, 5];
+
+    for (let i = 0; i < 4; i++) {
+        const btn = hintButtons[i];
+        const hintContent = hints[i];
+        const isUnlocked = guessCount >= unlockThresholds[i];
+        
+        if (!hintContent || hintContent.trim() === "") {
+            btn.style.display = "none";
+            continue;
+        }
+
+        btn.style.display = isUnlocked ? "inline-flex" : "none";
+
+        if (isUnlocked) {
+            const used = hintUsedFlags[i];
+            const expanded = hintExpandedFlags[i];
 
             if (used) {
                 btn.classList.add('clicked-hint');
@@ -1521,21 +2088,28 @@ function updateHintButtons() {
                 const hintTextSpan = btn.querySelector('.hint-text');
                 if (hintTextSpan) {
                     hintTextSpan.classList.remove('visible');
-                    hintTextSpan.textContent = ""; // Clear hidden hint text
+                    hintTextSpan.textContent = "";
                 }
                 btn.querySelector('.hint-label').classList.remove('hidden');
             }
         }
     }
 
-    // Apply restoration logic for each hint button
-    restoreHintButton(hintBtn1, customHint1, hintUsed1, hintExpanded1);
-    restoreHintButton(hintBtn2, customHint2, hintUsed2, hintExpanded2);
-    restoreHintButton(hintBtn3, customHint3, hintUsed3, hintExpanded3);
-    restoreHintButton(hintBtn4, customHint4, hintUsed4, hintExpanded4);
+    // --- START: NEW LOGIC FOR "UNLOCK NEXT" MESSAGE ---
+    hintUnlockNextMessage.style.display = 'none'; // Hide by default
 
-    // Show or hide the "Need a hint?" container based on availability
-    document.getElementById("hintButtons").style.display = hasAnyHints ? "block" : "none";
+    // Determine if the *next* potential hint exists
+    let nextHintExists = false;
+    if (guessCount === 2 && hints[1] && hints[1].trim() !== "") nextHintExists = true;
+    if (guessCount === 3 && hints[2] && hints[2].trim() !== "") nextHintExists = true;
+    if (guessCount === 4 && hints[3] && hints[3].trim() !== "") nextHintExists = true;
+
+    // Show the message if appropriate
+    if (guessCount >= 2 && guessCount < 5 && nextHintExists) {
+        hintUnlockNextMessage.textContent = "Enter one more guess to unlock another hint.";
+        hintUnlockNextMessage.style.display = 'block';
+    }
+    // --- END: NEW LOGIC FOR "UNLOCK NEXT" MESSAGE ---
 }
 
 function bindModalButtons(savedGuessHistory, savedColorHistory, isSolved, savedHintStatus) {
@@ -1621,66 +2195,70 @@ if (hintPopup) {
 // --- Add this new function to your script ---
 
 async function generateRandomWord() {
-  const generateBtn = document.getElementById("generateWordBtn");
-  const secretInput = document.getElementById("secretInput");
-  const indicator = document.getElementById("word-status-indicator");
+    const generateBtn = document.getElementById("generateWordBtn");
+    const secretInput = document.getElementById("secretInput");
+    const indicator = document.getElementById("word-status-indicator");
 
-  if (allValidWords.size === 0) {
-    showToast("Word lists are still loading. Please wait a moment and try again.", "error");
-    return;
-  }
-
-  // Set the UI to a "loading" state
-  if (generateBtn) generateBtn.disabled = true;
-  secretInput.value = '';
-  indicator.innerHTML = '';
-  indicator.className = 'loading';
-
-  const allWordsArray = [...allValidWords];
-  let foundWord = null;
-  let attempts = 0;
-  const maxAttempts = 50; // Safety limit to prevent an infinite loop
-  let hadError = false;
-
-  while (!foundWord && attempts < maxAttempts) {
-    attempts++;
-    const randomIndex = Math.floor(Math.random() * allWordsArray.length);
-    const randomWord = allWordsArray[randomIndex].toUpperCase();
-
-    try {
-      const gameRef = database.ref('games/' + randomWord);
-      const snapshot = await gameRef.once('value');
-      if (!snapshot.exists()) {
-        foundWord = randomWord; // We found an available word!
-      }
-    } catch (error) {
-      console.error("Database error while finding a random word:", error);
-      hadError = true;
-      break; // Exit the loop on a database error
+    // CHANGED: Check the new wordLists Map instead of the old Set.
+    if (wordLists.size === 0) {
+        showToast("Word lists are still loading. Please wait a moment and try again.", "error");
+        return;
     }
-  }
 
-  // --- Final UI update after the search is complete ---
+    // Set the UI to a "loading" state
+    if (generateBtn) generateBtn.disabled = true;
+    secretInput.value = '';
+    indicator.innerHTML = '';
+    indicator.className = 'loading';
 
-  // Always remove the loading spinner
-  indicator.className = '';
-  indicator.innerHTML = '';
+    // CHANGED: Create a flat array of all words from all languages in the Map.
+    const allWordsArray = [...wordLists.values()].flatMap(wordSet => [...wordSet]);
+    let foundWord = null;
+    let attempts = 0;
+    const maxAttempts = 50; // Safety limit to prevent an infinite loop
+    let hadError = false;
 
-  if (foundWord) {
-    secretInput.value = foundWord;
-  } else {
-    // If we failed, show an error icon briefly
-    console.warn("Could not find an available random word after several attempts.");
-    if (hadError) {
-        indicator.innerHTML = '⚠️';
-        indicator.className = 'invalid';
-        // Clear the error icon after a few seconds
-        setTimeout(() => { indicator.innerHTML = ''; indicator.className = ''; }, 2500);
+    while (!foundWord && attempts < maxAttempts) {
+        attempts++;
+        const randomIndex = Math.floor(Math.random() * allWordsArray.length);
+        const randomWord = allWordsArray[randomIndex].toUpperCase();
+
+        try {
+            const gameRef = database.ref('games/' + randomWord);
+            const snapshot = await gameRef.once('value');
+            if (!snapshot.exists()) {
+                foundWord = randomWord; // We found an available word!
+            }
+        } catch (error) {
+            console.error("Database error while finding a random word:", error);
+            hadError = true;
+            break; // Exit the loop on a database error
+        }
     }
-  }
 
-  // Always re-enable the button
-  if (generateBtn) generateBtn.disabled = false;
+    // --- Final UI update after the search is complete ---
+
+    // Always remove the loading spinner
+    indicator.className = '';
+    indicator.innerHTML = '';
+
+    if (foundWord) {
+        secretInput.value = foundWord;
+        // ADDED: Call validateSecretWord() to trigger the check mark AND auto-populate hints.
+        validateSecretWord();
+    } else {
+        // If we failed, show an error icon briefly
+        console.warn("Could not find an available random word after several attempts.");
+        if (hadError) {
+            indicator.innerHTML = '⚠️';
+            indicator.className = 'invalid';
+            // Clear the error icon after a few seconds
+            setTimeout(() => { indicator.innerHTML = ''; indicator.className = ''; }, 2500);
+        }
+    }
+
+    // Always re-enable the button
+    if (generateBtn) generateBtn.disabled = false;
 }
 
 // --- Add this event listener to make the button work ---
@@ -1786,7 +2364,7 @@ function fetchAndDisplayScoreboard() {
             <div class="summary-stat">
                 <span class="stat-label">Avg. Guesses</span>
                 <div class="stat-bar-container">
-                    <div class="stat-bar" style="width: ${(avgGuesses / 6) * 100}%;">${avgGuesses.toFixed(1)}</div>
+                    <div class="stat-bar" style="width: ${(avgGuesses / rows) * 100}%;">${avgGuesses.toFixed(1)}</div>
                 </div>
             </div>
         `;
@@ -1835,11 +2413,21 @@ function fetchAndDisplayScoreboard() {
 }
 
 function closeGameOverModal() {
-  const overlay = document.getElementById('game-over-overlay');
-  if (overlay) {
-    overlay.classList.remove('show');
-  }
-  hideScoreboard();
+    // Check the URL to see if we are in the special scoreboard view
+    const params = new URLSearchParams(window.location.search);
+    const isScoreboardView = params.get('view') === 'scoreboard';
+
+    if (isScoreboardView) {
+        // If we are in scoreboard view, navigate back to the main page.
+        history.back();
+    } else {
+        // Otherwise, just hide the modal as usual.
+        const overlay = document.getElementById('game-over-overlay');
+        if (overlay) {
+            overlay.classList.remove('show');
+        }
+        hideScoreboard();
+    }
 }
 
 function generateGuessHistoryHTML(guessHistory, colorHistory) {
@@ -1948,14 +2536,7 @@ async function registerUser(inputId, pinInputId, config) {
             // Automatically log the user in after registration.
             localStorage.setItem("gerNordleUsername", username);
             localStorage.setItem("gerNordleUserPin", pin);
-            window.location.reload();
-            
-            // Refresh the UI
-            if (config.isGamePage) {
-                checkUserStatus();
-            } else {
-                setupUsernameInterface(config);
-            }
+            showLanguagePopup(username);
         }
     } catch (error) {
         console.error("Registration error:", error);
@@ -2122,7 +2703,6 @@ function renderHostedGames(snapshot) {
     if (!snapshot.exists()) {
         if (titleElement) titleElement.textContent = 'Hosted Games (0)';
         hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
-        // ✅ Signal that loading is complete, even if the list is empty.
         if (resolveHostedGames) {
             resolveHostedGames();
             resolveHostedGames = null;
@@ -2136,11 +2716,10 @@ function renderHostedGames(snapshot) {
         games.push({ word: word, ...gamesObject[word] });
     }
     
-    if (titleElement) titleElement.textContent = `My Games (${games.length})`;
+    if (titleElement) titleElement.textContent = `Hosted Games (${games.length})`;
 
     if (games.length === 0) {
         hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
-        // ✅ Signal that loading is complete for an empty list.
         if (resolveHostedGames) {
             resolveHostedGames();
             resolveHostedGames = null;
@@ -2164,6 +2743,14 @@ function renderHostedGames(snapshot) {
                 gameLink.textContent = meta.word;
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'game-item-actions';
+
+                const scoreboardBtn = document.createElement('button');
+                scoreboardBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>`;
+                scoreboardBtn.title = 'View Scoreboard';
+                scoreboardBtn.onclick = () => {
+                    window.location.href = fullUrl;
+                };
+
                 const copyBtn = document.createElement('button');
                 copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
                 copyBtn.title = 'Copy Link';
@@ -2180,8 +2767,11 @@ function renderHostedGames(snapshot) {
                 deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
                 deleteBtn.title = 'Delete Game';
                 deleteBtn.onclick = () => deleteGame(meta.word);
+                
+                actionsDiv.appendChild(scoreboardBtn);
                 actionsDiv.appendChild(copyBtn);
                 actionsDiv.appendChild(deleteBtn);
+                
                 listItem.appendChild(gameLink);
                 listItem.appendChild(actionsDiv);
                 fragment.appendChild(listItem);
@@ -2189,24 +2779,23 @@ function renderHostedGames(snapshot) {
         });
         hostedGamesList.appendChild(fragment);
 
-        // ✅ Signal that loading is complete after rendering the list.
         if (resolveHostedGames) {
             resolveHostedGames();
-            resolveHostedGames = null; // Set to null so we only do this on the initial load.
+            resolveHostedGames = null;
         }
     });
 }
 
-function renderPlayedGames(snapshot) {
-    playedGamesList.innerHTML = '';
-    const titleElement = document.getElementById('played-games-title');
+function renderHostedGames(snapshot) {
+    hostedGamesList.innerHTML = '';
+    const titleElement = document.getElementById('hosted-games-title');
 
     if (!snapshot.exists()) {
-        if (titleElement) titleElement.textContent = 'Played Games (0)';
-        playedGamesList.innerHTML = '<p style="padding: 10px;">You have not played any games.</p>';
-        if (resolvePlayedGames) {
-            resolvePlayedGames();
-            resolvePlayedGames = null;
+        if (titleElement) titleElement.textContent = 'Hosted Games (0)';
+        hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
+        if (resolveHostedGames) {
+            resolveHostedGames();
+            resolveHostedGames = null;
         }
         return;
     }
@@ -2216,20 +2805,17 @@ function renderPlayedGames(snapshot) {
     for (const word in gamesObject) {
         games.push({ word: word, ...gamesObject[word] });
     }
-
-    if (titleElement) titleElement.textContent = `Played Games (${games.length})`;
+    
+    if (titleElement) titleElement.textContent = `Hosted Games (${games.length})`;
 
     if (games.length === 0) {
-        playedGamesList.innerHTML = '<p style="padding: 10px;">You have not played any games.</p>';
-        if (resolvePlayedGames) {
-            resolvePlayedGames();
-            resolvePlayedGames = null;
+        hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
+        if (resolveHostedGames) {
+            resolveHostedGames();
+            resolveHostedGames = null;
         }
         return;
     }
-    
-    // ✅ Get the current user's name to check against the host.
-    const currentUsername = localStorage.getItem("gerNordleUsername");
 
     games.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
     const metaPromises = games.map(game => database.ref(`games/${game.word}/metadata`).once('value'));
@@ -2239,35 +2825,58 @@ function renderPlayedGames(snapshot) {
         metaSnapshots.forEach((metaSnap, idx) => {
             if (metaSnap.exists()) {
                 const meta = metaSnap.val();
-                const gameData = games[idx];
+                const listItem = document.createElement('div');
+                listItem.className = 'game-list-item';
                 const gameLink = document.createElement('a');
-                gameLink.href = generateShareURL(meta.word, meta.hint1, meta.hint2, meta.hint3, meta.funFact);
                 
-                const wordSpan = document.createElement('span');
-                let wordText = (gameData.status === 'won' || gameData.status === 'lost') ? meta.word : '?????';
+                // --- START: MODIFIED URL LOGIC ---
+                let fullUrl = generateShareURL(meta.word, meta.hint1, meta.hint2, meta.hint3, meta.hint4, meta.funFact);
+                const scoreboardUrl = fullUrl + '&view=scoreboard'; // Create the special scoreboard URL
+                // --- END: MODIFIED URL LOGIC ---
 
-                // ✅ Check if the current user was the host of this game.
-                if (meta.host && meta.host === currentUsername) {
-                    wordText += ` <span style="color: #951414; font-weight: bold;">H</span>`;
-                }
-                wordSpan.innerHTML = wordText;
-
-                const statusSpan = document.createElement('span');
-                statusSpan.className = 'game-status';
-                if (gameData.status === 'won') statusSpan.textContent = `Won (${gameData.guesses}/6)`;
-                else if (gameData.status === 'lost') statusSpan.textContent = 'Lost';
-                else statusSpan.textContent = 'In progress';
+                gameLink.href = fullUrl;
+                gameLink.textContent = meta.word;
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'game-item-actions';
                 
-                gameLink.appendChild(wordSpan);
-                gameLink.appendChild(statusSpan);
-                fragment.appendChild(gameLink);
+                const scoreboardBtn = document.createElement('button');
+                scoreboardBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>`;
+                scoreboardBtn.title = 'View Scoreboard';
+                scoreboardBtn.onclick = () => {
+                    window.location.href = scoreboardUrl; // Use the new URL
+                };
+
+                const copyBtn = document.createElement('button');
+                copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
+                copyBtn.title = 'Copy Link';
+                copyBtn.onclick = () => {
+                    const urlToCopy = meta.shortUrl || fullUrl;
+                    navigator.clipboard.writeText(urlToCopy).then(() => {
+                        copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                        setTimeout(() => {
+                            copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
+                        }, 2000);
+                    });
+                };
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+                deleteBtn.title = 'Delete Game';
+                deleteBtn.onclick = () => deleteGame(meta.word);
+                
+                actionsDiv.appendChild(scoreboardBtn);
+                actionsDiv.appendChild(copyBtn);
+                actionsDiv.appendChild(deleteBtn);
+                
+                listItem.appendChild(gameLink);
+                listItem.appendChild(actionsDiv);
+                fragment.appendChild(listItem);
             }
         });
-        playedGamesList.appendChild(fragment);
+        hostedGamesList.appendChild(fragment);
 
-        if (resolvePlayedGames) {
-            resolvePlayedGames();
-            resolvePlayedGames = null;
+        if (resolveHostedGames) {
+            resolveHostedGames();
+            resolveHostedGames = null;
         }
     });
 }
@@ -2278,33 +2887,27 @@ function closeAccountSidebar() {
     accountOverlay.classList.remove('show');
     mainContent.inert = false;
 
-    // Detach the game list listeners
+    // Detach all real-time Firebase listeners to prevent memory leaks
     if (hostedGamesRef) {
         hostedGamesRef.off('value', renderHostedGames);
     }
     if (playedGamesRef) {
         playedGamesRef.off('value', renderPlayedGames);
     }
-
-    // ✅ NEW: Detach the stats listener when the sidebar is closed.
     if (statsRef && statsListener) {
         statsRef.off('value', statsListener);
     }
-
-    // Reset all sidebar titles to their default state
-    const sidebarTitle = document.getElementById('account-sidebar-title');
-    const hostedTitle = document.getElementById('hosted-games-title');
-    const playedTitle = document.getElementById('played-games-title');
-    
-    if (sidebarTitle) sidebarTitle.textContent = 'My Account';
-    if (hostedTitle) hostedTitle.textContent = 'Hosted Games';
-    if (playedTitle) playedTitle.textContent = 'Played Games';
+    if (badgesRef && badgesListener) {
+        badgesRef.off('value', badgesListener);
+    }
 }
 
 let statsRef = null;
 let statsListener = null;
 
 // This is the improved openAccountSidebar function
+// REPLACE your existing openAccountSidebar function with this one
+
 async function openAccountSidebar() {
     const username = localStorage.getItem("gerNordleUsername");
     if (!username) {
@@ -2312,9 +2915,9 @@ async function openAccountSidebar() {
         return;
     }
 
-    const sidebarTitle = document.getElementById('account-sidebar-title');
-    if (sidebarTitle) sidebarTitle.textContent = username.toUpperCase();
-
+    // Get references to the new username text and the flag element
+    const usernameText = document.getElementById('account-username-text');
+    const sidebarFlag = document.getElementById('account-sidebar-flag');
     const sidebarLoader = document.getElementById('sidebar-loader');
     const sidebarContent = document.getElementById('sidebar-content');
     
@@ -2323,43 +2926,61 @@ async function openAccountSidebar() {
     mainContent.inert = true;
     sidebarLoader.style.display = 'block';
     sidebarContent.classList.remove('loaded');
+    
+    // Set default state
+    if (sidebarFlag) sidebarFlag.textContent = '';
+    if (usernameText) usernameText.textContent = username.toUpperCase();
 
     try {
         const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
 
-        // Fetch and render badges (this is fine as is)
-        const badgesRef = database.ref(`userProfiles/${sanitizedUsername}/badges`);
-        const badgesSnapshot = await badgesRef.once('value');
-        const badgesContainer = document.getElementById('account-badges-container');
-        badgesContainer.innerHTML = ''; 
-
-        if (badgesSnapshot.exists()) {
-            const earnedBadges = badgesSnapshot.val();
-            for (const badgeId in earnedBadges) {
-                if (earnedBadges[badgeId] === true && BADGE_DEFINITIONS[badgeId]) {
-                    const badgeInfo = BADGE_DEFINITIONS[badgeId];
-                    const badgeElement = document.createElement('div');
-                    badgeElement.className = 'badge';
-                    badgeElement.textContent = badgeInfo.name;
-                    badgeElement.title = badgeInfo.description;
-                    badgesContainer.appendChild(badgeElement);
-                }
+        // Fetch user's native language for the flag
+        const langRef = database.ref(`userProfiles/${sanitizedUsername}/nativeLanguage`);
+        const langSnapshot = await langRef.once('value');
+        const nativeLanguage = langSnapshot.val();
+        
+        // Set the username in its dedicated span
+        if (usernameText) usernameText.textContent = username.toUpperCase();
+        
+        // Set the flag in its dedicated span
+        if (nativeLanguage) {
+            const countryCode = languageToCountryCode[nativeLanguage.toLowerCase()];
+            if (countryCode && sidebarFlag) {
+                sidebarFlag.textContent = getFlagEmoji(countryCode);
             }
         }
+        
+        // (The rest of the function remains the same)
+        const badgesRef = database.ref(`userProfiles/${sanitizedUsername}/badges`);
+        badgesRef.on('value', (badgesSnapshot) => {
+            const badgesContainer = document.getElementById('account-badges-container');
+            badgesContainer.innerHTML = '';
+            if (badgesSnapshot.exists()) {
+                const earnedBadges = badgesSnapshot.val();
+                for (const badgeId in earnedBadges) {
+                    if (earnedBadges[badgeId] === true && BADGE_DEFINITIONS[badgeId]) {
+                        const badgeInfo = BADGE_DEFINITIONS[badgeId];
+                        const badgeElement = document.createElement('div');
+                        badgeElement.className = 'badge';
+                        badgeElement.textContent = badgeInfo.name;
+                        badgeElement.title = badgeInfo.description;
+                        badgesContainer.appendChild(badgeElement);
+                    }
+                }
+            }
+        });
 
         const hostedGamesLoaded = new Promise(resolve => { resolveHostedGames = resolve; });
         const playedGamesLoaded = new Promise(resolve => { resolvePlayedGames = resolve; });
 
-        // Attach listeners for game lists
         hostedGamesRef = database.ref(`userProfiles/${sanitizedUsername}/hostedGames`);
         hostedGamesRef.on('value', renderHostedGames);
 
         playedGamesRef = database.ref(`userProfiles/${sanitizedUsername}/playedGames`);
         playedGamesRef.on('value', renderPlayedGames);
         
-        // ✅ This ONE listener will now handle ALL stats rendering.
         statsRef = database.ref(`userProfiles/${sanitizedUsername}/stats`);
-        statsListener = statsRef.on('value', renderAccountStats); // This now renders the graph too
+        statsListener = statsRef.on('value', renderAccountStats);
         
         await Promise.all([hostedGamesLoaded, playedGamesLoaded]);
 
@@ -2372,8 +2993,6 @@ async function openAccountSidebar() {
         console.error("Error loading account sidebar:", error);
     }
 }
-
-
 accountBtn.addEventListener('click', openAccountSidebar);
 closeAccountBtn.addEventListener('click', closeAccountSidebar);
 accountOverlay.addEventListener('click', closeAccountSidebar);
@@ -2498,10 +3117,44 @@ async function saveCompletedGameData(won) {
             if (winStreak >= 3) awardBadge(username, 'on_a_roll');
             if (winStreak >= 10) awardBadge(username, 'dominating');
 
+            // --- START: REORDERED AND CORRECTED BADGE LOGIC ---
+
+            // 1. FIRST, record the language from the current win.
+            if (customHint1) {
+                const lang = customHint1.trim().toLowerCase();
+                if (SUPPORTED_LANGUAGES.includes(lang)) {
+                     await userProfileRef.child('playedLanguages').child(lang).set(true);
+                     // Also update our in-memory copy of the profile for the next checks
+                     if (!userProfile.playedLanguages) userProfile.playedLanguages = {};
+                     userProfile.playedLanguages[lang] = true;
+                }
+            }
+
+            // 2. SECOND, check for language-based badges using the up-to-date data.
+            if (userProfile.playedLanguages) {
+                const solvedLangs = new Set(Object.keys(userProfile.playedLanguages));
+
+                // Check for Polyglot
+                if (solvedLangs.size >= 5) {
+                    awardBadge(username, 'polyglot');
+                }
+
+                // Check for Globetrotter
+                const nativeLang = userProfile.nativeLanguage ? userProfile.nativeLanguage.toLowerCase() : null;
+                if (nativeLang) {
+                    const nonNativeLangs = SUPPORTED_LANGUAGES.filter(lang => lang !== nativeLang);
+                    const hasSolvedAllNonNative = nonNativeLangs.every(lang => solvedLangs.has(lang));
+                    
+                    if (nonNativeLangs.length >= 4 && hasSolvedAllNonNative) {
+                        awardBadge(username, 'globetrotter');
+                    }
+                }
+            }
+
             // ✅ ADDED BACK: All other win-based badges belong here.
             if (guessHistory.length === 1) awardBadge(username, 'prodigy');
             if (guessHistory.length <= 2) awardBadge(username, 'genius');
-            if (currentRow === 5) awardBadge(username, 'clutch_victory');
+            if (currentRow === rows - 1) awardBadge(username, 'clutch_victory');
             const hasAbsentLetters = colorHistory.flat().includes('absent');
             if (!hasAbsentLetters) awardBadge(username, 'flawless');
             const hintsAvailable = customHint1 || customHint2 || customHint3 || customHint4;
@@ -2514,6 +3167,15 @@ async function saveCompletedGameData(won) {
             const currentHour = new Date().getHours();
             if (currentHour >= 0 && currentHour <= 4) awardBadge(username, 'night_owl');
             if (currentHour >= 5 && currentHour <= 8) awardBadge(username, 'early_bird');
+
+            // 1. Check for "Consonant Crusher"
+            const vowels = new Set(['A', 'E', 'I', 'O', 'U', 'Ä', 'Ö', 'Ü', 'Æ', 'Ø', 'Å']);
+            const uniqueConsonants = new Set(
+                [...secret].filter(char => !vowels.has(char.toUpperCase()))
+            );
+            if (uniqueConsonants.size >= 4) {
+                awardBadge(username, 'consonant_crusher');
+            }
 
         } else {
             // Reset win streak on a loss
@@ -2534,18 +3196,6 @@ async function saveCompletedGameData(won) {
             const playerCount = Object.keys(data).filter(key => key !== 'metadata' && key !== 'players').length;
             if (playerCount >= 10) {
                 awardBadge(hostName, 'crowd_pleaser');
-            }
-        }
-
-        // Check Polyglot badge
-        if (customHint1) {
-            const lang = customHint1.trim().toLowerCase();
-            if (SUPPORTED_LANGUAGES.includes(lang)) {
-                 await userProfileRef.child('playedLanguages').child(lang).set(true);
-                 const playedLangSnapshot = await userProfileRef.child('playedLanguages').once('value');
-                 if (playedLangSnapshot.numChildren() >= 5) {
-                     awardBadge(username, 'polyglot');
-                 }
             }
         }
 
@@ -2916,7 +3566,7 @@ async function awardBadge(username, badgeId) {
  * Renders a Wordle-style guess distribution graph inside a given container.
  * @param {HTMLElement} containerElement - The div where the graph should be drawn.
  * @param {object} distributionData - The user's guessDistribution stats.
- * @param {number|null} highlightRow - The row number (1-6) to highlight (optional).
+ * @param {number|null} highlightRow - The row number (1-8) to highlight (optional).
  */
 function renderGuessDistribution(containerElement, distributionData, highlightRow = null) {
     if (!containerElement) return;
@@ -2927,7 +3577,7 @@ function renderGuessDistribution(containerElement, distributionData, highlightRo
     const values = Object.values(distribution);
     const maxValue = values.length > 0 ? Math.max(...values) : 1;
 
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= rows; i++) {
         const count = distribution[i] || 0;
         const row = document.createElement('div');
         row.className = 'graph-row';
@@ -2958,6 +3608,91 @@ function handleGiveUp() {
     if (window.confirm("Are you sure you want to end the game?")) {
         endGame(false);
     }
+}
+
+/**
+ * Shows a popup to collect the user's native language after registration.
+ * @param {string} username The newly registered user's name.
+ */
+function showLanguagePopup(username) {
+    const overlay = document.getElementById('language-popup-overlay');
+    const popup = document.getElementById('language-popup');
+    const title = document.getElementById('language-popup-title');
+    const saveBtn = document.getElementById('language-popup-save-btn');
+    const languageInput = document.getElementById('language-popup-input');
+
+    // Personalize the welcome message
+    title.textContent = `Welcome, ${username}!`;
+    
+    // Make the popup visible
+    overlay.classList.add('show');
+    popup.classList.add('show');
+    
+    // Handle the save button click
+    saveBtn.onclick = async () => {
+        const nativeLanguage = languageInput.value.trim();
+        
+        // --- START: VALIDATION LOGIC ---
+        // Check if the input (in lowercase) exists in our Set of valid languages.
+        if (!validLanguages.has(nativeLanguage.toLowerCase())) {
+            showToast('Please enter a valid language.', 'error');
+            return; // Stop the function if the language is not valid
+        }
+        // --- END: VALIDATION LOGIC ---
+        
+        // Format the language for consistent storage (e.g., "English")
+        const formattedLanguage = nativeLanguage.charAt(0).toUpperCase() + nativeLanguage.slice(1).toLowerCase();
+        
+        const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+        const profileRef = database.ref(`userProfiles/${sanitizedUsername}`);
+        try {
+            // Update the profile with the new formatted nativeLanguage field
+            await profileRef.update({ nativeLanguage: formattedLanguage });
+            showToast('Profile updated!', 'success');
+        } catch (error) {
+            console.error("Could not save native language:", error);
+            showToast('Could not save language.', 'error');
+        }
+        
+        // Hide the popup and reload the page to finish the login process
+        overlay.classList.remove('show');
+        popup.classList.remove('show');
+        window.location.reload();
+    };
+}
+// ADD THIS HELPER FUNCTION TO YOUR SCRIPT
+/**
+ * Converts a two-letter country code into a flag emoji.
+ * @param {string} countryCode The uppercase, two-letter country code (e.g., "US").
+ * @returns {string} The flag emoji.
+ */
+function getFlagEmoji(countryCode) {
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt());
+  return String.fromCodePoint(...codePoints);
+}
+
+/**
+ * Cycles through the available languages for the secret word.
+ */
+function switchLanguage() {
+  if (availableLanguagesForWord.length <= 1) {
+    return;
+  }
+
+  // Move to the next language, looping back to the start if needed
+  currentLanguageIndex = (currentLanguageIndex + 1) % availableLanguagesForWord.length;
+
+  const newLanguage = availableLanguagesForWord[currentLanguageIndex];
+  const langInput = document.getElementById('hintInput');
+
+  // Update the input field with the new language
+  langInput.value = newLanguage.charAt(0).toUpperCase() + newLanguage.slice(1);
+
+  // Save the new state to local storage
+  saveSetupState();
 }
 
 </script>
