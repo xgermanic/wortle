@@ -17,7 +17,7 @@
   <p><span style="color:var(--accent-color);">Cross-Germanic</span> WØRTLE</p>
 </h1>
 <div id="header-setup" style="display: flex;">
-<a href="/wordle.html" class="back-link">← Back to WØRTLE</a>
+<a href="/wortle" class="back-link">← Back to WØRTLE</a>
 </div>
 <h2>Global Scoreboard</h2>
 
@@ -38,7 +38,7 @@
 }
 
 #scoreboard-container {
-    max-width: 800px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
@@ -71,6 +71,7 @@
   }
 thead {
     border-bottom:2px solid var(--border-subtle);
+    text-align:center !important;
 }
 thead th:first-child {
     border-top-left-radius: 5px;
@@ -142,12 +143,20 @@ tbody tr:hover {
     text-align: center;
 }
 
-.col-player {
-    width: 22%;
+.col-flag {
+    width: 4%;
+    text-align: center;
+    font-size: 1.2rem;
 }
 
+/* REPLACE your existing .col-player rule with this one */
+.col-player {
+    width: 13%; /* Reduced from 22% to make space */
+}
+
+
 .col-badges {
-    width: 20%;
+    width: 30%;
 }
 
 /* A shared class for the smaller stat columns */
@@ -158,7 +167,7 @@ tbody tr:hover {
 
 /* You can still override a shared class for a specific column */
 .col-avg-guesses {
-    width: 20%;
+    width: 15%;
 }
 
 /* This will truncate player names that are too long with "..." */
