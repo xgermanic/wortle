@@ -24,7 +24,6 @@
 }
 /* ADD THESE RULES FOR THE MINI-KEYBOARD */
   .mini-keyboard {
-    display: none;
     margin: 2px 0 !important;
     max-width: 500px; /* Limit width */
     align-self: center; /* Center it */
@@ -37,15 +36,14 @@
     background-color: var(--bg-keyboard);
     border: 0px solid var(--border-subtle);
   }
-/* --- ADD THIS ENTIRE BLOCK FOR THE TOOLTIP --- */
-  
   /* This container allows us to position the '?' icon relative to the input */
   .input-with-tooltip-container {
     position: relative;
     display: flex;
     justify-content: center;
     width: 100%;
-    padding:2px 0;
+    padding:0;
+    margin: 4px 0;
     max-width: 500px; /* Ensures it matches other inputs */
   }
 
@@ -343,6 +341,7 @@
     <span id="word-status-indicator"></span>
   </div>
     <button id="generateWordBtn" style="margin:5px 0 7px 0;">Pick Random Word</button>
+    <!-- 
     <div id="special-char-keyboard" class="keyboard mini-keyboard">
     <div class="key-row">
       <button class="key" onclick="insertSpecialChar('Ä')">Ä</button>
@@ -354,6 +353,7 @@
       <button class="key" onclick="insertSpecialChar('Å')">Å</button>
     </div>
   </div>
+  -->
 
 <div class="language-input-container">
   <input type="text" id="hintInput" placeholder="Language" class="host-input" disabled/>
