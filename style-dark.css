@@ -6,7 +6,8 @@
     --correct-bg: #4f1868; /* Muted terracotta */
     --accent-color: rgb(243, 202, 186);
     --text-primary: #fff;
-    --text-secondary: #214a5a;
+    --text-secondary: #214a5a; 
+    --border-subtle: #052737;
     }
   body {
     font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
@@ -387,7 +388,7 @@ h1 > p {
   border: none;
   padding: 7px;
   border-radius: 6px;
-  min-width: 197px;
+  min-width: 200px;
   margin-top: 5px;
   margin-bottom: 5px;
   margin-left: 30px;
@@ -399,9 +400,10 @@ h1 > p {
   font-size:11pt;
   color: #c7d1d5;
   border: none;
-  padding: 8px;
+  padding: 7px;
   border-radius: 6px;
   width: 200px;
+  height:22px;
   display: block;
   margin: auto;
   margin-top: 2px;
@@ -416,13 +418,17 @@ h1 > p {
 .host-input:not(:placeholder-shown), .word-host-input:not(:placeholder-shown), #funFactInput:not(:placeholder-shown) {
   background: #010f15;
 }
+  .host-input, #funFactInput {
+    border: 1px solid var(--border-subtle);
+  }
 #hintInput4Container {
   margin: auto;
   margin-top: 3px;
   margin-bottom: 3px;
   display: block;
   background: #021a24;
-  padding: 8px;
+    border: 1px solid var(--border-subtle);
+  padding: 7px;
   width: 200px;
   border-radius: 6px;
   text-align:center;
@@ -474,7 +480,6 @@ h1 > p {
   #funFactInput {
   background: #021a24;
   color: #c7d1d5;
-  border: none;
   padding: 8px 28px;
   min-height: 70px;
   font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
