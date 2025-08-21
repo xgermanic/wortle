@@ -382,7 +382,7 @@ h1 > p {
     transition: background 0.2s ease;
   }
   .word-host-input {
-    min-width: 200px;
+    width: 200px;
     margin: 5px 0 5px 30px;
   }
   .host-input {
