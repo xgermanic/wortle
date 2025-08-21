@@ -7,9 +7,10 @@ const BADGE_DEFINITIONS = {
 
     // New Skill & Difficulty Badges
     prodigy: { name: 'Prodigy 🤯', description: 'Solved the Wørtle on the first guess.' },
-    clutch_victory: { name: 'Clutch Victory 😮‍💨', description: 'Solved the Wørtle on the sixth and final guess.' },
-    natural_talent: { name: 'Natural Talent 🧠', description: 'Won a game that had hints available, without using any of them.' },
+    clutch_victory: { name: 'Clutch Victory 😮‍💨', description: 'Solved the Wørtle on the final guess.' },
+    natural_talent: { name: 'Natural Talent 😎', description: 'Won a game without using any hints.' },
     vowel_virtuoso: { name: 'Vowel Virtuoso 🎤', description: 'Solved a word with at least 4 unique vowels.' },
+    consonant_crusher: { name: 'Consonant Crusher ⛏️', description: 'Solved a word with at least 4 unique consonants.' },
 
     // New Streaks & Consistency Badges
     on_a_roll: { name: 'On a Roll 🔥', description: 'Achieved a 3-game winning streak.' },
@@ -28,4 +29,5 @@ const BADGE_DEFINITIONS = {
     umlaut_enthusiast: { name: 'Umlaut Enthusiast 🇩🇪', description: 'Solved a word containing an umlaut (Ä, Ö, or Ü).' },
     nordic_explorer: { name: 'Nordic Explorer 🇳🇴', description: 'Solved a word containing a Nordic character (Æ, Ø, or Å).' },
     polyglot: { name: 'Polyglot 🌐', description: 'Solved at least one word from each of the 5 supported languages.' },
+    globetrotter: { name: 'Globetrotter 🌎', description: 'Solved at least one word from each of your non-native languages.' },
 };
