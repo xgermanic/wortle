@@ -7,7 +7,8 @@
     --text-primary: #5D4037; /* A soft, dark brown for readability */
     --text-secondary: #5D4037;
     --text-on-color: #FFF8E8; /* Creamy text for colored tiles */
-    --border-subtle: #C5D0B7; /* A darker shade of the background */
+    --border-subtle: #C5D0B7; /* Creamy text for colored tiles */
+    --border-strong: #f9da28; /* A darker shade of the background */
     --correct-bg: #8cbb53; /* Muted terracotta */
     --present-bg: #F08B51; /* Soft orange */
     --absent-bg: #B0A99A; /* A harmonizing soft grey */
@@ -1019,7 +1020,7 @@ h1 > p {
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 9999;
+    z-index: 10003;
     display: flex;
     flex-direction: column;
     align-items: center;
