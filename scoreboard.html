@@ -71,7 +71,7 @@
     opacity: 0.8;
   }
 thead {
-    border-bottom:2px solid var(--border-subtle);
+    border-bottom:2px solid var(--border-strong);
     text-align:center !important;
 }
 thead th:first-child {
@@ -100,7 +100,7 @@ tbody tr:nth-child(even) {
     background-color: var(--bg-panel);
 }
 tbody tr:hover {
-    background-color: var(--border-subtle);
+    background-color: var(--border-strong);
 }
 
   tr>:nth-child(2), tr>:nth-child(1), tr>:nth-child(4),tr>:nth-child(3) {
@@ -165,10 +165,14 @@ tbody tr:hover {
     width: 10%;
     text-align: center;
 }
+.col-trend {
+    width: 5%;
+    text-align: center;
+}
 
 /* You can still override a shared class for a specific column */
 .col-avg-guesses {
-    width: 15%;
+    width: 10%;
 }
 
 /* This will truncate player names that are too long with "..." */
