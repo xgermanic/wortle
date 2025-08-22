@@ -161,9 +161,6 @@
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
   }
-  /* --- END OF CUSTOM CHECKBOX BLOCK --- */
-/* --- START: CSS FOR NATIVE LANGUAGE POPUP --- */
-
 /* The dark background overlay */
 .language-popup-overlay {
   visibility: hidden;
@@ -174,13 +171,17 @@
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 100;
+  z-index: 10000;
   transition: opacity 0.3s ease;
+}
+.language-popup .close-btn {
+  top:-28px;
 }
 
 /* The popup window itself */
 .language-popup {
     width:300px;
+    max-height: 500px;
     background-color: var(--bg-panel);
     border-top:20px solid var(--present-bg);
     border-radius:10px;
@@ -193,7 +194,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.9);
-  z-index: 101;
+  z-index: 10001;
   text-align: center;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
@@ -231,6 +232,10 @@
   margin-top: 20px;
   cursor: pointer;
   transition: background-color 0.2s;
+}
+.scoreboard-content-container {
+  max-height: 400px;
+  overflow:scroll;
 }
 /* REPLACE your old #account-sidebar-header and #account-sidebar-flag rules with these */
 /* REPLACE your old #account-sidebar-title and #account-sidebar-flag rules with these */
@@ -309,6 +314,16 @@
   <p class="language-popup-text">To finish setting up your profile, can you tell us what your native language is?</p>
   <input type="text" id="language-popup-input" class="language-popup-input" placeholder="e.g., Danish, Swedish, German, etc.">
   <button id="language-popup-save-btn" class="language-popup-button">Save and Continue</button>
+</div>
+
+<div id="game-scoreboard-overlay" class="language-popup-overlay"></div>
+
+<div id="game-scoreboard-popup" class="language-popup" role="dialog" aria-modal="true" aria-labelledby="game-scoreboard-title">
+  <button class="close-btn" onclick="closeGameScoreboard()">&times;</button>
+  <h2 id="game-scoreboard-title" class="language-popup-title">Scoreboard</h2>
+  <div id="game-scoreboard-content" class="scoreboard-content-container">
+    <p>Loading scores...</p>
+  </div>
 </div>
 
 <h1>
@@ -561,6 +576,9 @@ let hintExpanded4 = false;
 let scoreboardListener = null;
 let badgesRef = null;      // <-- Ensure this line exists
 let badgesListener = null;
+let langRef = null;      // ADD THIS
+let langListener = null; // ADD THIS
+let isModalOpen = false;
 let userListener = { ref: null, listener: null };
 let availableLanguagesForWord = [];
 let currentLanguageIndex = 0;
@@ -886,7 +904,8 @@ async function updateStats(username, won, guesses) {
                 currentStats.wins++;
                 currentStats.totalGuesses += guesses;
             }
-            
+            currentStats.lastGameTrend = won ? "up" : "down";
+
             return currentStats;
         });
 
@@ -1206,6 +1225,7 @@ function handleKeyPress(key) {
 }
 
 window.addEventListener("keydown", (e) => {
+  if (isModalOpen) return;
   if (!usernameSet || isAnimating) return;
   
   if (document.getElementById("game").style.display !== "flex") return;
@@ -1429,6 +1449,7 @@ async function endGame(won) {
 
 // ADD THIS NEW HELPER FUNCTION
 async function showEndGameUI(won) {
+    isModalOpen = true; 
     const username = localStorage.getItem("gerNordleUsername");
     const modalOverlay = document.getElementById('game-over-overlay');
     const hintStatusForSummary = { hintUsed1, hintUsed2, hintUsed3, hintUsed4 };
@@ -1681,41 +1702,6 @@ window.onload = async () => {
     loader.style.display = 'block';
 
     const params = new URLSearchParams(window.location.search);
-    const isScoreboardView = params.get('view') === 'scoreboard';
-
-    if (secret && isScoreboardView) {
-        // This block runs ONLY if the URL has &view=scoreboard
-        headerSetup.style.display = "none";
-        gameDiv.style.display = "flex";
-        gameDiv.style.opacity = '0.5';
-        gameDiv.style.pointerEvents = 'none';
-        document.getElementById('giveUpBtn').style.display = 'none';
-        const modalContent = document.querySelector('#game-over-modal .modal-content');
-        if (modalContent) {
-            modalContent.style.minHeight = '400px'; // You can adjust this value
-        }
-
-        const modalOverlay = document.getElementById('game-over-overlay');
-        modalOverlay.classList.add('show');
-        showScoreboard();
-
-        // --- START: ADDED FIX ---
-        // Manually attach the event handler for the close button in this view
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        if (closeModalBtn) {
-            closeModalBtn.onclick = closeGameOverModal;
-        }
-
-        document.getElementById('modal-message').innerHTML = `Viewing Scoreboard...`;
-        document.getElementById('modal-summary').style.display = 'none';
-        document.getElementById('modalCopyBtn').style.display = 'none';
-        document.getElementById('showStatsBtn').style.display = 'none';
-        document.getElementById('showScoreboardBtn').style.display = 'none';
-        
-        loader.style.display = 'none';
-        mainContent.classList.add('loaded');
-        return;
-    }
 
     if (secret) {
         // This is the normal game-playing logic
@@ -1914,6 +1900,7 @@ if (giveUpBtn) {
 }
 
 function showHelpPopup() {
+  isModalOpen = true;
   helpPopup.hidden = false;
   helpOverlay.classList.add('show');
   mainContent.inert = true;
@@ -1923,6 +1910,7 @@ function showHelpPopup() {
 }
 
 function hideHelpPopup() {
+  isModalOpen = false;
   helpPopup.hidden = true;
   helpOverlay.classList.remove('show');
   mainContent.inert = false;
@@ -2416,6 +2404,7 @@ function fetchAndDisplayScoreboard() {
 }
 
 function closeGameOverModal() {
+    isModalOpen = false;
     // Check the URL to see if we are in the special scoreboard view
     const params = new URLSearchParams(window.location.search);
     const isScoreboardView = params.get('view') === 'scoreboard';
@@ -2539,6 +2528,7 @@ async function registerUser(inputId, pinInputId, config) {
             // Automatically log the user in after registration.
             localStorage.setItem("gerNordleUsername", username);
             localStorage.setItem("gerNordleUserPin", pin);
+          showLanguagePopup(username, true); 
             showLanguagePopup(username);
         }
     } catch (error) {
@@ -2721,15 +2711,6 @@ function renderHostedGames(snapshot) {
     
     if (titleElement) titleElement.textContent = `Hosted Games (${games.length})`;
 
-    if (games.length === 0) {
-        hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
-        if (resolveHostedGames) {
-            resolveHostedGames();
-            resolveHostedGames = null;
-        }
-        return;
-    }
-
     games.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
     const metaPromises = games.map(game => database.ref(`games/${game.word}/metadata`).once('value'));
 
@@ -2746,125 +2727,43 @@ function renderHostedGames(snapshot) {
                 gameLink.textContent = meta.word;
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'game-item-actions';
-
-                const scoreboardBtn = document.createElement('button');
-                scoreboardBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>`;
-                scoreboardBtn.title = 'View Scoreboard';
-                scoreboardBtn.onclick = () => {
-                    window.location.href = fullUrl;
-                };
-
-                const copyBtn = document.createElement('button');
-                copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
-                copyBtn.title = 'Copy Link';
-                copyBtn.onclick = () => {
-                    const urlToCopy = meta.shortUrl || fullUrl;
-                    navigator.clipboard.writeText(urlToCopy).then(() => {
-                        copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                        setTimeout(() => {
-                            copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
-                        }, 2000);
-                    });
-                };
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
-                deleteBtn.title = 'Delete Game';
-                deleteBtn.onclick = () => deleteGame(meta.word);
-                
-                actionsDiv.appendChild(scoreboardBtn);
-                actionsDiv.appendChild(copyBtn);
-                actionsDiv.appendChild(deleteBtn);
-                
-                listItem.appendChild(gameLink);
-                listItem.appendChild(actionsDiv);
-                fragment.appendChild(listItem);
-            }
-        });
-        hostedGamesList.appendChild(fragment);
-
-        if (resolveHostedGames) {
-            resolveHostedGames();
-            resolveHostedGames = null;
-        }
-    });
-}
-
-function renderHostedGames(snapshot) {
-    hostedGamesList.innerHTML = '';
-    const titleElement = document.getElementById('hosted-games-title');
-
-    if (!snapshot.exists()) {
-        if (titleElement) titleElement.textContent = 'Hosted Games (0)';
-        hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
-        if (resolveHostedGames) {
-            resolveHostedGames();
-            resolveHostedGames = null;
-        }
-        return;
-    }
-
-    const gamesObject = snapshot.val();
-    const games = [];
-    for (const word in gamesObject) {
-        games.push({ word: word, ...gamesObject[word] });
-    }
-    
-    if (titleElement) titleElement.textContent = `Hosted Games (${games.length})`;
-
-    if (games.length === 0) {
-        hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
-        if (resolveHostedGames) {
-            resolveHostedGames();
-            resolveHostedGames = null;
-        }
-        return;
-    }
-
-    games.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
-    const metaPromises = games.map(game => database.ref(`games/${game.word}/metadata`).once('value'));
-
-    Promise.all(metaPromises).then(metaSnapshots => {
-        const fragment = document.createDocumentFragment();
-        metaSnapshots.forEach((metaSnap, idx) => {
-            if (metaSnap.exists()) {
-                const meta = metaSnap.val();
-                const listItem = document.createElement('div');
-                listItem.className = 'game-list-item';
-                const gameLink = document.createElement('a');
-                
-                // --- START: MODIFIED URL LOGIC ---
-                let fullUrl = generateShareURL(meta.word, meta.hint1, meta.hint2, meta.hint3, meta.hint4, meta.funFact);
-                const scoreboardUrl = fullUrl + '&view=scoreboard'; // Create the special scoreboard URL
-                // --- END: MODIFIED URL LOGIC ---
-
-                gameLink.href = fullUrl;
-                gameLink.textContent = meta.word;
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'game-item-actions';
                 
                 const scoreboardBtn = document.createElement('button');
                 scoreboardBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>`;
                 scoreboardBtn.title = 'View Scoreboard';
-                scoreboardBtn.onclick = () => {
-                    window.location.href = scoreboardUrl; // Use the new URL
+                scoreboardBtn.onclick = (event) => {
+                    event.stopPropagation(); 
+                    showGameScoreboard(meta.word);
                 };
 
                 const copyBtn = document.createElement('button');
-                copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
+                const linkIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
+                const checkIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                
+                copyBtn.innerHTML = linkIconSVG;
                 copyBtn.title = 'Copy Link';
-                copyBtn.onclick = () => {
+                
+                // --- START: CORRECTED on-click LOGIC ---
+                copyBtn.onclick = (event) => {
+                    event.stopPropagation();
                     const urlToCopy = meta.shortUrl || fullUrl;
+                    // The .then() block runs after the copy is successful
                     navigator.clipboard.writeText(urlToCopy).then(() => {
-                        copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                        copyBtn.innerHTML = checkIconSVG; // Show checkmark
                         setTimeout(() => {
-                            copyBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
+                            copyBtn.innerHTML = linkIconSVG; // Revert to link icon
                         }, 2000);
                     });
                 };
+                // --- END: CORRECTED on-click LOGIC ---
+
                 const deleteBtn = document.createElement('button');
                 deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
                 deleteBtn.title = 'Delete Game';
-                deleteBtn.onclick = () => deleteGame(meta.word);
+                deleteBtn.onclick = (event) => {
+                    event.stopPropagation();
+                    deleteGame(meta.word);
+                };
                 
                 actionsDiv.appendChild(scoreboardBtn);
                 actionsDiv.appendChild(copyBtn);
@@ -2886,11 +2785,12 @@ function renderHostedGames(snapshot) {
 
 // Replace your existing closeAccountSidebar function
 function closeAccountSidebar() {
+    isModalOpen = false;
     accountSidebar.classList.remove('show');
     accountOverlay.classList.remove('show');
     mainContent.inert = false;
 
-    // Detach all real-time Firebase listeners to prevent memory leaks
+    // Detach all real-time Firebase listeners
     if (hostedGamesRef) {
         hostedGamesRef.off('value', renderHostedGames);
     }
@@ -2903,6 +2803,9 @@ function closeAccountSidebar() {
     if (badgesRef && badgesListener) {
         badgesRef.off('value', badgesListener);
     }
+    if (langRef && langListener) { // ADD THIS BLOCK
+        langRef.off('value', langListener);
+    }
 }
 
 let statsRef = null;
@@ -2912,46 +2815,56 @@ let statsListener = null;
 // REPLACE your existing openAccountSidebar function with this one
 
 async function openAccountSidebar() {
+    isModalOpen = true;
     const username = localStorage.getItem("gerNordleUsername");
     if (!username) {
         showToast("Please log in to view your account.", "error");
         return;
     }
 
-    // Get references to the new username text and the flag element
     const usernameText = document.getElementById('account-username-text');
     const sidebarFlag = document.getElementById('account-sidebar-flag');
     const sidebarLoader = document.getElementById('sidebar-loader');
     const sidebarContent = document.getElementById('sidebar-content');
-    
+
     accountSidebar.classList.add('show');
     accountOverlay.classList.add('show');
     mainContent.inert = true;
     sidebarLoader.style.display = 'block';
     sidebarContent.classList.remove('loaded');
-    
-    // Set default state
-    if (sidebarFlag) sidebarFlag.textContent = '';
+
     if (usernameText) usernameText.textContent = username.toUpperCase();
 
     try {
         const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
 
-        // Fetch user's native language for the flag
-        const langRef = database.ref(`userProfiles/${sanitizedUsername}/nativeLanguage`);
-        const langSnapshot = await langRef.once('value');
-        const nativeLanguage = langSnapshot.val();
-        
-        // Set the username in its dedicated span
-        if (usernameText) usernameText.textContent = username.toUpperCase();
-        
-        // Set the flag in its dedicated span
-        if (nativeLanguage) {
-            const countryCode = languageToCountryCode[nativeLanguage.toLowerCase()];
-            if (countryCode && sidebarFlag) {
-                sidebarFlag.textContent = getFlagEmoji(countryCode);
+        // --- START: MODIFIED FLAG/EMOJI LOGIC ---
+        // This now listens for language changes in real-time
+        langRef = database.ref(`userProfiles/${sanitizedUsername}/nativeLanguage`);
+        langListener = langRef.on('value', (langSnapshot) => {
+            const nativeLanguage = langSnapshot.val();
+
+            if (nativeLanguage) {
+                // If language exists, show the flag
+                const countryCode = languageToCountryCode[nativeLanguage.toLowerCase()];
+                if (countryCode && sidebarFlag) {
+                    sidebarFlag.textContent = getFlagEmoji(countryCode);
+                    sidebarFlag.onclick = null; // Make it not clickable
+                    sidebarFlag.style.cursor = 'default';
+                    sidebarFlag.title = '';
+                }
+            } else {
+                // If language does NOT exist, show a clickable emoji
+                if (sidebarFlag) {
+                    sidebarFlag.textContent = '✏️';
+                    sidebarFlag.style.cursor = 'pointer';
+                    sidebarFlag.title = 'Set your native language';
+                    sidebarFlag.onclick = () => {
+                        showLanguagePopup(username); // Opens the popup
+                    };
+                }
             }
-        }
+        });
         
         // (The rest of the function remains the same)
         const badgesRef = database.ref(`userProfiles/${sanitizedUsername}/badges`);
@@ -3617,39 +3530,35 @@ function handleGiveUp() {
  * Shows a popup to collect the user's native language after registration.
  * @param {string} username The newly registered user's name.
  */
-function showLanguagePopup(username) {
+function showLanguagePopup(username, shouldReload = false) {
+    isModalOpen = true;
     const overlay = document.getElementById('language-popup-overlay');
     const popup = document.getElementById('language-popup');
     const title = document.getElementById('language-popup-title');
     const saveBtn = document.getElementById('language-popup-save-btn');
     const languageInput = document.getElementById('language-popup-input');
 
-    // Personalize the welcome message
+    // Disable the main page content
+    setInputsDisabled(true);
+
     title.textContent = `Welcome, ${username}!`;
     
-    // Make the popup visible
     overlay.classList.add('show');
     popup.classList.add('show');
+    languageInput.focus(); // Set focus to the input field
     
-    // Handle the save button click
     saveBtn.onclick = async () => {
         const nativeLanguage = languageInput.value.trim();
         
-        // --- START: VALIDATION LOGIC ---
-        // Check if the input (in lowercase) exists in our Set of valid languages.
         if (!validLanguages.has(nativeLanguage.toLowerCase())) {
             showToast('Please enter a valid language.', 'error');
-            return; // Stop the function if the language is not valid
+            return;
         }
-        // --- END: VALIDATION LOGIC ---
         
-        // Format the language for consistent storage (e.g., "English")
         const formattedLanguage = nativeLanguage.charAt(0).toUpperCase() + nativeLanguage.slice(1).toLowerCase();
-        
         const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
         const profileRef = database.ref(`userProfiles/${sanitizedUsername}`);
         try {
-            // Update the profile with the new formatted nativeLanguage field
             await profileRef.update({ nativeLanguage: formattedLanguage });
             showToast('Profile updated!', 'success');
         } catch (error) {
@@ -3657,13 +3566,14 @@ function showLanguagePopup(username) {
             showToast('Could not save language.', 'error');
         }
         
-        // Hide the popup and reload the page to finish the login process
-        overlay.classList.remove('show');
-        popup.classList.remove('show');
-        window.location.reload();
+        // Use the new close function
+        closeLanguagePopup();
+        
+        if (shouldReload) {
+            window.location.reload();
+        }
     };
 }
-// ADD THIS HELPER FUNCTION TO YOUR SCRIPT
 /**
  * Converts a two-letter country code into a flag emoji.
  * @param {string} countryCode The uppercase, two-letter country code (e.g., "US").
@@ -3698,6 +3608,81 @@ function switchLanguage() {
   saveSetupState();
 }
 
+// ADD THESE NEW FUNCTIONS TO YOUR MAIN SCRIPT
+
+function showGameScoreboard(word) {
+    isModalOpen = true;
+    document.getElementById('game-scoreboard-overlay').classList.add('show');
+    document.getElementById('game-scoreboard-popup').classList.add('show');
+    
+    const title = document.getElementById('game-scoreboard-title');
+    title.innerHTML = `Scoreboard for <span style="color:var(--accent-color);">${word}</span>`;
+
+    populateGameScoreboard(word);
+}
+
+function closeGameScoreboard() {
+    isModalOpen = false;
+    document.getElementById('game-scoreboard-overlay').classList.remove('show');
+    document.getElementById('game-scoreboard-popup').classList.remove('show');
+}
+
+async function populateGameScoreboard(word) {
+    const container = document.getElementById('game-scoreboard-content');
+    container.innerHTML = '<div class="spinner"></div>';
+
+    try {
+        const gameRef = database.ref('games/' + word);
+        const snapshot = await gameRef.once('value');
+        const scoresData = snapshot.val();
+
+        if (!scoresData) {
+            container.innerHTML = '<p>No scores found for this game yet.</p>';
+            return;
+        }
+
+        const playerScores = Object.keys(scoresData)
+            .filter(key => key !== 'metadata' && key !== 'players')
+            .map(key => scoresData[key]);
+
+        if (playerScores.length === 0) {
+            container.innerHTML = '<p>No one has won this Wørtle yet.</p>';
+            return;
+        }
+        
+        playerScores.sort((a, b) => {
+            if (a.guesses === -1) return 1; // Move losses to the bottom
+            if (b.guesses === -1) return -1;
+            return a.guesses - b.guesses || (a.hintCount || 0) - (b.hintCount || 0);
+        });
+
+        let tableHTML = `<table class="scoreboard-table" style="width:100%; font-size:11pt;"><thead><tr><th>Rank</th><th>Player</th><th>Guesses</th><th>Hints</th></tr></thead><tbody>`;
+
+        playerScores.forEach((score, index) => {
+            const guessDisplay = score.guesses > 0 ? score.guesses : 'X';
+            tableHTML += `<tr>
+                <td>${index + 1}</td>
+                <td>${score.username}</td>
+                <td>${guessDisplay}</td>
+                <td>${score.hintCount || 0}</td>
+            </tr>`;
+        });
+
+        tableHTML += `</tbody></table>`;
+        container.innerHTML = tableHTML;
+
+    } catch (error) {
+        console.error("Error loading game scoreboard:", error);
+        container.innerHTML = '<p>Could not load scores for this game.</p>';
+    }
+}
+function closeLanguagePopup() {
+    isModalOpen = false;
+    document.getElementById('language-popup-overlay').classList.remove('show');
+    document.getElementById('language-popup').classList.remove('show');
+    // Re-enable all inputs on the main page
+    setInputsDisabled(false);
+}
 </script>
 </body>
 </html>
