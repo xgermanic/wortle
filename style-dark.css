@@ -2,12 +2,13 @@
   :root {
     --bg-panel: #011a23;
     --bg-keyboard: #818384;
-    --border-subtle: #1f0471; /* A darker shade of the background */
+    --border-strong: #1f0471; /* A darker shade of the background */
     --correct-bg: #4f1868; /* Muted terracotta */
     --accent-color: rgb(243, 202, 186);
     --text-primary: #fff;
     --text-secondary: #214a5a; 
-    --border-subtle: #052737;
+    --border-subtle: #052737;/* Muted terracotta */
+    --present-bg: #011219; 
     }
   body {
     font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
@@ -591,6 +592,9 @@ h1 > p {
   color: rgb(185, 71, 5);
   font-family: 'Sansita', cursive;
 }
+.language-popup .close-btn {
+    color: #707070;
+}
 .close-btn:hover {
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
   color: #000;
@@ -1118,7 +1122,7 @@ tr:nth-child(even){
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 9999;
+  z-index: 10003;
   display: flex;
   flex-direction: column;
   align-items: center;
