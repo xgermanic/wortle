@@ -15,7 +15,7 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 
-// --- START: ADD FLAG HELPERS ---
+// --- START: ADDED FLAG HELPERS ---
 const languageToCountryCode = {
   bulgarian: 'BG', croatian: 'HR', czech: 'CZ', danish: 'DK',
   dutch: 'NL', english: 'GB', estonian: 'EE', finnish: 'FI',
@@ -33,7 +33,7 @@ function getFlagEmoji(countryCode) {
     .map(char => 127397 + char.charCodeAt());
   return String.fromCodePoint(...codePoints);
 }
-// --- END: ADD FLAG HELPERS ---
+// --- END: ADDED FLAG HELPERS ---
 
 
 // 2. --- Main Function to Fetch and Display Data ---
@@ -61,14 +61,14 @@ async function displayGlobalScoreboard() {
                 const avgGuesses = stats.wins > 0 ? (stats.totalGuesses / stats.wins) : 0;
 
                 players.push({
-                    username: key.replace(/_/g, ''),
-                    // --- MODIFIED: Fetch native language ---
+                    username: profile.original || key,
                     nativeLanguage: profile.nativeLanguage || null,
                     gamesPlayed: stats.gamesPlayed,
                     wins: stats.wins,
                     winPct: winPct,
                     avgGuesses: avgGuesses,
-                    badges: profile.badges || {}
+                    badges: profile.badges || {},
+                    lastGameTrend: stats.lastGameTrend || null
                 });
             }
         }
@@ -100,13 +100,14 @@ function renderTable(players, container) {
             <thead>
                 <tr>
                     <th class="col-rank">Rank</th>
-                    <th class="col-flag"></th> 
+                    <th class="col-flag"></th>
                     <th class="col-player">Player</th>
                     <th class="col-badges">Badges</th>
-                    <th class="col-stats">Games</th>
                     <th class="col-stats">Wins</th>
+                    <th class="col-trend"></th>
+                    <th class="col-stats">Played</th>
                     <th class="col-stats">Win %</th>
-                    <th class="col-stats col-avg-guesses">Avg. Guesses</th>
+                    <th class="col-avg-guesses">Avg. Guesses</th>
                 </tr>
             </thead>
             <tbody>
@@ -124,8 +125,6 @@ function renderTable(players, container) {
             }
         }
 
-        // --- START: MODIFIED FLAG LOGIC ---
-        // The flag is now generated into its own variable.
         let flagHTML = '';
         if (player.nativeLanguage) {
             const countryCode = languageToCountryCode[player.nativeLanguage.toLowerCase()];
@@ -133,7 +132,13 @@ function renderTable(players, container) {
                 flagHTML = getFlagEmoji(countryCode);
             }
         }
-        // --- END: MODIFIED FLAG LOGIC ---
+
+        let trendHTML = '';
+        if (player.lastGameTrend === 'up') {
+            trendHTML = `<span style="color: green;" title="Ranking Up">▲</span>`;
+        } else if (player.lastGameTrend === 'down') {
+            trendHTML = `<span style="color: red;" title="Ranking Down">▼</span>`;
+        }
 
         tableHTML += `
             <tr>
@@ -141,10 +146,11 @@ function renderTable(players, container) {
                 <td class="col-flag">${flagHTML}</td>
                 <td class="col-player" title="${player.username}">${player.username}</td>
                 <td class="col-badges">${badgesHTML || '-'}</td>
-                <td class="col-stats">${player.gamesPlayed}</td>
                 <td class="col-stats">${player.wins}</td>
+                <td class="col-trend">${trendHTML}</td>
+                <td class="col-stats">${player.gamesPlayed}</td>
                 <td class="col-stats">${player.winPct.toFixed(1)}%</td>
-                <td class="col-stats col-avg-guesses">${player.avgGuesses > 0 ? player.avgGuesses.toFixed(2) : '-'}</td>
+                <td class="col-avg-guesses">${player.avgGuesses > 0 ? player.avgGuesses.toFixed(2) : '-'}</td>
             </tr>
         `;
     });
