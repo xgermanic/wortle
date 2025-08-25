@@ -226,6 +226,10 @@
 }
 .language-popup-input {
   width: 80%;
+  padding:5px;
+  border-radius:10px;
+  font-family:monospace;
+  border:2px solid var(--border-subtle);
   box-sizing: border-box; /* Important for padding */
 }
 .language-popup-button {
@@ -300,6 +304,9 @@
   #switch-language-btn:hover {
     color: #555555;
   }
+  #word-status-indicator.valid, #word-status-indicator.invalid {
+    font-weight:bold;
+  }
 
   </style>
   
@@ -312,7 +319,9 @@
 <div id="language-popup" class="language-popup" role="dialog" aria-modal="true" aria-labelledby="language-popup-title">
   <h2 id="language-popup-title" class="language-popup-title">Welcome!</h2>
   <p class="language-popup-text">To finish setting up your profile, can you tell us what your native language is?</p>
-  <input type="text" id="language-popup-input" class="language-popup-input" placeholder="e.g., Danish, Swedish, German, etc.">
+    <select id="language-popup-input" class="language-popup-input">
+      <option value="" disabled selected>Select your language...</option>
+      </select>
   <button id="language-popup-save-btn" class="language-popup-button">Save and Continue</button>
 </div>
 
@@ -372,7 +381,7 @@
   -->
 
 <div class="language-input-container">
-  <input type="text" id="hintInput" placeholder="Language" class="host-input" disabled/>
+  <input type="text" id="hintInput" placeholder="Language" class="host-input is-auto-populated" disabled/>
   <button id="switch-language-btn" onclick="switchLanguage()">›</button>
 </div>
 
@@ -392,25 +401,25 @@
   <div id="hintInput4Container" class="disabled-container">
   <p>Special character(s)</p>
   <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Ä" class="specialCharCheckbox" disabled>
+  <input type="checkbox" value="Ä" class="specialCharCheckbox is-auto-populated" disabled>
   <span class="custom-checkmark"></span>Ä</label>
   <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Ö" class="specialCharCheckbox" disabled>
+  <input type="checkbox" value="Ö" class="specialCharCheckbox is-auto-populated" disabled>
   <span class="custom-checkmark"></span>Ö</label>
   <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Ü" class="specialCharCheckbox" disabled>
+  <input type="checkbox" value="Ü" class="specialCharCheckbox is-auto-populated" disabled>
   <span class="custom-checkmark"></span>Ü</label>
   <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="ẞ" class="specialCharCheckbox" disabled>
+  <input type="checkbox" value="ẞ" class="specialCharCheckbox is-auto-populated" disabled>
   <span class="custom-checkmark"></span>ẞ</label>
   <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Æ" class="specialCharCheckbox" disabled>
+  <input type="checkbox" value="Æ" class="specialCharCheckbox is-auto-populated" disabled>
   <span class="custom-checkmark"></span>Æ</label>
   <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Ø" class="specialCharCheckbox" disabled>
+  <input type="checkbox" value="Ø" class="specialCharCheckbox is-auto-populated" disabled>
   <span class="custom-checkmark"></span>Ø</label>
   <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Å" class="specialCharCheckbox" disabled>
+  <input type="checkbox" value="Å" class="specialCharCheckbox is-auto-populated" disabled>
   <span class="custom-checkmark"></span>Å</label>
 </div>
   <textarea id="funFactInput" placeholder="Fun fact about the word (to be shown after the game is over)"></textarea>
@@ -590,7 +599,7 @@ const game = document.getElementById("game");
 const validLanguages = new Set([
     'bulgarian', 'croatian', 'czech', 'danish', 'dutch', 'english', 
     'estonian', 'finnish', 'french', 'german', 'greek', 'hungarian', 
-    'irish', 'italian', 'latvian', 'lithuanian', 'maltese', 'polish', 
+    'irish', 'italian', 'latvian', 'lithuanian', 'polish', 
     'portuguese', 'romanian', 'slovak', 'slovenian', 'spanish', 
     'swedish', 'norwegian', 'russian', 'turkish'
 ]);
@@ -599,7 +608,7 @@ const languageToCountryCode = {
   dutch: 'NL', english: 'GB', estonian: 'EE', finnish: 'FI',
   french: 'FR', german: 'DE', greek: 'GR', hungarian: 'HU',
   irish: 'IE', italian: 'IT', latvian: 'LV', lithuanian: 'LT',
-  maltese: 'MT', polish: 'PL', portuguese: 'PT', romanian: 'RO',
+  polish: 'PL', portuguese: 'PT', romanian: 'RO',
   slovak: 'SK', slovenian: 'SI', spanish: 'ES', swedish: 'SE',
   norwegian: 'NO', russian: 'RU', turkish: 'TR'
 };
@@ -1998,17 +2007,21 @@ helpPopup.addEventListener("click", (event) => {
 });
 
 function setInputsDisabled(state) {
-  // Select all inputs, textareas, and contenteditable elements inside mainContent
-  const inputs = mainContent.querySelectorAll('input, textarea, [contenteditable="true"], button, select');
-  inputs.forEach(el => {
-    el.disabled = state;
-    if (state) {
-      el.setAttribute('aria-disabled', 'true');
-      el.blur(); // remove focus when disabling
-    } else {
-      el.removeAttribute('aria-disabled');
-    }
-  });
+    const inputs = mainContent.querySelectorAll('input, textarea, [contenteditable="true"], button, select');
+    inputs.forEach(el => {
+        if (state === true) {
+            // When disabling, disable everything.
+            el.disabled = true;
+            el.setAttribute('aria-disabled', 'true');
+            el.blur();
+        } else {
+            // When re-enabling, ONLY enable elements that are NOT auto-populated.
+            if (!el.classList.contains('is-auto-populated')) {
+                el.disabled = false;
+                el.removeAttribute('aria-disabled');
+            }
+        }
+    });
 }
 
 function updateHintButtons() {
@@ -2529,7 +2542,6 @@ async function registerUser(inputId, pinInputId, config) {
             localStorage.setItem("gerNordleUsername", username);
             localStorage.setItem("gerNordleUserPin", pin);
           showLanguagePopup(username, true); 
-            showLanguagePopup(username);
         }
     } catch (error) {
         console.error("Registration error:", error);
@@ -3531,42 +3543,46 @@ function handleGiveUp() {
  * @param {string} username The newly registered user's name.
  */
 function showLanguagePopup(username, shouldReload = false) {
-    isModalOpen = true;
     const overlay = document.getElementById('language-popup-overlay');
     const popup = document.getElementById('language-popup');
     const title = document.getElementById('language-popup-title');
     const saveBtn = document.getElementById('language-popup-save-btn');
     const languageInput = document.getElementById('language-popup-input');
 
-    // Disable the main page content
+    languageInput.value = "";
     setInputsDisabled(true);
-
+    isModalOpen = true;
     title.textContent = `Welcome, ${username}!`;
     
     overlay.classList.add('show');
     popup.classList.add('show');
-    languageInput.focus(); // Set focus to the input field
+    languageInput.focus();
     
     saveBtn.onclick = async () => {
-        const nativeLanguage = languageInput.value.trim();
+        const selectedValue = languageInput.value;
         
-        if (!validLanguages.has(nativeLanguage.toLowerCase())) {
-            showToast('Please enter a valid language.', 'error');
+        if (!selectedValue) {
+            showToast('Please select an option from the list.', 'error');
             return;
         }
         
-        const formattedLanguage = nativeLanguage.charAt(0).toUpperCase() + nativeLanguage.slice(1).toLowerCase();
-        const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
-        const profileRef = database.ref(`userProfiles/${sanitizedUsername}`);
-        try {
-            await profileRef.update({ nativeLanguage: formattedLanguage });
-            showToast('Profile updated!', 'success');
-        } catch (error) {
-            console.error("Could not save native language:", error);
-            showToast('Could not save language.', 'error');
+        // --- START: MODIFIED SAVE LOGIC ---
+        // Only save to Firebase if the user selected a specific language.
+        if (selectedValue !== 'other') {
+            const formattedLanguage = selectedValue.charAt(0).toUpperCase() + selectedValue.slice(1);
+            const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
+            const profileRef = database.ref(`userProfiles/${sanitizedUsername}`);
+            try {
+                await profileRef.update({ nativeLanguage: formattedLanguage });
+                showToast('Profile updated!', 'success');
+            } catch (error) {
+                console.error("Could not save native language:", error);
+                showToast('Could not save language.', 'error');
+            }
         }
+        // If "Other" is selected, this block is skipped, and nothing is saved.
+        // --- END: MODIFIED SAVE LOGIC ---
         
-        // Use the new close function
         closeLanguagePopup();
         
         if (shouldReload) {
@@ -3683,6 +3699,71 @@ function closeLanguagePopup() {
     // Re-enable all inputs on the main page
     setInputsDisabled(false);
 }
+
+/**
+ * Populates the language dropdown menu from the validLanguages Set.
+ */
+function populateLanguageDropdown() {
+    const dropdown = document.getElementById('language-popup-input');
+    if (!dropdown) return;
+
+    // Sort languages alphabetically
+    const sortedLanguages = [...validLanguages].sort();
+
+    sortedLanguages.forEach(lang => {
+        const option = document.createElement('option');
+        option.value = lang; // e.g., "danish"
+        // Capitalize the first letter for display
+        option.textContent = lang.charAt(0).toUpperCase() + lang.slice(1);
+        dropdown.appendChild(option);
+    });
+
+    // --- ADD THIS PART ---
+    // Add the "Other" option at the end of the list
+    const otherOption = document.createElement('option');
+    otherOption.value = 'other';
+    otherOption.textContent = 'None of the above';
+    dropdown.appendChild(otherOption);
+    // ---------------------
+}
+
+// Call the function once when the script loads
+populateLanguageDropdown();
+
+// --- START: CLICK-OUTSIDE-TO-CLOSE LOGIC ---
+
+/**
+ * Attaches event listeners to an overlay to close its corresponding popup.
+ * Also prevents clicks inside the popup from closing it.
+ * @param {string} overlayId The ID of the overlay element.
+ * @param {string} popupId The ID of the popup/modal element.
+ * @param {Function} closeFunction The function to call to close the popup.
+ */
+function setupPopupCloseEvents(overlayId, popupId, closeFunction) {
+    const overlay = document.getElementById(overlayId);
+    const popup = document.getElementById(popupId);
+
+    if (overlay) {
+        // When the overlay is clicked, call the close function.
+        overlay.addEventListener('click', closeFunction);
+    }
+    
+    if (popup) {
+        // This stops a click on the popup itself from "bubbling up"
+        // to the overlay and closing the popup unintentionally.
+        popup.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+    }
+}
+
+// Set up the "click outside" functionality for all your popups and sidebars
+setupPopupCloseEvents('game-over-overlay', 'game-over-modal', closeGameOverModal);
+setupPopupCloseEvents('language-popup-overlay', 'language-popup', closeLanguagePopup);
+setupPopupCloseEvents('game-scoreboard-overlay', 'game-scoreboard-popup', closeGameScoreboard);
+
+// --- END: CLICK-OUTSIDE-TO-CLOSE LOGIC ---
+
 </script>
 </body>
 </html>
