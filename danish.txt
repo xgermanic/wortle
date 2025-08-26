@@ -1391,3 +1391,5 @@ yngre
 ytrer
 ytret
 zonen
+kølig
+årlig
