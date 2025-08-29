@@ -1543,84 +1543,84 @@ async function submitGuess() {
     }, (cols * 200) + 250);
 }
 
-// REPLACE your old endGame function with this one
 async function endGame(won) {
     hideHintPopup();
-    
-    // ✅ This line RESTORES the initial fade-out of the active game board.
-    document.getElementById('game').style.opacity = '0';
 
+    // Fetch the definitive fun fact from the database
+    let definitiveFunFact = "";
+    try {
+        const metadataRef = database.ref(`games/${secret}/metadata`);
+        const metaSnapshot = await metadataRef.once('value');
+        if (metaSnapshot.exists()) {
+            definitiveFunFact = metaSnapshot.val().funFact || "";
+        }
+    } catch (error) {
+        console.error("Could not fetch metadata for final popup:", error);
+        definitiveFunFact = customFunFact;
+    }
+
+    const gameResult = {
+        isSolved: won,
+        history: guessHistory,
+        colors: colorHistory,
+        hints: { hintUsed1, hintUsed2, hintUsed3, hintUsed4 },
+        funFact: definitiveFunFact
+    };
+
+    // First, save the game data.
     try {
         await saveCompletedGameData(won);
     } catch (error) {
         console.error("Failed to save game results to Firebase:", error);
-        alert("Your game result could not be saved, but you can still view your stats for this round.");
     }
 
-    await showEndGameUI(won);
-}
+    // Then, show the results modal.
+    await showGameOverModal(
+        gameResult.isSolved,
+        gameResult.history,
+        gameResult.colors,
+        gameResult.hints,
+        gameResult.funFact
+    );
 
-// ADD THIS NEW HELPER FUNCTION
-async function showEndGameUI(won) {
-    isModalOpen = true; 
-    const username = localStorage.getItem("gerNordleUsername");
-    const modalOverlay = document.getElementById('game-over-overlay');
-    const hintStatusForSummary = { hintUsed1, hintUsed2, hintUsed3, hintUsed4 };
-
-    // 1. Populate the modal content
-    document.getElementById("modal-summary").textContent = generateResultText(true, guessHistory, colorHistory, won, hintStatusForSummary);
-    
-    if (won) {
-        document.getElementById("modal-message").innerHTML = `You win! 🎉<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
-    } else {
-        document.getElementById("modal-message").innerHTML = `Game over!<br>The secret word was <span id="secretWordColor">${secret}</span>.`;
-    }
-
-    const existingFunFact = document.querySelector("#game-over-modal .fun-fact-section");
-    if (existingFunFact) existingFunFact.remove();
-    if (customFunFact && customFunFact.trim() !== "") {
-        const funFactDiv = document.createElement('div');
-        funFactDiv.classList.add('fun-fact-section');
-        funFactDiv.innerHTML = `<h2>Fun fact about today's Wørtle:</h2><p style="margin:0;">${customFunFact}</p>`;
-        document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
-    }
-    
-    // 2. Populate the stats and graph
-    const statsContainer = document.getElementById("modal-stats-container");
-    statsContainer.innerHTML = "";
-    
-    const stats = await displayStats(username);
-    const statsLines = [`Stats for ${username}`, `Games Played: ${stats.gamesPlayed}`, `Wins: ${stats.wins}`, `Win %: ${stats.winPct}%`, `Average Guesses: ${stats.avgGuesses}`];
-    statsLines.forEach(line => {
-        const p = document.createElement("p");
-        p.textContent = line;
-        p.classList.add("stats-line");
-        statsContainer.appendChild(p);
-    });
-
-    // 3. Show the modal and update the game board
-    bindModalButtons(guessHistory, colorHistory, won, hintStatusForSummary);
-    modalOverlay.classList.add('show');
-
+    // This block updates the underlying game board to the finished state
     setTimeout(() => {
-        const gameContainer = document.getElementById('game')
+        const gameContainer = document.getElementById('game');
+        const messageEl = document.getElementById('message');
         const board = document.getElementById('board');
-            const messageEl = document.getElementById('message'); // Get the message element
 
-            // ✅ RESTORED: This displays the on-screen win/loss message
-            if (won) {
-                messageEl.textContent = "You win! 🎉";
-            } else {
-                messageEl.textContent = `Game over! The word was ${secret}.`;
-            }
-            messageEl.classList.add('visible');
+        // 1. Display the "You win!" or "Game over!" message on the board
+        if (won) {
+            messageEl.textContent = "You win! 🎉";
+        } else {
+            messageEl.textContent = `Game over! The word was ${secret}.`;
+        }
+        messageEl.classList.add('visible');
 
-        const historyHtml = generateGuessHistoryHTML(guessHistory, colorHistory);
-        board.innerHTML = historyHtml;
+        // 2. Replace the interactive board with a static summary of the guesses
+        board.innerHTML = generateGuessHistoryHTML(gameResult.history, gameResult.colors);
+
+        // --- ADD THIS LINE ---
+        // This removes the fixed grid layout, allowing the board to shrink to fit the content.
         board.style.gridTemplateRows = 'none';
-        disableKeyboard();
+
+        // 3. Dim and disable the game container
         gameContainer.style.opacity = '0.5';
         gameContainer.style.pointerEvents = 'none';
+
+        // 4. Disable the keyboard
+        disableKeyboard();
+
+        // --- ADD THIS BLOCK ---
+        // Visually update the toggle to reflect the game's true hard mode status.
+        const toggle = document.getElementById('hard-mode-toggle');
+        if (toggle) {
+            // '!hardModeWasDisabled' is the final truth for whether the game was hard mode.
+            toggle.checked = !hardModeWasDisabled;
+            toggle.disabled = true; // Also ensure it's not clickable
+        }
+        // --- END OF NEW BLOCK ---
+
     }, 400);
 }
 
@@ -2769,7 +2769,7 @@ function setupUsernameInterface(config) {
 
 // This helper function displays the game-over modal with the correct information.
 async function showGameOverModal(isSolved, guessHistory, colorHistory, hintStatus, funFactText) {
-    const overlay = document.getElementById("game-over-overlay");
+const overlay = document.getElementById("game-over-overlay");
     
     // Set win/loss message
     if (isSolved) {
@@ -3092,181 +3092,146 @@ function stopUserDeletionListener() {
 async function saveCompletedGameData(won) {
     const username = localStorage.getItem("gerNordleUsername");
     if (!username || !secret) return;
-    const finalHardModeState = !hardModeWasDisabled;
 
     const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
-    
-    const creationDateToSave = new Date().toISOString();
-    const hintStatusToSave = { hintUsed1, hintUsed2, hintUsed3, hintUsed4 };
     const guesses = won ? (currentRow + 1) : -1;
-
-    const finalPlayedGameData = {
-        status: won ? 'won' : 'lost',
-        guesses: guesses,
-        createdDate: creationDateToSave,
-        guessHistory: guessHistory,
-        colorHistory: colorHistory,
-        hintStatus: hintStatusToSave,
-        wasHardMode: finalHardModeState
-    };
-    
-    const finalScoreData = {
-        username: username,
-        guesses: guesses,
-        timestamp: new Date().toISOString(),
-        hintCount: (hintUsed1 ? 1:0) + (hintUsed2 ? 1:0) + (hintUsed3 ? 1:0) + (hintUsed4 ? 1:0),
-        wasHardMode: finalHardModeState
-      };
-
-    const updates = {};
-    updates[`/userProfiles/${sanitizedUsername}/playedGames/${secret}`] = finalPlayedGameData;
-    updates[`/games/${secret}/${sanitizedUsername}`] = finalScoreData;
-    updates[`/games/${secret}/players/${sanitizedUsername}`] = null;
-
     const userProfileRef = database.ref(`userProfiles/${sanitizedUsername}`);
-    const hostNameRef = database.ref(`games/${secret}/metadata/host`);
-    
+
     try {
-        const [profileSnapshot, hostSnapshot] = await Promise.all([
-            userProfileRef.once('value'),
-            hostNameRef.once('value')
-        ]);
-        const userProfile = profileSnapshot.val() || {};
+        const hostNameRef = database.ref(`games/${secret}/metadata/host`);
+        const hostSnapshot = await hostNameRef.once('value');
         const hostName = hostSnapshot.val();
 
-        // --- THIS IS THE KEY CHANGE ---
-        // If the current player is the host, stop all save operations and exit the function.
-        if (username === hostName) {
-            console.log("Host is playing their own game. No stats or history will be saved.");
-            return; // Exit early
-        }
+        // --- Step 1: ALWAYS save the result to the player's personal history ---
+        // This applies to both the host and regular players.
+        const creationDateToSave = new Date().toISOString();
+        const finalPlayedGameData = {
+            status: won ? 'won' : 'lost',
+            guesses: guesses,
+            createdDate: creationDateToSave,
+            guessHistory: guessHistory,
+            colorHistory: colorHistory,
+            hintStatus: { hintUsed1, hintUsed2, hintUsed3, hintUsed4 },
+            wasHardMode: !hardModeWasDisabled,
+            host: hostName
+        };
+        await userProfileRef.child('playedGames').child(secret).set(finalPlayedGameData);
 
-        // If the code reaches this point, the player is NOT the host, so all original logic continues.
-        
-        const today = new Date().toDateString();
-        const yesterday = new Date(Date.now() - 864e5).toDateString();
-        // ... (The rest of your badge logic, database updates, and localStorage save will now only run for non-hosts)
-        
-        let playStreak = userProfile.playStreak || 0;
-        let lastPlayed = userProfile.lastPlayedDate;
-
-        if (lastPlayed !== today) {
-            playStreak = (lastPlayed === yesterday) ? playStreak + 1 : 1;
-            userProfileRef.child('playStreak').set(playStreak);
-            userProfileRef.child('lastPlayedDate').set(today);
-        }
-        if (playStreak >= 7) {
-            awardBadge(username, 'daily_dedication');
-        }
-
-        if (won) {
-            const guessCount = guessHistory.length; 
-            const guessDistRef = userProfileRef.child('stats/guessDistribution').child(String(guessCount));
-            await guessDistRef.transaction(currentCount => {
-                return (currentCount || 0) + 1;
-            });
-            let winStreak = userProfile.winStreak || 0;
-            let lastWin = userProfile.lastWinDate;
-            if (lastWin !== today) {
-                 winStreak = (lastWin === yesterday) ? winStreak + 1 : 1;
-                 userProfileRef.child('winStreak').set(winStreak);
-                 userProfileRef.child('lastWinDate').set(today);
-            }
-            if (winStreak >= 3) awardBadge(username, 'on_a_roll');
-            if (winStreak >= 10) awardBadge(username, 'dominating');
-
-            if (customHint1) {
-                const lang = customHint1.trim().toLowerCase();
-                if (SUPPORTED_LANGUAGES.includes(lang)) {
-                     await userProfileRef.child('playedLanguages').child(lang).set(true);
-                     if (!userProfile.playedLanguages) userProfile.playedLanguages = {};
-                     userProfile.playedLanguages[lang] = true;
-                }
-            }
-            if (userProfile.playedLanguages) {
-                const solvedLangs = new Set(Object.keys(userProfile.playedLanguages));
-                if (solvedLangs.size >= 5) {
-                    awardBadge(username, 'polyglot');
-                }
-                const nativeLang = userProfile.nativeLanguage ? userProfile.nativeLanguage.toLowerCase() : null;
-                if (nativeLang) {
-                    const nonNativeLangs = SUPPORTED_LANGUAGES.filter(lang => lang !== nativeLang);
-                    const hasSolvedAllNonNative = nonNativeLangs.every(lang => solvedLangs.has(lang));
-                    if (nonNativeLangs.length >= 4 && hasSolvedAllNonNative) {
-                        awardBadge(username, 'globetrotter');
-                    }
-                }
-            }
-            if (guessHistory.length === 1) awardBadge(username, 'prodigy');
-            if (guessHistory.length <= 2) awardBadge(username, 'genius');
-            if (currentRow === rows - 1) awardBadge(username, 'clutch_victory');
-            const hasAbsentLetters = colorHistory.flat().includes('absent');
-            if (!hasAbsentLetters) awardBadge(username, 'flawless');
-            const hintsAvailable = customHint1 || customHint2 || customHint3 || customHint4;
-            const hintsUsed = hintUsed1 || hintUsed2 || hintUsed3 || hintUsed4;
-            if (hintsAvailable && !hintsUsed) awardBadge(username, 'natural_talent');
-            if (/[ÄÖÜ]/.test(secret)) awardBadge(username, 'umlaut_enthusiast');
-            if (/[ÆØÅ]/.test(secret)) awardBadge(username, 'nordic_explorer');
-            const uniqueVowels = new Set(secret.toUpperCase().match(/[AEIOU]/g));
-            if (uniqueVowels && uniqueVowels.size >= 4) awardBadge(username, 'vowel_virtuoso');
-            const currentHour = new Date().getHours();
-            if (currentHour >= 0 && currentHour <= 4) awardBadge(username, 'night_owl');
-            if (currentHour >= 5 && currentHour <= 8) awardBadge(username, 'early_bird');
-
-            const vowels = new Set(['A', 'E', 'I', 'O', 'U', 'Y', 'Ä', 'Ö', 'Ü', 'Æ', 'Ø', 'Å']);
-            const uniqueConsonants = new Set([...secret].filter(char => !vowels.has(char.toUpperCase())));
-            if (uniqueConsonants.size >= 4) {
-                awardBadge(username, 'consonant_crusher');
-            }
-        } else {
-            userProfileRef.child('winStreak').set(0);
-        }
-        
-        if (hostName && hostName !== username) {
-            const playedHostsRef = userProfileRef.child('playedHosts').child(hostName);
-            await playedHostsRef.set(true);
-            const playedHostsSnapshot = await userProfileRef.child('playedHosts').once('value');
-            if (playedHostsSnapshot.numChildren() >= 10) {
-                awardBadge(username, 'wortle_wanderer');
-            }
-            const gamePlayersRef = database.ref(`games/${secret}`);
-            const gamePlayersSnapshot = await gamePlayersRef.once('value');
-            const data = gamePlayersSnapshot.val() || {};
-            const playerCount = Object.keys(data).filter(key => key !== 'metadata' && key !== 'players').length;
-            if (playerCount >= 10) {
-                awardBadge(hostName, 'crowd_pleaser');
-            }
-        }
-
-        await database.ref().update(updates);
-        await updateStats(username, won, guesses);
-        
+        // Also ALWAYS update localStorage to mark the game as finished
         const encodedSecret = base64Encode(secret);
         const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
         if (!allGameData[username]) allGameData[username] = {};
-        
         const finalGameRecord = {
-            status: won ? 'won' : 'lost',
-            guessHistory: guessHistory, 
-            colorHistory: colorHistory, 
-            keyColors: keyColors,
-            hintStatus: { 
-                hintUsed1: hintUsed1, 
-                hintUsed2: hintUsed2, 
-                hintUsed3: hintUsed3, 
-                hintUsed4: hintUsed4, 
-                hintExpanded1: hintExpanded1, 
-                hintExpanded2: hintExpanded2, 
-                hintExpanded3: hintExpanded3, 
-                hintExpanded4: hintExpanded4 
-            },
-            createdDate: creationDateToSave,
-            wasHardMode: isHardMode
+            ...finalPlayedGameData,
+            keyColors: keyColors
         };
-        
         delete finalGameRecord.ongoingState;
         allGameData[username][encodedSecret] = finalGameRecord;
         localStorage.setItem("gerNordleGameData", JSON.stringify(allGameData));
+
+
+        // --- Step 2: ONLY if the player is NOT the host, update public stats and badges ---
+        if (username !== hostName) {
+            // A) Post score to the game's public scoreboard
+            const finalScoreData = {
+                username: username,
+                guesses: guesses,
+                timestamp: new Date().toISOString(),
+                hintCount: (hintUsed1 ? 1:0) + (hintUsed2 ? 1:0) + (hintUsed3 ? 1:0) + (hintUsed4 ? 1:0),
+                wasHardMode: !hardModeWasDisabled
+            };
+            const publicScoreUpdates = {};
+            publicScoreUpdates[`/games/${secret}/${sanitizedUsername}`] = finalScoreData;
+            publicScoreUpdates[`/games/${secret}/players/${sanitizedUsername}`] = null;
+            await database.ref().update(publicScoreUpdates);
+
+            // B) Update the user's global stats
+            await updateStats(username, won, guesses);
+
+            // C) Process all badge logic
+            const profileSnapshot = await userProfileRef.once('value');
+            const userProfile = profileSnapshot.val() || {};
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 864e5).toDateString();
+            
+            let playStreak = userProfile.playStreak || 0;
+            let lastPlayed = userProfile.lastPlayedDate;
+            if (lastPlayed !== today) {
+                playStreak = (lastPlayed === yesterday) ? playStreak + 1 : 1;
+                userProfileRef.child('playStreak').set(playStreak);
+                userProfileRef.child('lastPlayedDate').set(today);
+            }
+            if (playStreak >= 7) awardBadge(username, 'daily_dedication');
+
+            if (won) {
+                const guessCount = guessHistory.length;
+                const guessDistRef = userProfileRef.child('stats/guessDistribution').child(String(guessCount));
+                await guessDistRef.transaction(currentCount => (currentCount || 0) + 1);
+                
+                let winStreak = userProfile.winStreak || 0;
+                let lastWin = userProfile.lastWinDate;
+                if (lastWin !== today) {
+                    winStreak = (lastWin === yesterday) ? winStreak + 1 : 1;
+                    userProfileRef.child('winStreak').set(winStreak);
+                    userProfileRef.child('lastWinDate').set(today);
+                }
+                if (winStreak >= 3) awardBadge(username, 'on_a_roll');
+                if (winStreak >= 10) awardBadge(username, 'dominating');
+
+                if (customHint1) {
+                    const lang = customHint1.trim().toLowerCase();
+                    if (SUPPORTED_LANGUAGES.includes(lang)) {
+                        await userProfileRef.child('playedLanguages').child(lang).set(true);
+                        if (!userProfile.playedLanguages) userProfile.playedLanguages = {};
+                        userProfile.playedLanguages[lang] = true;
+                    }
+                }
+
+                if (userProfile.playedLanguages) {
+                    const solvedLangs = new Set(Object.keys(userProfile.playedLanguages));
+                    if (solvedLangs.size >= 5) awardBadge(username, 'polyglot');
+                    const nativeLang = userProfile.nativeLanguage ? userProfile.nativeLanguage.toLowerCase() : null;
+                    if (nativeLang) {
+                        const nonNativeLangs = SUPPORTED_LANGUAGES.filter(lang => lang !== nativeLang);
+                        if (nonNativeLangs.length >= 4 && nonNativeLangs.every(lang => solvedLangs.has(lang))) {
+                            awardBadge(username, 'globetrotter');
+                        }
+                    }
+                }
+
+                if (guessHistory.length === 1) awardBadge(username, 'prodigy');
+                if (guessHistory.length <= 2) awardBadge(username, 'genius');
+                if (currentRow === rows - 1) awardBadge(username, 'clutch_victory');
+                if (!colorHistory.flat().includes('absent')) awardBadge(username, 'flawless');
+                const hintsAvailable = customHint1 || customHint2 || customHint3 || customHint4;
+                if (hintsAvailable && !(hintUsed1 || hintUsed2 || hintUsed3 || hintUsed4)) awardBadge(username, 'natural_talent');
+                if (/[ÄÖÜ]/.test(secret)) awardBadge(username, 'umlaut_enthusiast');
+                if (/[ÆØÅ]/.test(secret)) awardBadge(username, 'nordic_explorer');
+                const uniqueVowels = new Set(secret.toUpperCase().match(/[AEIOU]/g));
+                if (uniqueVowels && uniqueVowels.size >= 4) awardBadge(username, 'vowel_virtuoso');
+                const currentHour = new Date().getHours();
+                if (currentHour >= 0 && currentHour <= 4) awardBadge(username, 'night_owl');
+                if (currentHour >= 5 && currentHour <= 8) awardBadge(username, 'early_bird');
+                const vowels = new Set(['A', 'E', 'I', 'O', 'U', 'Y', 'Ä', 'Ö', 'Ü', 'Æ', 'Ø', 'Å']);
+                if (new Set([...secret].filter(char => !vowels.has(char.toUpperCase()))).size >= 4) {
+                    awardBadge(username, 'consonant_crusher');
+                }
+            } else {
+                userProfileRef.child('winStreak').set(0);
+            }
+
+            if (hostName && hostName !== username) {
+                const playedHostsRef = userProfileRef.child('playedHosts').child(hostName);
+                await playedHostsRef.set(true);
+                const playedHostsSnapshot = await userProfileRef.child('playedHosts').once('value');
+                if (playedHostsSnapshot.numChildren() >= 10) awardBadge(username, 'wortle_wanderer');
+                const gamePlayersRef = database.ref(`games/${secret}`);
+                const gamePlayersSnapshot = await gamePlayersRef.once('value');
+                const data = gamePlayersSnapshot.val() || {};
+                const playerCount = Object.keys(data).filter(key => key !== 'metadata' && key !== 'players').length;
+                if (playerCount >= 10) awardBadge(hostName, 'crowd_pleaser');
+            }
+        }
 
     } catch (error) {
         console.error("Failed to save final game data:", error);
@@ -3421,13 +3386,36 @@ async function loadCompletedGame(playedGameData) {
     }
     keyColors = reconstructedKeyColors;
     updateKeyboardColors();
-    updateHintButtons();
+
+    // --- ADD THIS BLOCK TO RESTORE HINT STATUS ---
+    // Read the saved hint status and set the global variables.
+    const hintStatus = playedGameData.hintStatus || {};
+    hintUsed1 = hintStatus.hintUsed1 || false;
+    hintUsed2 = hintStatus.hintUsed2 || false;
+    hintUsed3 = hintStatus.hintUsed3 || false;
+    hintUsed4 = hintStatus.hintUsed4 || false;
+    // Set expanded state for the UI to correctly show the hint text
+    hintExpanded1 = hintUsed1;
+    hintExpanded2 = hintUsed2;
+    hintExpanded3 = hintUsed3;
+    hintExpanded4 = hintUsed4;
+    // --- END OF NEW BLOCK ---
+
+    updateHintButtons(); // Now this will show the correct used hints
 
     const board = document.getElementById('board');
     board.innerHTML = generateGuessHistoryHTML(playedGameData.guessHistory, playedGameData.colorHistory);
     board.style.gridTemplateRows = 'none';
+    
+    const toggle = document.getElementById('hard-mode-toggle');
+    if (toggle) {
+        // --- THIS IS THE CORRECTED LINE ---
+        // If 'wasHardMode' is missing (undefined), this check will be true, keeping the toggle on.
+        // It will only be turned off if the value is explicitly false.
+        toggle.checked = playedGameData.wasHardMode !== false;
+        toggle.disabled = true;
+    }
 
-    // --- NEW: Fetch metadata to get the correct fun fact ---
     let funFactForModal = "";
     try {
         const metadataRef = database.ref(`games/${secret}/metadata`);
@@ -3439,7 +3427,6 @@ async function loadCompletedGame(playedGameData) {
         console.error("Could not fetch metadata for modal:", error);
     }
     
-    // Pass the fetched fun fact directly to the modal function
     showGameOverModal(isSolved, playedGameData.guessHistory, playedGameData.colorHistory, playedGameData.hintStatus, funFactForModal);
     disableKeyboard();  
 
