@@ -62,18 +62,25 @@ async function displayGlobalScoreboard() {
 
                 // --- NEW: Calculate Hard Mode Win Percentage ---
                 let hardModeWins = 0;
-                if (stats.wins > 0 && profile.playedGames) {
+                let totalOfficialWins = 0;
+                const currentPlayerName = profile.original || key;
+
+                if (profile.playedGames) {
                     for (const gameId in profile.playedGames) {
                         const game = profile.playedGames[gameId];
-                        // --- THE ONLY CHANGE IS THIS LINE ---
-                        // It now counts a win as hard mode unless it was EXPLICITLY not.
-                        if (game.status === 'won' && game.wasHardMode !== false) { // UPDATED
-                            hardModeWins++;
+        
+                        // --- THIS IS THE CORRECTED, ROBUST CHECK ---
+                        // It now checks that the 'host' field EXISTS and is not the current player.
+                        if (game.status === 'won' && game.host && game.host !== currentPlayerName) {
+                            totalOfficialWins++;
+                            if (game.wasHardMode !== false) {
+                                hardModeWins++;
+                            }
                         }
                     }
                 }
 
-                const hardModePct = stats.wins > 0 ? (hardModeWins / stats.wins) * 100 : 0;
+                const hardModePct = totalOfficialWins > 0 ? (hardModeWins / totalOfficialWins) * 100 : 0;
                 // --- END OF NEW LOGIC ---
 
                 players.push({
@@ -83,7 +90,7 @@ async function displayGlobalScoreboard() {
                     wins: stats.wins,
                     winPct: winPct,
                     avgGuesses: avgGuesses,
-                    hardModePct: hardModePct, // Add the new stat to the player object
+                    hardModePct: hardModePct,
                     badges: profile.badges || {},
                     lastGameTrend: stats.lastGameTrend || null
                 });
