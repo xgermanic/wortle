@@ -307,6 +307,57 @@
   #word-status-indicator.valid, #word-status-indicator.invalid {
     font-weight:bold;
   }
+  .hard-mode-toggle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 0 0;
+  letter-spacing: 1px;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 12pt;
+  color: var(--text-primary);
+}
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+input:checked + .slider {
+  background-color: var(--correct-bg); /* Use your theme's 'correct' color */
+}
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
 
   </style>
   
@@ -431,6 +482,7 @@
   <p id="message"></p>
 
 <div id="game">
+
   <div id="board" class="board"></div>
 
 <div id="hintButtons" style="display: none;">
@@ -438,6 +490,13 @@
 </div>
 
   <div id="keyboard" class="keyboard"></div>
+    <div class="hard-mode-toggle-container">
+    <label for="hard-mode-toggle" class="hard-mode-label">Hard Mode</label>
+    <label class="toggle-switch">
+      <input type="checkbox" id="hard-mode-toggle" checked>
+      <span class="slider"></span>
+    </label>
+  </div>
   <button id="giveUpBtn">I Give Up</button>
   <p id="host-credit"></p>
 </div>
@@ -493,7 +552,7 @@
     German &mdash; 3902 words<br>
     Norwegian &mdash; 15651 words<br>
     Swedish &mdash; 4585 words<br>
-    Danish &mdash; 1392 words<br>
+    Danish &mdash; 4548 words<br>
     English &mdash; 14849 words</p>
     <p>Each language utilises a limited word list, which vary in how extensive they are.</p>
     <hr>
@@ -577,6 +636,8 @@ let guessHistory = [];
 let colorHistory = [];
 let usernameSet = false;
 let isAnimating = false;
+let isHardMode = true; // Hard mode is on by default
+let hardModeWasDisabled = false;
 let gameCreatedDate = null;
 let hintExpanded1 = false;
 let hintExpanded2 = false;
@@ -587,6 +648,9 @@ let badgesRef = null;      // <-- Ensure this line exists
 let badgesListener = null;
 let langRef = null;      // ADD THIS
 let langListener = null; // ADD THIS
+// Near the top of your script with other global variables
+let gameNumber = null;
+let hostUsername = null;
 let isModalOpen = false;
 let userListener = { ref: null, listener: null };
 let availableLanguagesForWord = [];
@@ -965,11 +1029,18 @@ async function displayStats(username) {
 }
 
 async function startGame() {
-    const hostUsername = localStorage.getItem("gerNordleUsername");
-    if (!hostUsername) {
+    // 1. Get the username from localStorage just ONCE.
+    const localHost = localStorage.getItem("gerNordleUsername");
+
+    // 2. Check if it exists.
+    if (!localHost) {
         showToast("You must be logged in to host a game.", "error");
         return;
     }
+
+    // 3. Set the global 'hostUsername' variable for use in other functions (like generateResultText).
+    //    The 'localHost' const will be used within this function.
+    hostUsername = localHost;
     
     const isWordAvailable = await validateSecretWord();
     if (!isWordAvailable) {
@@ -978,6 +1049,27 @@ async function startGame() {
             secretInput.classList.add('shake');
             setTimeout(() => secretInput.classList.remove('shake'), 500);
         }
+        return;
+    }
+
+        // --- START: MODIFIED LOGIC TO GET GAME NUMBER ---
+    let newGameNumber;
+    try {
+        const counterRef = database.ref('metadata/totalGames');
+        const transactionResult = await counterRef.transaction(currentCount => {
+            // If the counter doesn't exist, start it at 1. Otherwise, increment it.
+            return (currentCount || 0) + 1;
+        });
+
+        if (!transactionResult.committed) {
+            throw new Error("Failed to get a new game number from the database.");
+        }
+        newGameNumber = transactionResult.snapshot.val();
+        gameNumber = newGameNumber; // Set the global variable for the current session
+
+    } catch (error) {
+        console.error("Could not generate game number:", error);
+        showToast("Error creating game. Please try again.", "error");
         return;
     }
 
@@ -1006,8 +1098,8 @@ async function startGame() {
         const metadataToSave = {
             word: secret,
             hint1: customHint1, hint2: customHint2, hint3: customHint3,
-            hint4: customHint4, funFact: customFunFact, host: hostUsername,
-            createdDate: new Date().toISOString()
+            hint4: customHint4, funFact: customFunFact, host: localHost,
+            gameNumber: newGameNumber
         };
         await metadataRef.set(metadataToSave);
 
@@ -1032,7 +1124,8 @@ async function startGame() {
 
         const userProfileRef = database.ref('userProfiles/' + sanitizedUsername);
         const newGameData = {};
-        newGameData[`/hostedGames/${secret}`] = { createdDate: metadataToSave.createdDate };
+        // Use the current date for the hosted game entry
+        newGameData[`/hostedGames/${secret}`] = { createdDate: new Date().toISOString() };
         await userProfileRef.update(newGameData);
 
     } catch (error) {
@@ -1163,6 +1256,7 @@ function loadGameFromStorage() {
         currentRow = 0;
         currentCol = 0;
         isAnimating = false;
+        hardModeWasDisabled = false;
         
         setupUsernameInterface({
             isGamePage: true,
@@ -1203,51 +1297,59 @@ function updateBoard() {
 }
 
 function handleKeyPress(key) {
-  if (!usernameSet || isAnimating) {
-    return;
-  }
-  
-  const msgEl = document.getElementById("message");
-  if (msgEl.textContent.trim() === "You win! 🎉" || msgEl.textContent.trim().startsWith("Game over!")) return;
+    if (!usernameSet || isAnimating) {
+        return;
+    }
 
-  const keyButton = document.querySelector(`.key[data-key="${key.toUpperCase()}"]`);
-  if (keyButton) {
-    keyButton.classList.add("key-pop");
-    setTimeout(() => {
-      keyButton.classList.remove("key-pop");
-    }, 100);
-  }
+    const msgEl = document.getElementById("message");
+    if (msgEl.textContent.trim().startsWith("You win! 🎉") || msgEl.textContent.trim().startsWith("Game over!")) return;
 
-  if (/^[a-zA-ZÄÖÜäöüßẞÆØÅæøå]$/.test(key) && currentCol < cols) {
-    let letter = key;
-    if (key === "ß") letter = "ẞ";
-    else letter = key.toUpperCase();
+    // Animate the on-screen keyboard button if it exists
+    const keyButton = document.querySelector(`.key[data-key="${key.toUpperCase()}"], .key[data-key="ẞ"][data-key-lower="ß"]`);
+    if (keyButton) {
+        keyButton.classList.add("key-pop");
+        setTimeout(() => {
+            keyButton.classList.remove("key-pop");
+        }, 100);
+    }
 
-    grid[currentRow][currentCol] = letter;
-    currentCol++;
-    updateBoard();
-  } else if (key === "Backspace" && currentCol > 0) {
-    currentCol--; grid[currentRow][currentCol] = ""; updateBoard();
-  } else if (key === "Enter") {
-    submitGuess();
-  }
+    if (/^[a-zA-ZÄÖÜäöüßẞÆØÅæøå]$/.test(key) && currentCol < cols) {
+        let letter = key;
+        // This logic now correctly handles ß -> ẞ before any other uppercasing
+        if (key === "ß") {
+            letter = "ẞ";
+        } else {
+            letter = key.toUpperCase();
+        }
+
+        grid[currentRow][currentCol] = letter;
+        currentCol++;
+        updateBoard();
+    } else if (key === "Backspace" && currentCol > 0) {
+        currentCol--;
+        grid[currentRow][currentCol] = "";
+        updateBoard();
+    } else if (key === "Enter" && currentCol === cols) {
+        submitGuess();
+    }
 }
 
 window.addEventListener("keydown", (e) => {
-  if (isModalOpen) return;
-  if (!usernameSet || isAnimating) return;
-  
-  if (document.getElementById("game").style.display !== "flex") return;
-  const key = e.key.toUpperCase();
-  if (key === "BACKSPACE") {
-    handleKeyPress("Backspace");
-  } else if (key === "ENTER") {
-    handleKeyPress("Enter");
-  } else if (/^[A-ZÄÖÜßẞÆØÅ]$/.test(key)) {
-    const keyToPass = key === 'ß' ? 'ẞ' : key;
-    handleKeyPress(keyToPass);
-  }
+    if (isModalOpen) return;
+    if (!usernameSet || isAnimating) return;
+    if (document.getElementById("game").style.display !== "flex") return;
+
+    const key = e.key; // Get the key without changing its case
+
+    if (key === "Backspace") {
+        handleKeyPress("Backspace");
+    } else if (key === "Enter") {
+        handleKeyPress("Enter");
+    } else if (/^[a-zA-ZÄÖÜäöüßẞÆØÅæøå]$/.test(key)) { // Check for any valid letter
+        handleKeyPress(key); // Pass the original, unaltered key
+    }
 });
+
 function validateHardMode(guess) {
   for (let i = 0; i < guessHistory.length; i++) {
     const prevGuess = guessHistory[i];
@@ -1372,14 +1474,16 @@ async function submitGuess() {
     }
 
     // ✅ FIX: The hard mode validation and its toast message are now handled correctly.
-    const hardModeViolation = validateHardMode(guess);
-    if (hardModeViolation !== true) { // Check if it returned a string message
-        if (currentRowDiv) {
-            currentRowDiv.classList.add("shake");
-            setTimeout(() => { currentRowDiv.classList.remove("shake"); }, 500);
+      if (isHardMode) {
+        const hardModeViolation = validateHardMode(guess);
+        if (hardModeViolation !== true) { // Check if it returned a string message
+            if (currentRowDiv) {
+                currentRowDiv.classList.add("shake");
+                setTimeout(() => { currentRowDiv.classList.remove("shake"); }, 500);
+            }
+            showToast(hardModeViolation, "error"); // Use the returned message directly
+            return;
         }
-        showToast(hardModeViolation, "error"); // Use the returned message directly
-        return;
     }
 
     isAnimating = true;
@@ -1634,11 +1738,18 @@ function generateResultText(isForDisplay, history, colors, won, hintStatus) {
     const options = { year: 'numeric', month: 'short', day: 'numeric' };
     const dateString = dateToUse.toLocaleDateString('en-GB', options);
 
-    // The first line of the result text
-    let text = `WØRTLE (${won ? history.length : 'X'}/${rows})\n`;
-    
-    // Add the formatted date on the next line
-    text += `${dateString}\n`;
+    let headerLine = `WØRTLE ${won ? history.length : 'X'}/${rows}`;
+    if (gameNumber) {
+        headerLine = `WØRTLE #${gameNumber} (${won ? history.length : 'X'}/${rows})`;
+    }
+
+    let text = headerLine + '\n'; // Add extra newline for spacing
+    // --- ADD THIS BLOCK ---
+    // Add the "Created by" line if the host's name is known
+    if (hostUsername) {
+        text += `Created by ${hostUsername}\n`;
+    }
+    // --- END OF NEW BLOCK ---
 
     // Count the total number of hints used
     let hintCount = 0;
@@ -1720,6 +1831,13 @@ window.onload = async () => {
         loader.style.display = 'none';
 
         if (snapshot.exists()) {
+            // --- ADD THIS ---
+            // Fetch the game number from the metadata
+            const metadata = snapshot.val().metadata;
+            if (metadata && metadata.gameNumber) {
+                gameNumber = metadata.gameNumber;
+            }
+            hostUsername = metadata.host;
             headerSetup.style.display = "flex";
             gameDiv.style.display = "flex";
             gameDiv.style.flexDirection = "column"; 
@@ -1766,8 +1884,16 @@ window.onload = async () => {
     mainContent.classList.add('loaded');
 
     const secretInput = document.getElementById('secretInput');
-    if (secretInput) {
-        secretInput.addEventListener('input', () => {
+if (secretInput) {
+    secretInput.addEventListener('input', () => {
+        // --- START: Real-time uppercase conversion ---
+        const selectionStart = secretInput.selectionStart;
+        const selectionEnd = secretInput.selectionEnd;
+        // Use the German-friendly function to correctly uppercase the input value
+        secretInput.value = germanFriendlyUpperCase(secretInput.value);
+        // Restore the cursor position
+        secretInput.setSelectionRange(selectionStart, selectionEnd);
+        // --- END: Real-time uppercase conversion ---
             clearTimeout(debounceTimer);
             const indicator = document.getElementById('word-status-indicator');
             indicator.innerHTML = ''; 
@@ -1874,6 +2000,8 @@ async function saveOngoingGame(username, encodedSecret) {
         guessHistory: guessHistory,
         colorHistory: colorHistory,
         keyColors: keyColors,
+        isHardMode: isHardMode,
+        hardModeWasDisabled: hardModeWasDisabled,
         hintStatus: { hintUsed1, hintUsed2, hintUsed3, hintUsed4, hintExpanded1, hintExpanded2, hintExpanded3, hintExpanded4 }
     };
 
@@ -2640,7 +2768,7 @@ function setupUsernameInterface(config) {
 }
 
 // This helper function displays the game-over modal with the correct information.
-async function showGameOverModal(isSolved, guessHistory, colorHistory, hintStatus) {
+async function showGameOverModal(isSolved, guessHistory, colorHistory, hintStatus, funFactText) {
     const overlay = document.getElementById("game-over-overlay");
     
     // Set win/loss message
@@ -2653,17 +2781,20 @@ async function showGameOverModal(isSolved, guessHistory, colorHistory, hintStatu
     // Generate and display the shareable summary
     document.getElementById("modal-summary").textContent = generateResultText(true, guessHistory, colorHistory, isSolved, hintStatus);
 
-    // Display the fun fact, if one exists
+    // --- UPDATED LOGIC ---
+    // First, always remove any fun fact from a previous game.
     const existingFunFact = document.querySelector("#game-over-modal .fun-fact-section");
     if (existingFunFact) existingFunFact.remove();
-    if (customFunFact && customFunFact.trim() !== "") {
+
+    // Now, display the new fun fact ONLY if one was provided for THIS game.
+    if (funFactText && funFactText.trim() !== "") {
         const funFactDiv = document.createElement('div');
         funFactDiv.classList.add('fun-fact-section');
-        funFactDiv.innerHTML = `<h2>Fun fact about today's Wørtle:</h2><p style="margin:0;">${customFunFact}</p>`;
+        funFactDiv.innerHTML = `<h2>Fun fact about today's Wørtle:</h2><p style="margin:0;">${funFactText}</p>`;
         document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
     }
 
-    // Display user stats
+    // ... (The rest of the function for displaying stats and binding buttons remains the same)
     const statsContainer = document.getElementById("modal-stats-container");
     statsContainer.innerHTML = "";
     const username = localStorage.getItem("gerNordleUsername");
@@ -2683,7 +2814,6 @@ async function showGameOverModal(isSolved, guessHistory, colorHistory, hintStatu
         statsContainer.appendChild(p);
     });
 
-    // Bind buttons and show the modal
     bindModalButtons(guessHistory, colorHistory, isSolved, hintStatus);
     overlay.classList.add('show');
 }
@@ -2962,33 +3092,32 @@ function stopUserDeletionListener() {
 async function saveCompletedGameData(won) {
     const username = localStorage.getItem("gerNordleUsername");
     if (!username || !secret) return;
+    const finalHardModeState = !hardModeWasDisabled;
 
     const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
     
-    // Step 1: Prepare all the data that needs to be written.
     const creationDateToSave = new Date().toISOString();
     const hintStatusToSave = { hintUsed1, hintUsed2, hintUsed3, hintUsed4 };
     const guesses = won ? (currentRow + 1) : -1;
 
-    // Data for the user's private profile in Firebase
     const finalPlayedGameData = {
         status: won ? 'won' : 'lost',
         guesses: guesses,
         createdDate: creationDateToSave,
         guessHistory: guessHistory,
         colorHistory: colorHistory,
-        hintStatus: hintStatusToSave
+        hintStatus: hintStatusToSave,
+        wasHardMode: finalHardModeState
     };
     
-    // Data for the public game scoreboard
     const finalScoreData = {
         username: username,
         guesses: guesses,
         timestamp: new Date().toISOString(),
-        hintCount: (hintUsed1 ? 1:0) + (hintUsed2 ? 1:0) + (hintUsed3 ? 1:0) + (hintUsed4 ? 1:0)
-    };
+        hintCount: (hintUsed1 ? 1:0) + (hintUsed2 ? 1:0) + (hintUsed3 ? 1:0) + (hintUsed4 ? 1:0),
+        wasHardMode: finalHardModeState
+      };
 
-    // Step 2: Create a single multi-path update object.
     const updates = {};
     updates[`/userProfiles/${sanitizedUsername}/playedGames/${secret}`] = finalPlayedGameData;
     updates[`/games/${secret}/${sanitizedUsername}`] = finalScoreData;
@@ -2997,9 +3126,7 @@ async function saveCompletedGameData(won) {
     const userProfileRef = database.ref(`userProfiles/${sanitizedUsername}`);
     const hostNameRef = database.ref(`games/${secret}/metadata/host`);
     
-    // Step 3: Perform the atomic write and then update stats.
     try {
-        // --- This block handles complex badge logic ---
         const [profileSnapshot, hostSnapshot] = await Promise.all([
             userProfileRef.once('value'),
             hostNameRef.once('value')
@@ -3007,9 +3134,19 @@ async function saveCompletedGameData(won) {
         const userProfile = profileSnapshot.val() || {};
         const hostName = hostSnapshot.val();
 
-        // Check Play Streak ('Daily Dedication')
+        // --- THIS IS THE KEY CHANGE ---
+        // If the current player is the host, stop all save operations and exit the function.
+        if (username === hostName) {
+            console.log("Host is playing their own game. No stats or history will be saved.");
+            return; // Exit early
+        }
+
+        // If the code reaches this point, the player is NOT the host, so all original logic continues.
+        
         const today = new Date().toDateString();
         const yesterday = new Date(Date.now() - 864e5).toDateString();
+        // ... (The rest of your badge logic, database updates, and localStorage save will now only run for non-hosts)
+        
         let playStreak = userProfile.playStreak || 0;
         let lastPlayed = userProfile.lastPlayedDate;
 
@@ -3022,19 +3159,12 @@ async function saveCompletedGameData(won) {
             awardBadge(username, 'daily_dedication');
         }
 
-        // Check Win Streaks and other win-based badges
         if (won) {
-            // 1. Get the number of guesses for this win
             const guessCount = guessHistory.length; 
-            
-            // 2. Create a reference to the specific guess number in the user's profile
             const guessDistRef = userProfileRef.child('stats/guessDistribution').child(String(guessCount));
-
-            // 3. Atomically increment the count for that number of guesses
             await guessDistRef.transaction(currentCount => {
                 return (currentCount || 0) + 1;
             });
-            // Win Streak Logic
             let winStreak = userProfile.winStreak || 0;
             let lastWin = userProfile.lastWinDate;
             if (lastWin !== today) {
@@ -3045,41 +3175,28 @@ async function saveCompletedGameData(won) {
             if (winStreak >= 3) awardBadge(username, 'on_a_roll');
             if (winStreak >= 10) awardBadge(username, 'dominating');
 
-            // --- START: REORDERED AND CORRECTED BADGE LOGIC ---
-
-            // 1. FIRST, record the language from the current win.
             if (customHint1) {
                 const lang = customHint1.trim().toLowerCase();
                 if (SUPPORTED_LANGUAGES.includes(lang)) {
                      await userProfileRef.child('playedLanguages').child(lang).set(true);
-                     // Also update our in-memory copy of the profile for the next checks
                      if (!userProfile.playedLanguages) userProfile.playedLanguages = {};
                      userProfile.playedLanguages[lang] = true;
                 }
             }
-
-            // 2. SECOND, check for language-based badges using the up-to-date data.
             if (userProfile.playedLanguages) {
                 const solvedLangs = new Set(Object.keys(userProfile.playedLanguages));
-
-                // Check for Polyglot
                 if (solvedLangs.size >= 5) {
                     awardBadge(username, 'polyglot');
                 }
-
-                // Check for Globetrotter
                 const nativeLang = userProfile.nativeLanguage ? userProfile.nativeLanguage.toLowerCase() : null;
                 if (nativeLang) {
                     const nonNativeLangs = SUPPORTED_LANGUAGES.filter(lang => lang !== nativeLang);
                     const hasSolvedAllNonNative = nonNativeLangs.every(lang => solvedLangs.has(lang));
-                    
                     if (nonNativeLangs.length >= 4 && hasSolvedAllNonNative) {
                         awardBadge(username, 'globetrotter');
                     }
                 }
             }
-
-            // ✅ ADDED BACK: All other win-based badges belong here.
             if (guessHistory.length === 1) awardBadge(username, 'prodigy');
             if (guessHistory.length <= 2) awardBadge(username, 'genius');
             if (currentRow === rows - 1) awardBadge(username, 'clutch_victory');
@@ -3096,21 +3213,15 @@ async function saveCompletedGameData(won) {
             if (currentHour >= 0 && currentHour <= 4) awardBadge(username, 'night_owl');
             if (currentHour >= 5 && currentHour <= 8) awardBadge(username, 'early_bird');
 
-            // 1. Check for "Consonant Crusher"
-            const vowels = new Set(['A', 'E', 'I', 'O', 'U', 'Ä', 'Ö', 'Ü', 'Æ', 'Ø', 'Å']);
-            const uniqueConsonants = new Set(
-                [...secret].filter(char => !vowels.has(char.toUpperCase()))
-            );
+            const vowels = new Set(['A', 'E', 'I', 'O', 'U', 'Y', 'Ä', 'Ö', 'Ü', 'Æ', 'Ø', 'Å']);
+            const uniqueConsonants = new Set([...secret].filter(char => !vowels.has(char.toUpperCase())));
             if (uniqueConsonants.size >= 4) {
                 awardBadge(username, 'consonant_crusher');
             }
-
         } else {
-            // Reset win streak on a loss
             userProfileRef.child('winStreak').set(0);
         }
-
-        // Check community badges
+        
         if (hostName && hostName !== username) {
             const playedHostsRef = userProfileRef.child('playedHosts').child(hostName);
             await playedHostsRef.set(true);
@@ -3128,15 +3239,12 @@ async function saveCompletedGameData(won) {
         }
 
         await database.ref().update(updates);
-        // ONLY if the write succeeds, update the stats.
         await updateStats(username, won, guesses);
-
-        // ✅ FIX: The local storage update is now correctly placed inside the 'try' block.
+        
         const encodedSecret = base64Encode(secret);
         const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
         if (!allGameData[username]) allGameData[username] = {};
         
-        // ✅ FIX: Corrected the object syntax and added the missing createdDate.
         const finalGameRecord = {
             status: won ? 'won' : 'lost',
             guessHistory: guessHistory, 
@@ -3152,7 +3260,8 @@ async function saveCompletedGameData(won) {
                 hintExpanded3: hintExpanded3, 
                 hintExpanded4: hintExpanded4 
             },
-            createdDate: creationDateToSave // This was missing
+            createdDate: creationDateToSave,
+            wasHardMode: isHardMode
         };
         
         delete finalGameRecord.ongoingState;
@@ -3276,54 +3385,66 @@ function handleTypingToClose(event) {
     }
 }
 
-function loadCompletedGame(playedGameData) {
-    const savedUsername = localStorage.getItem("gerNordleUsername");
-    if (!savedUsername) return;
+async function loadCompletedGame(playedGameData) {
+    const savedUsername = localStorage.getItem("gerNordleUsername");
+    if (!savedUsername) return;
 
-    const headerSetup = document.getElementById("header-setup");
-    const gameElement = document.getElementById("game");
+    const headerSetup = document.getElementById("header-setup");
+    const gameElement = document.getElementById("game");
 
-    // Use the new unified header logic
-    setupUsernameInterface({
-        isGamePage: true,
-        containerId: 'setup-username-area',
-        inputId: 'usernameInputGame',
-        placeholder: 'Enter username'
-    });
+    setupUsernameInterface({
+        isGamePage: true,
+        containerId: 'setup-username-area',
+        inputId: 'usernameInputGame',
+        placeholder: 'Enter username'
+    });
 
-    initBoard();
-    initKeyboard();
+    initBoard();
+    initKeyboard();
 
-    const isSolved = playedGameData.status === 'won';
-    document.getElementById("message").textContent = isSolved ? "You already solved this Wørtle! 🥳" : "You have already played this Wørtle.";
+    const isSolved = playedGameData.status === 'won';
+    document.getElementById("message").textContent = isSolved ? "You already solved this Wørtle! 🥳" : "You have already played this Wørtle.";
 
-    const reconstructedKeyColors = {};
-    if (playedGameData.guessHistory && playedGameData.colorHistory) {
-        for (let i = 0; i < playedGameData.guessHistory.length; i++) {
-            const guess = playedGameData.guessHistory[i];
-            const colors = playedGameData.colorHistory[i];
-            for (let j = 0; j < guess.length; j++) {
-                const letter = guess[j];
-                const color = colors[j];
-                if (!reconstructedKeyColors[letter] || (color === 'correct') || (color === 'present' && reconstructedKeyColors[letter] === 'absent')) {
-                    reconstructedKeyColors[letter] = color;
-                }
-            }
-        }
-    }
-    keyColors = reconstructedKeyColors;
-    updateKeyboardColors();
-    updateHintButtons();
+    const reconstructedKeyColors = {};
+    if (playedGameData.guessHistory && playedGameData.colorHistory) {
+        for (let i = 0; i < playedGameData.guessHistory.length; i++) {
+            const guess = playedGameData.guessHistory[i];
+            const colors = playedGameData.colorHistory[i];
+            for (let j = 0; j < guess.length; j++) {
+                const letter = guess[j];
+                const color = colors[j];
+                if (!reconstructedKeyColors[letter] || (color === 'correct') || (color === 'present' && reconstructedKeyColors[letter] === 'absent')) {
+                    reconstructedKeyColors[letter] = color;
+                }
+            }
+        }
+    }
+    keyColors = reconstructedKeyColors;
+    updateKeyboardColors();
+    updateHintButtons();
 
-    const board = document.getElementById('board');
-    board.innerHTML = generateGuessHistoryHTML(playedGameData.guessHistory, playedGameData.colorHistory);
-    board.style.gridTemplateRows = 'none';
+    const board = document.getElementById('board');
+    board.innerHTML = generateGuessHistoryHTML(playedGameData.guessHistory, playedGameData.colorHistory);
+    board.style.gridTemplateRows = 'none';
 
-    showGameOverModal(isSolved, playedGameData.guessHistory, playedGameData.colorHistory, playedGameData.hintStatus);
-    disableKeyboard(); 
+    // --- NEW: Fetch metadata to get the correct fun fact ---
+    let funFactForModal = "";
+    try {
+        const metadataRef = database.ref(`games/${secret}/metadata`);
+        const metaSnapshot = await metadataRef.once('value');
+        if (metaSnapshot.exists()) {
+            funFactForModal = metaSnapshot.val().funFact || "";
+        }
+    } catch (error) {
+        console.error("Could not fetch metadata for modal:", error);
+    }
+    
+    // Pass the fetched fun fact directly to the modal function
+    showGameOverModal(isSolved, playedGameData.guessHistory, playedGameData.colorHistory, playedGameData.hintStatus, funFactForModal);
+    disableKeyboard();  
 
-    headerSetup.style.display = 'flex';
-    gameElement.style.display = 'flex';
+    headerSetup.style.display = 'flex';
+    gameElement.style.display = 'flex';
 }
 
 function loadOngoingGame(playedGameData) {
@@ -3340,6 +3461,20 @@ function loadOngoingGame(playedGameData) {
         inputId: 'usernameInputGame',
         placeholder: 'Enter username'
     });
+
+    isHardMode = playedGameData.isHardMode !== false;
+    hardModeWasDisabled = playedGameData.hardModeWasDisabled || false;
+         const toggle = document.getElementById('hard-mode-toggle');
+    if (toggle) {
+        toggle.checked = isHardMode;
+
+        // --- ADD THIS LOGIC ---
+        // If hard mode was ever disabled in this saved game,
+        // make sure the toggle is disabled when the page loads.
+        if (hardModeWasDisabled) {
+            toggle.disabled = true;
+        }
+    }
 
     initBoard();
     initKeyboard();
@@ -3763,6 +3898,33 @@ setupPopupCloseEvents('language-popup-overlay', 'language-popup', closeLanguageP
 setupPopupCloseEvents('game-scoreboard-overlay', 'game-scoreboard-popup', closeGameScoreboard);
 
 // --- END: CLICK-OUTSIDE-TO-CLOSE LOGIC ---
+
+// --- ADD THIS BLOCK TO THE END OF YOUR SCRIPT ---
+const hardModeToggle = document.getElementById('hard-mode-toggle');
+if (hardModeToggle) {
+    hardModeToggle.addEventListener('change', (event) => {
+        const isEnabling = event.target.checked;
+        if (isEnabling) {
+            isHardMode = true;
+        } else {
+            // If turning off, ask for confirmation
+            if (window.confirm("Are you sure you want to turn off hard mode? This cannot be undone for this game.")) {
+                isHardMode = false;
+                hardModeWasDisabled = true;
+                event.target.disabled = true;
+
+                // NEW: Disable the toggle to make the choice permanent
+                event.target.disabled = true;
+
+            } else {
+                event.target.checked = true; // User cancelled, revert the toggle
+            }
+        }
+        if (window.currentUsername && secret) {
+            saveOngoingGame(window.currentUsername, base64Encode(secret));
+        }
+    });
+}
 
 </script>
 </body>
