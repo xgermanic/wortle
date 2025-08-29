@@ -439,9 +439,6 @@ h1 > p {
 #hintInput4Container.darkened {
   background: #010f15;
 }
-#secretInput {
-  text-transform: uppercase;
-}
 
 #modal-stats-container {
     max-height: 0;
