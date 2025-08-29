@@ -51,7 +51,7 @@ async function displayGlobalScoreboard() {
         const profiles = snapshot.val();
         const players = [];
 
-        // 3. --- Process Each Player's Stats & BADGES ---
+        // 3. --- Process Each Player's Stats ---
         for (const key in profiles) {
             const profile = profiles[key];
             const stats = profile.stats;
@@ -60,6 +60,22 @@ async function displayGlobalScoreboard() {
                 const winPct = (stats.wins / stats.gamesPlayed) * 100;
                 const avgGuesses = stats.wins > 0 ? (stats.totalGuesses / stats.wins) : 0;
 
+                // --- NEW: Calculate Hard Mode Win Percentage ---
+                let hardModeWins = 0;
+                if (stats.wins > 0 && profile.playedGames) {
+                    for (const gameId in profile.playedGames) {
+                        const game = profile.playedGames[gameId];
+                        // --- THE ONLY CHANGE IS THIS LINE ---
+                        // It now counts a win as hard mode unless it was EXPLICITLY not.
+                        if (game.status === 'won' && game.wasHardMode !== false) { // UPDATED
+                            hardModeWins++;
+                        }
+                    }
+                }
+
+                const hardModePct = stats.wins > 0 ? (hardModeWins / stats.wins) * 100 : 0;
+                // --- END OF NEW LOGIC ---
+
                 players.push({
                     username: profile.original || key,
                     nativeLanguage: profile.nativeLanguage || null,
@@ -67,21 +83,39 @@ async function displayGlobalScoreboard() {
                     wins: stats.wins,
                     winPct: winPct,
                     avgGuesses: avgGuesses,
+                    hardModePct: hardModePct, // Add the new stat to the player object
                     badges: profile.badges || {},
                     lastGameTrend: stats.lastGameTrend || null
                 });
             }
         }
 
-        // 4. --- Rank the Players ---
+        // 4. --- Rank the Players (your adjusted ranking logic) ---
         players.sort((a, b) => {
-            if (b.winPct !== a.winPct) return b.winPct - a.winPct;
+            // 1. Primary: Sort by Win Percentage (highest first)
+            if (b.winPct !== a.winPct) {
+                return b.winPct - a.winPct;
+            }
+
+            // 2. Secondary: Sort by Total Wins (highest first)
+            if (b.wins !== a.wins) {
+                return b.wins - a.wins;
+            }
+
+            // 3. Tertiary: Sort by Hard Mode Percentage (highest first)
+            if (b.hardModePct !== a.hardModePct) {
+                return b.hardModePct - a.hardModePct;
+            }
+
+            // 4. Final Tie-breaker: Sort by Average Guesses (lowest first)
             if (a.avgGuesses !== b.avgGuesses) {
-                if (a.avgGuesses === 0) return 1;
+                if (a.avgGuesses === 0) return 1; // Pushes players with 0 wins down
                 if (b.avgGuesses === 0) return -1;
                 return a.avgGuesses - b.avgGuesses;
             }
-            return b.wins - a.wins;
+
+            // Return 0 if players are perfectly equal
+            return 0;
         });
         
         // 5. --- Generate and Display the HTML Table ---
@@ -108,6 +142,7 @@ function renderTable(players, container) {
                     <th class="col-stats">Played</th>
                     <th class="col-stats">Win %</th>
                     <th class="col-avg-guesses">Avg. Guesses</th>
+                    <th class="col-stats">Hard Mode %</th> </tr>
                 </tr>
             </thead>
             <tbody>
@@ -151,6 +186,7 @@ function renderTable(players, container) {
                 <td class="col-stats">${player.gamesPlayed}</td>
                 <td class="col-stats">${player.winPct.toFixed(1)}%</td>
                 <td class="col-avg-guesses">${player.avgGuesses > 0 ? player.avgGuesses.toFixed(2) : '-'}</td>
+                <td class="col-stats">${player.wins > 0 ? player.hardModePct.toFixed(1) + '%' : '-'}</td>
             </tr>
         `;
     });
