@@ -630,7 +630,6 @@ basal
 basar
 basen
 baser
-bases
 bakre
 bakro
 baksa
@@ -694,7 +693,8 @@ basal
 basar
 basen
 baser
-basesbaset
+bases
+baset
 basic
 basis
 baska
@@ -1333,7 +1333,6 @@ bryte
 brøda
 brøde
 brøla
-brøle
 briar
 brien
 brier
@@ -1397,7 +1396,8 @@ bryte
 brøda
 brøde
 brøla
-brølebrølt
+brøle
+brølt
 brønn
 brønt
 brøst
@@ -2100,7 +2100,8 @@ ditch
 ditto
 divan
 divis
-djakndjerv
+djakn
+djerv
 djinn
 djupa
 djupe
@@ -2803,7 +2804,8 @@ erfar
 ergen
 erger
 erges
-ergetergot
+erget
+ergot
 ergra
 ergre
 erkna
@@ -3504,7 +3506,8 @@ fonen
 foner
 fonga
 fonna
-fonnefonon
+fonne
+fonon
 forag
 foran
 forbi
@@ -4200,7 +4203,8 @@ glett
 glida
 glidd
 glide
-glimaglime
+glima
+glime
 glimr
 glimt
 glins
@@ -5593,7 +5597,8 @@ image
 imago
 imens
 imida
-iminaimmer
+imina
+immer
 immun
 impro
 incel
@@ -6296,7 +6301,8 @@ kisla
 kisle
 kisma
 kista
-kistekiten
+kiste
+kiten
 kiter
 kites
 kitet
@@ -6999,7 +7005,8 @@ krøka
 krøke
 krøkl
 krøkn
-krøktkrøll
+krøkt
+krøll
 krøna
 krøpl
 krøpp
@@ -7702,7 +7709,8 @@ linja
 linje
 linka
 linke
-linkslinna
+links
+linna
 linne
 linon
 linsa
@@ -8405,7 +8413,8 @@ miene
 miger
 miges
 miget
-mikkamikke
+mikka
+mikke
 mikro
 miksa
 mikse
@@ -9107,7 +9116,8 @@ nurka
 nuska
 nuske
 nusla
-nuslenussa
+nusle
+nussa
 nusse
 nuten
 nuter
@@ -9810,7 +9820,8 @@ pitla
 pitle
 pitra
 pitre
-pittepivot
+pitte
+pivot
 pizza
 pjakk
 pjaks
@@ -10513,7 +10524,8 @@ rekyl
 relat
 relea
 remen
-remisremja
+remis
+remja
 remje
 remma
 remme
@@ -11216,7 +11228,8 @@ scatt
 scene
 schwa
 scoop
-scorascore
+scora
+score
 scout
 sebra
 secco
@@ -11919,7 +11932,8 @@ slica
 slice
 slide
 slien
-slietslike
+sliet
+slike
 slikk
 slikt
 slima
@@ -12622,7 +12636,8 @@ stoet
 stoff
 stogg
 stokk
-stolastole
+stola
+stole
 stoll
 stolp
 stolt
@@ -13267,7 +13282,8 @@ teavl
 tedde
 teddy
 teduk
-teedeteene
+teede
+teene
 teete
 tefat
 tefta
@@ -13970,7 +13986,8 @@ tvill
 tvilt
 tvina
 tvine
-tvingtvinl
+tving
+tvinl
 tvinn
 tvint
 tvirr
@@ -14673,7 +14690,8 @@ utøvd
 utøve
 utøya
 utånd
-uvanduvane
+uvand
+uvane
 uvant
 uvdøl
 uvenn
