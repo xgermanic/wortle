@@ -293,7 +293,7 @@ h1 > p {
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1001;
-  width: 360px;
+  width: 400px;
   
   /* Hiding and transition */
   opacity: 0;
