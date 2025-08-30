@@ -327,8 +327,6 @@ h1 > p {
 }
 .modal {
   position: relative;
-  width: 360px;
-  
   /* The animation for the modal itself */
   transform: scale(0.95);
   opacity: 0;
@@ -351,7 +349,6 @@ h1 > p {
   #modal-message { font-size: 16pt; width:auto; font-family:monospace; }
   .modal-content {
   position: relative; 
-  width:300px;
   max-height:80%;
   background-color: #e1dbd9;
   border-top:20px solid rgb(206, 86, 17);
@@ -921,11 +918,6 @@ tr:nth-child(even){
 /* --- Account Sidebar Styles --- */
 #account-sidebar {
     font-family: monospace;
-    position: fixed;
-    top: 0;
-    right: -320px; /* Start off-screen */
-    width: 300px;
-    height: 100%;
     background-color: #01222e;
     border-left: 2px solid rgb(34, 65, 78);
     box-shadow: -5px 0 15px rgba(0,0,0,0.4);
@@ -1049,20 +1041,6 @@ tr:nth-child(even){
 }
 .game-item-actions button:hover {
     color: #fff;
-}
-#account-stats-section {
-    display: flex;
-    justify-content: space-around;
-    text-align: center;
-    padding: 15px 10px;
-    /* background-color: #021a24; */
-    border-radius: 8px;
-    margin-bottom: 5px;
-}
-
-.stat-item {
-    display: flex;
-    flex-direction: column;
 }
 
 .stat-value {
