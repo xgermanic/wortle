@@ -358,6 +358,32 @@ input:checked + .slider:before {
   transform: translateX(20px);
 }
 
+  #account-stats-section {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    text-align: center;
+  }
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+    #account-sidebar {
+    position: fixed;
+    top: 0;
+    right: -390px;
+    width: 370px;
+    height: 100%;
+    }
+    .modal {
+      width:400px;
+    }
+    .modal-content {
+      width:340px;
+    }
 
   </style>
   
@@ -491,7 +517,7 @@ input:checked + .slider:before {
 
   <div id="keyboard" class="keyboard"></div>
     <div class="hard-mode-toggle-container">
-    <label for="hard-mode-toggle" class="hard-mode-label">Hard Mode</label>
+    <label for="hard-mode-toggle" class="hard-mode-label">Hard mode</label>
     <label class="toggle-switch">
       <input type="checkbox" id="hard-mode-toggle" checked>
       <span class="slider"></span>
@@ -520,8 +546,6 @@ input:checked + .slider:before {
 
       <div class="modal-button-container">
         <button id="modalCopyBtn">Copy Result</button>
-        <button id="showStatsBtn">Show My Stats</button>
-        <div id="modal-stats-container"></div>
         <button id="showScoreboardBtn">View Scoreboard</button>
       </div>
     </div>
@@ -1746,9 +1770,9 @@ function generateResultText(isForDisplay, history, colors, won, hintStatus) {
     let text = headerLine + '\n'; // Add extra newline for spacing
     // --- ADD THIS BLOCK ---
     // Add the "Created by" line if the host's name is known
-    if (hostUsername) {
-        text += `Created by ${hostUsername}\n`;
-    }
+    // if (hostUsername) {
+    //     text += `By ${hostUsername}\n`;
+    // }
     // --- END OF NEW BLOCK ---
 
     // Count the total number of hints used
@@ -2270,15 +2294,6 @@ function bindModalButtons(savedGuessHistory, savedColorHistory, isSolved, savedH
         };
     }
 
-    // --- 2. Stats Toggle Button ---
-    if (showStatsBtn) {
-        showStatsBtn.onclick = () => {
-            const statsContainer = document.getElementById("modal-stats-container");
-            statsContainer.classList.toggle('expanded');
-            showStatsBtn.textContent = statsContainer.classList.contains('expanded') ? "Hide My Stats" : "Show My Stats";
-        };
-    }
-
     // --- 3. View/Hide Scoreboard Button (MODIFIED) ---
     if (showScoreboardBtn) {
         // Set initial text
@@ -2793,26 +2808,6 @@ const overlay = document.getElementById("game-over-overlay");
         funFactDiv.innerHTML = `<h2>Fun fact about today's Wørtle:</h2><p style="margin:0;">${funFactText}</p>`;
         document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
     }
-
-    // ... (The rest of the function for displaying stats and binding buttons remains the same)
-    const statsContainer = document.getElementById("modal-stats-container");
-    statsContainer.innerHTML = "";
-    const username = localStorage.getItem("gerNordleUsername");
-    const stats = await displayStats(username);
-    const statsLines = [
-        `Stats for ${username}`,
-        `Games Played: ${stats.gamesPlayed}`,
-        `Wins: ${stats.wins}`,
-        `Win %: ${stats.winPct}%`,
-        `Average Guesses: ${stats.avgGuesses}`
-    ];
-
-    statsLines.forEach(line => {
-        const p = document.createElement("p");
-        p.textContent = line;
-        p.classList.add("stats-line");
-        statsContainer.appendChild(p);
-    });
 
     bindModalButtons(guessHistory, colorHistory, isSolved, hintStatus);
     overlay.classList.add('show');
@@ -3515,7 +3510,8 @@ function renderAccountStats(snapshot) {
 
     const stats = snapshot.val() || {};
     const winPct = (stats.gamesPlayed > 0) ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
-    
+    const avgGuesses = (stats.wins > 0) ? (stats.totalGuesses / stats.wins).toFixed(2) : "-";
+
     // Render the main stats (Played, Wins, etc.)
     statsSection.innerHTML = `
         <div class="stat-item">
@@ -3529,6 +3525,10 @@ function renderAccountStats(snapshot) {
         <div class="stat-item">
             <span class="stat-value">${winPct}%</span>
             <span class="stat-label">Win %</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">${avgGuesses}</span>
+            <span class="stat-label">Avg. Guesses</span>
         </div>
     `;
 
@@ -3556,30 +3556,29 @@ function showToast(message, type = '') {
         toastElement.remove();
     }, 3000); // 3000ms = 3 seconds
 }
-
 async function displayHostCredit() {
     const creditElement = document.getElementById('host-credit');
     if (!secret || !creditElement) return;
 
     try {
-        // ✅ Change the reference to get all metadata, not just the host
         const metadataRef = database.ref(`games/${secret}/metadata`);
         const snapshot = await metadataRef.once('value');
 
         if (snapshot.exists()) {
             const metadata = snapshot.val();
             const hostName = metadata.host;
-            const shortUrl = metadata.shortUrl; // Get the shortUrl
+            const gameNum = metadata.gameNumber; // Get the game number from metadata
+            const shortUrl = metadata.shortUrl;
 
-            // Clear any previous content
-            creditElement.innerHTML = ''; 
+            creditElement.innerHTML = '';
 
-            // Display the host credit
-            creditElement.textContent = `Wørtle by: ${hostName}`;
+            // Construct the new credit text, including the game number if it exists
+            creditElement.textContent = gameNum
+                ? `Wørtle #${gameNum} by: ${hostName}`
+                : `Wørtle by: ${hostName}`;
 
-            // ✅ If a TinyURL exists, create and display the link
             if (shortUrl) {
-                const urlElement = document.createElement('div'); // Use a div for a new line
+                const urlElement = document.createElement('div');
                 urlElement.style.marginTop = '5px';
                 urlElement.innerHTML = `Share this game: <a href="${shortUrl}" target="_blank" style="color: #5c7a98;">${shortUrl}</a>`;
                 creditElement.appendChild(urlElement);
