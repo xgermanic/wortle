@@ -321,7 +321,6 @@ h1 > p {
   }
   .modal {
     position: relative;
-    width: 360px;
     transform: scale(0.95);
     opacity: 0;
     transition: opacity 0.3s ease, transform 0.3s ease;
@@ -340,7 +339,6 @@ h1 > p {
   #modal-message { font-size: 16pt; width:auto; font-family:monospace; }
   .modal-content {
     position: relative; 
-    width:300px;
     max-height:80%;
     background-color: var(--bg-panel);
     border-top:20px solid var(--present-bg);
@@ -840,11 +838,6 @@ h1 > p {
   }
   #account-sidebar {
     font-family: monospace;
-    position: fixed;
-    top: 0;
-    right: -320px;
-    width: 300px;
-    height: 100%;
     background-color: var(--bg-main);
     border-left: 2px solid var(--border-subtle);
     box-shadow: -5px 0 15px var(--shadow);
@@ -957,18 +950,6 @@ h1 > p {
   }
   .game-item-actions button:hover {
     color: var(--text-primary);
-  }
-  #account-stats-section {
-    display: flex;
-    justify-content: space-around;
-    text-align: center;
-    padding: 15px 10px;
-    border-radius: 8px;
-    margin-bottom: 5px;
-  }
-  .stat-item {
-    display: flex;
-    flex-direction: column;
   }
   .stat-value {
     font-size: 1.4em;
