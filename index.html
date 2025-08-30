@@ -384,6 +384,71 @@ input:checked + .slider:before {
     .modal-content {
       width:340px;
     }
+    /* Style for the container span when the word is valid */
+#word-status-indicator.valid {
+  color: #28a745; /* A nice success green */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Style for the SVG icon itself */
+#word-status-indicator.valid .checkmark-svg {
+  width: 18px; /* Adjust size as needed */
+  height: 18px;
+  stroke: currentColor; /* Inherits the green color */
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* Add a pop-in animation */
+  animation: pop-in 0.3s ease-out;
+}
+
+/* Keyframe animation for the pop-in effect */
+@keyframes pop-in {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  80% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+/* Style for the container span when the word is invalid */
+#word-status-indicator.invalid {
+  color: #dc3545; /* A standard error red */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Style for the SVG 'X' icon itself */
+#word-status-indicator.invalid .x-svg {
+  width: 18px; /* Adjust size as needed */
+  height: 18px;
+  stroke: currentColor; /* Inherits the red color */
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: shake-in 0.4s ease-out; /* Add a shake animation */
+}
+
+/* Keyframe animation for the shake effect */
+@keyframes shake-in {
+  0% { transform: translateX(0) scale(0.5); opacity: 0; }
+  50% { transform: translateX(0) scale(1); opacity: 1; }
+  60% { transform: translateX(-3px); }
+  70% { transform: translateX(3px); }
+  80% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
 
   </style>
   
@@ -788,6 +853,7 @@ async function validateSecretWord() {
     const switchBtn = document.getElementById('switch-language-btn');
     const langInput = document.getElementById('hintInput');
     const word = germanFriendlyUpperCase(secretInput.value.trim());
+    const invalidSvg = `<svg class="x-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
     // --- Reset state on every validation check ---
     indicator.innerHTML = '';
@@ -802,14 +868,14 @@ async function validateSecretWord() {
     }
 
     if (word.length !== 5 || !/^[A-ZÄÖÜßẞÆØÅ]+$/i.test(word)) {
-        indicator.innerHTML = 'X';
+        indicator.innerHTML = invalidSvg; 
         indicator.className = 'invalid';
         langInput.value = ''; // Clear language if word is invalid
         return false;
     }
 
     if (!isValidWord(word)) {
-        indicator.innerHTML = 'X';
+        indicator.innerHTML = invalidSvg; 
         indicator.className = 'invalid';
         langInput.value = ''; // Clear language if word is not in list
         return false;
@@ -822,12 +888,12 @@ async function validateSecretWord() {
         const snapshot = await gameRef.once('value');
 
         if (snapshot.exists()) {
-            indicator.innerHTML = 'X';
+            indicator.innerHTML = invalidSvg; 
             indicator.className = 'invalid';
             langInput.value = ''; // Clear language if word is taken
             return false;
         } else {
-            indicator.innerHTML = 'Y';
+            indicator.innerHTML = `<svg class="checkmark-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
             indicator.className = 'valid';
 
             // --- START: MODIFIED LANGUAGE LOGIC ---
