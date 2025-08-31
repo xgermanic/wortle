@@ -1241,11 +1241,11 @@ async function startGame() {
         const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`);
         if (!response.ok) throw new Error('TinyURL service is not available.');
         const shortUrl = await response.text();
-        shareMessageBox.value = `Hi! Play my WØRTLE: ${shortUrl}`;
+        shareMessageBox.value = `${shortUrl}`;
         await metadataRef.update({ shortUrl: shortUrl });
     } catch (error) {
         console.error("Could not shorten URL:", error);
-        shareMessageBox.value = `Hi! Play my WØRTLE: ${longUrl}`;
+        shareMessageBox.value = `${longUrl}`;
     } finally {
         copyBtn.disabled = false;
         startBtn.disabled = false;
@@ -3097,8 +3097,8 @@ async function openAccountSidebar() {
 
         playedGamesRef = database.ref(`userProfiles/${sanitizedUsername}/playedGames`);
         playedGamesRef.on('value', renderPlayedGames);
-        
-        statsRef = database.ref(`userProfiles/${sanitizedUsername}/stats`);
+                
+        statsRef = database.ref(`userProfiles/${sanitizedUsername}`); 
         statsListener = statsRef.on('value', renderAccountStats);
         
         await Promise.all([hostedGamesLoaded, playedGamesLoaded]);
@@ -3212,33 +3212,47 @@ async function saveCompletedGameData(won) {
             // C) Process all badge logic
             const profileSnapshot = await userProfileRef.once('value');
             const userProfile = profileSnapshot.val() || {};
-            const today = new Date().toDateString();
-            const yesterday = new Date(Date.now() - 864e5).toDateString();
+            const today = new Date();
+            const todayString = today.toDateString();
             
-            let playStreak = userProfile.playStreak || 0;
-            let lastPlayed = userProfile.lastPlayedDate;
-            if (lastPlayed !== today) {
-                playStreak = (lastPlayed === yesterday) ? playStreak + 1 : 1;
-                userProfileRef.child('playStreak').set(playStreak);
-                userProfileRef.child('lastPlayedDate').set(today);
-            }
-            if (playStreak >= 7) awardBadge(username, 'daily_dedication');
-
-            if (won) {
-                const guessCount = guessHistory.length;
-                const guessDistRef = userProfileRef.child('stats/guessDistribution').child(String(guessCount));
-                await guessDistRef.transaction(currentCount => (currentCount || 0) + 1);
-                
-                let winStreak = userProfile.winStreak || 0;
-                let lastWin = userProfile.lastWinDate;
-                if (lastWin !== today) {
-                    winStreak = (lastWin === yesterday) ? winStreak + 1 : 1;
-                    userProfileRef.child('winStreak').set(winStreak);
-                    userProfileRef.child('lastWinDate').set(today);
+            // Handle Play Streak
+            const lastPlayed = userProfile.lastPlayedDate;
+            if (lastPlayed !== todayString) {
+                let playStreak = userProfile.playStreak || 0;
+                if (isConsecutiveDay(lastPlayed, today) || isFridayToMondayJump(lastPlayed, today)) {
+                    playStreak++;
+                } else {
+                    playStreak = 1;
                 }
-                if (winStreak >= 3) awardBadge(username, 'on_a_roll');
-                if (winStreak >= 10) awardBadge(username, 'dominating');
+                userProfileRef.child('playStreak').set(playStreak);
+                userProfileRef.child('lastPlayedDate').set(todayString);
+            }
+            if ((userProfile.playStreak || 0) >= 7) {
+                awardBadge(username, 'daily_dedication');
+            }
 
+            // Handle Win Streak
+            if (won) {
+                const lastWin = userProfile.lastWinDate;
+                if (lastWin !== todayString) {
+                    // CORRECTED: Read from the top-level userProfile object
+                    let winStreak = userProfile.winStreak || 0;
+                    
+                    if (isConsecutiveDay(lastWin, today) || isFridayToMondayJump(lastWin, today)) {
+                        winStreak++;
+                    } else {
+                        winStreak = 1;
+                    }
+
+                    // CORRECTED: Write to the top-level userProfile path
+                    userProfileRef.child('winStreak').set(winStreak);
+                    userProfileRef.child('lastWinDate').set(todayString);
+                }
+                
+                // CORRECTED: Read from the top-level for badge checks
+                if ((userProfile.winStreak || 0) >= 3) awardBadge(username, 'on_a_roll');
+                if ((userProfile.winStreak || 0) >= 10) awardBadge(username, 'dominating');
+            
                 if (customHint1) {
                     const lang = customHint1.trim().toLowerCase();
                     if (SUPPORTED_LANGUAGES.includes(lang)) {
@@ -3574,10 +3588,13 @@ function renderAccountStats(snapshot) {
     const graphContainer = document.getElementById('account-graph-container');
     if (!statsSection || !graphContainer) return;
 
-    const stats = snapshot.val() || {};
+    const userProfile = snapshot.val() || {};
+    const stats = userProfile.stats || {}; // Get the stats object from the profile.
+    const winStreak = userProfile.winStreak || 0; // Get the winStreak from the top level.
+
     const winPct = (stats.gamesPlayed > 0) ? ((stats.wins / stats.gamesPlayed) * 100).toFixed(1) : "0.0";
     const avgGuesses = (stats.wins > 0) ? (stats.totalGuesses / stats.wins).toFixed(2) : "-";
-
+    
     // Render the main stats (Played, Wins, etc.)
     statsSection.innerHTML = `
         <div class="stat-item">
@@ -3585,12 +3602,12 @@ function renderAccountStats(snapshot) {
             <span class="stat-label">Played</span>
         </div>
         <div class="stat-item">
-            <span class="stat-value">${stats.wins || 0}</span>
-            <span class="stat-label">Wins</span>
-        </div>
-        <div class="stat-item">
             <span class="stat-value">${winPct}%</span>
             <span class="stat-label">Win %</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value">${winStreak}</span>
+            <span class="stat-label">Win Streak</span>
         </div>
         <div class="stat-item">
             <span class="stat-value">${avgGuesses}</span>
@@ -3976,6 +3993,38 @@ if (hardModeToggle) {
             saveOngoingGame(window.currentUsername, base64Encode(secret));
         }
     });
+}
+
+/**
+ * Checks if a new game date is exactly one day after the last one.
+ * @param {string} lastDateString The last play/win date from the database.
+ * @param {Date} todayDate The current date object.
+ * @returns {boolean}
+ */
+function isConsecutiveDay(lastDateString, todayDate) {
+    if (!lastDateString) return false;
+    const lastDate = new Date(lastDateString);
+    const expectedNextDay = new Date(lastDate);
+    expectedNextDay.setDate(lastDate.getDate() + 1);
+    return expectedNextDay.toDateString() === todayDate.toDateString();
+}
+
+/**
+ * Checks for the special case of a streak continuing from a Friday to a Monday.
+ * @param {string} lastDateString The last play/win date from the database.
+ * @param {Date} todayDate The current date object.
+ * @returns {boolean}
+ */
+function isFridayToMondayJump(lastDateString, todayDate) {
+    if (!lastDateString) return false;
+    const lastDate = new Date(lastDateString);
+    // Check if last play was a Friday (day #5) and today is a Monday (day #1)
+    if (lastDate.getDay() === 5 && todayDate.getDay() === 1) {
+        const expectedMonday = new Date(lastDate);
+        expectedMonday.setDate(lastDate.getDate() + 3);
+        return expectedMonday.toDateString() === todayDate.toDateString();
+    }
+    return false;
 }
 
 </script>
