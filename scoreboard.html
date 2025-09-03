@@ -20,6 +20,35 @@
 <div id="header-setup" style="display: flex;">
 <a href="/wortle" class="back-link">← Back to WØRTLE</a>
 </div>
+
+<!--
+<div class="weekly-winners">
+  <h2>Wørtler of the Week</h2>
+  <div class="winner-grid">
+    <div class="winner-card" id="weekly-guesser">
+      <h3>Best Guesser</h3>
+      <p class="winner-name">-</p>
+      <span class="winner-stat"></span>
+    </div>
+    <div class="winner-card" id="weekly-host">
+      <h3>Host(ess) With The Mostess</h3>
+      <p class="winner-name">-</p>
+      <span class="winner-stat"></span>
+    </div>
+    <div class="winner-card" id="weekly-improver">
+      <h3>Greatest Improvement</h3>
+      <p class="winner-name">-</p>
+      <span class="winner-stat"></span>
+    </div>
+    <div class="winner-card" id="weekly-butterfly">
+      <h3>Most Dedicated Gamer</h3>
+      <p class="winner-name">-</p>
+      <span class="winner-stat"></span>
+    </div>
+  </div>
+</div>
+-->
+
 <h2>Global Scoreboard</h2>
 
     <div id="scoreboard-container">
@@ -27,6 +56,82 @@
     </div>
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+body {
+  font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
+  text-align: center;
+  margin: 0 auto;
+  background-size: 100% 2px, 2px 100%;
+      background-image: 
+        linear-gradient(var(--scanline-color) 50%, transparent 50%), 
+        linear-gradient(90deg, var(--scanline-color) 1px, transparent 1px);
+      background-size: 100% 5px, 5px 100%;
+}
+
+h1, h2, h3 {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+h1 {
+  letter-spacing: 1pt;
+  margin: 0;
+  font-family: 'VT323', monospace;
+  box-sizing: border-box;
+  height: 75px;
+  position: relative;
+  text-align: center;
+  padding: 0 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+h1 > p {
+  margin: 0;
+  line-height: 33pt;
+  min-width: 400px;
+}
+
+#header-setup {
+  display: none;
+  padding: 5px 10px;
+  justify-content: center;
+  height: 32px;
+}
+    .weekly-winners h2 {
+  text-align: center;
+  font-size: 1.5rem;
+  margin: 25px 0;
+}
+.winner-grid {
+  display: grid;
+  max-width:1100px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin:0 auto;
+  margin-bottom: 20px;
+}
+.winner-card {
+  background-color: var(--bg-panel);
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 4px var(--shadow);
+}
+.winner-card h3 {
+  margin: 0 0 5px 0;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.winner-name {
+  margin: 0;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+.winner-stat {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
 .back-link {
     display: inline-block;
     color: var(--text-primary);
