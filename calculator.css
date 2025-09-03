@@ -1,0 +1,327 @@
+/* calculator.css */
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+:root {
+  --bg-main: #020b05;
+  --bg-panel: #04140a;
+  --text-primary: #00ff41;
+  --text-secondary: #008f39;
+  --border-subtle: #00441b;
+  --accent-color: #008f39;
+  --correct-bg: #008f39;
+  --present-bg: #b59f3b;
+  --absent-bg: #3a3a3c;
+  --text-on-color: #FFFFFF;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'VT323', monospace;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  background-image: linear-gradient(rgba(0, 255, 65, 0.05) 50%, transparent 50%), 
+                    linear-gradient(90deg, rgba(0, 255, 65, 0.05) 1px, transparent 1px);
+  background-size: 100% 2px, 2px 100%; /* Horizontal lines, then vertical lines */
+  background-position: 0 0, 0 0;
+  background-attachment: fixed; /* Ensures lines stay fixed when scrolling if page is long */
+}
+
+#app-container {
+  width: 100%;
+  max-width: 700px;
+  text-align: center;
+}
+
+header h1 {
+  margin-top: 0;
+  letter-spacing: 2px;
+}
+
+.instructions {
+  color: var(--text-secondary);
+  line-height: 1.4;
+  max-width: 400px;
+  margin: 0 auto 30px auto;
+}
+
+/* New Setup Styles */
+#setup-container {
+  margin-top: 50px;
+}
+
+#secret-word-area {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+#secret-word-input {
+    width: 200px;
+    height: 50px;
+    padding: 10px;
+    font-size: 1.5em;
+    text-align: center;
+    text-transform: uppercase;
+    background-color: var(--bg-panel);
+    border: 2px solid var(--border-subtle);
+    color: var(--text-primary);
+    font-family: 'VT323', monospace;
+    border-radius: 5px;
+}
+
+/* Main Calculator Styles */
+.hidden {
+    display: none !important;
+}
+
+#results-container {
+  margin-bottom: 30px;
+}
+
+#current-secret-word {
+    color: var(--text-secondary);
+    font-size: 1.2em;
+    margin-bottom: 15px;
+}
+
+#possible-words-count {
+  font-size: 3em;
+  margin: 0;
+  color: var(--present-bg);
+}
+
+#results-container p {
+  margin: 0;
+  font-size: 1.2em;
+  color: var(--text-secondary);
+}
+
+#word-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: -10px;
+  margin-bottom: 30px;
+  min-height: 30px;
+}
+
+.possible-word {
+  background-color: var(--border-subtle);
+  color: var(--text-primary);
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 1.2em;
+  text-transform: uppercase;
+}
+
+#guess-history {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.guess-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.tile {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 5px;
+  user-select: none;
+  background-color: var(--bg-main);
+  border: 2px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.tile.absent {
+  background-color: var(--absent-bg);
+  border-color: var(--absent-bg);
+  color: var(--text-on-color);
+}
+
+.tile.present {
+  background-color: var(--present-bg);
+  border-color: var(--present-bg);
+  color: #000;
+}
+
+.tile.correct {
+  background-color: var(--correct-bg);
+  border-color: var(--correct-bg);
+  color: var(--text-on-color);
+}
+
+#input-area {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#guess-input {
+  width: 200px;
+  height: 50px;
+  padding: 10px;
+  font-size: 1.5em;
+  text-align: center;
+  text-transform: uppercase;
+  background-color: var(--bg-panel);
+  border: 2px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-family: 'VT323', monospace;
+  border-radius: 5px;
+}
+
+#guess-input::placeholder, #secret-word-input::placeholder {
+  color: var(--text-secondary);
+}
+
+button {
+  height: 50px;
+  padding: 0 20px;
+  font-family: 'VT323', monospace;
+  font-size: 1.2em;
+  background-color: var(--correct-bg);
+  color: var(--text-on-color);
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #00af4a;
+}
+
+#hard-reset-btn {
+    background-color: var(--absent-bg);
+}
+#hard-reset-btn:hover {
+    background-color: #555;
+}
+#suggestion-container, #filler-suggestion-container {
+  border: 2px dashed var(--border-subtle);
+  padding: 15px;
+  border-radius: 8px;
+  max-width: 300px;
+  margin: 20px auto 0 auto;
+}
+
+#suggestion-container h3, #filler-suggestion-container h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+#suggestion-list, #filler-suggestion-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.suggested-word {
+  background-color: var(--accent-color);
+  color: var(--text-on-color);
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 1.2em;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+#soft-reset-btn {
+    background-color: var(--absent-bg);
+}
+#soft-reset-btn:hover {
+    background-color: #555;
+}
+.guess-analysis {
+  font-size: 1em;
+  font-style: italic;
+  color: var(--text-secondary);
+  margin-top: 10px;
+}
+
+/* --- Letter Frequency Visualizer Styles --- */
+#frequency-container {
+  margin: 20px auto 0 auto;
+  border: 2px dashed var(--border-subtle);
+  padding: 15px;
+  border-radius: 8px;
+  max-width:300px;
+}
+
+#frequency-container h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.2em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+#frequency-bars {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 10px;
+  height: 100px; /* Set a fixed height for the chart */
+}
+
+.freq-bar-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  text-transform: uppercase;
+  height: 100%;
+}
+
+.freq-bar {
+  width: 100%;
+  background-color: var(--accent-color);
+  border-radius: 3px 3px 0 0;
+  transition: height 0.3s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1em;
+  color: var(--text-on-color);
+  overflow: hidden; /* Hides text if bar is too small */
+}
+
+.freq-label {
+  margin-top: 5px;
+  font-size: 1.2em;
+}
+#difficulty-rating {
+  font-size: 1.1em;
+  margin-bottom: 20px;
+  color: var(--text-secondary);
+}
+
+#difficulty-rating .stars {
+  color: var(--present-bg); /* Use a standout color for the stars */
+  font-size: 1.3em;
+  letter-spacing: 2px;
+}

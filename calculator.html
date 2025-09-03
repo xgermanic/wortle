@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WØRTLE - Guess Calculator</title>
+    <link rel="stylesheet" href="calculator.css">
+    <link rel="icon" type="image/x-icon" href="/wortle/images/favicon.ico">
+</head>
+<body>
+    <div id="app-container">
+        <div id="setup-container">
+            <header>
+                <h1>Wørtle Guess Calculator</h1>
+                <p class="instructions">Enter the secret word you're testing against. The word must be from the official word lists.</p>
+            </header>
+            <div id="secret-word-area">
+                <input type="text" id="secret-word-input" maxlength="5" placeholder="Secret Word...">
+                <button id="start-btn">Start Calculating</button>
+            </div>
+        </div>
+
+        <div id="calculator-container" class="hidden">
+            <div id="results-container">
+                <div id="current-secret-word"></div>
+                <div id="difficulty-rating"></div>
+                <h2 id="possible-words-count">...</h2>
+                <p>possible words remaining</p>
+            </div>
+    
+            <div id="word-list"></div>
+
+            <div id="guess-history">
+                </div>
+    
+            <div id="input-area">
+                <button id="hard-reset-btn">New Word</button> 
+                <button id="soft-reset-btn">Reset</button>
+                <input type="text" id="guess-input" maxlength="5" placeholder="Enter guess...">
+                <button id="submit-guess-btn">Submit Guess</button>
+            </div>
+
+            <div id="suggestion-container" class="hidden">
+                <h3>Top Next Guess Candidates:</h3>
+                <div id="suggestion-list"></div>
+            </div>
+
+            <div id="filler-suggestion-container" class="hidden">
+                <h3>Best Non-Hard Mode Filler:</h3>
+                <div id="filler-suggestion-list"></div>
+            </div>
+
+            <div id="frequency-container" class="hidden">
+                <h3>Most Common Letters Remaining:</h3>
+                <div id="frequency-bars"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="calculator.js"></script>
+</body>
+</html>
