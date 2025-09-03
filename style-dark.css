@@ -1,436 +1,145 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
-  :root {
-    --bg-panel: #011a23;
-    --bg-keyboard: #818384;
-    --border-strong: #1f0471; /* A darker shade of the background */
-    --correct-bg: #4f1868; /* Muted terracotta */
-    --accent-color: rgb(243, 202, 186);
-    --text-primary: #fff;
-    --text-secondary: #214a5a; 
-    --border-subtle: #052737;/* Muted terracotta */
-    --present-bg: #011219; 
-    }
-  body {
-    font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
-    text-align: center;
-    background-color: #01222e;
-    color: white;
-    margin:0 auto;
-  }
-  h1, h2, h3 {
-    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  }
-  a {
-    color:white;
-  }
+:root {
+  --bg-panel: #011a23;
+  --bg-keyboard: #818384;
+  --border-strong: #1f0471;
+  --correct-bg: #4f1868;
+  --accent-color: rgb(243, 202, 186);
+  --text-primary: #fff;
+  --text-secondary: #214a5a;
+  --border-subtle: #052737;
+  --present-bg: #011219;
+  --scanline-color: rgba(0, 231, 193, 0.01);
+}
 
-  .dimmed {
-    opacity: 0.5;
-    pointer-events: none; /* Disables interaction with dimmed elements */
+body {
+  background-color: #01222e;
+  color: white;
+  background-image: linear-gradient(rgba(0,0,0,.05) 50%, transparent 50%), linear-gradient(90deg, rgba(255,0,255,.03) 1px, transparent 1px);
 }
-  .board {
-    display: grid;
-    grid-template-rows: repeat(6, 1fr);
-    gap: 5px;
-    margin: 20px;
-    transition: opacity 0.4s ease-in-out;
-  }
-  .row {
-  display: grid;
-  /* ✅ FIX: Columns are now explicitly sized to fit the 60px tiles. */
-  grid-template-columns: repeat(5, 60px);
-  gap: 10px; /* You can still adjust this value if you want */
-  
-  /* ✅ ADD: This centers the entire group of 5 tiles within the row. */
-  justify-content: center;
+
+a {
+  color: white;
 }
-  .tile {
-    box-shadow: 2px 2px 2px #732b2b;
-    width: 60px;
-    height: 50px;
-    border: 3px solid #041c47;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2em;
-    font-weight: bold;
-    text-transform: uppercase;
-    background-color: #121213;
-    color: white;
-    border-radius:5px;
-    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
-  }
-  .correct { background-color: #538d4e !important; }
-  .present { background-color: #b59f3b !important; }
-  .absent { background-color: #3a3a3c !important; }
-  .keyboard {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    max-width: 600px;
-    margin-top:20px;
-    margin-bottom:20px;
-  }
-  .key-row {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-  }
-  .key {
-    padding: 10px;
-    background-color: #818384;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    font-weight: bold;
-    color: white;
-    user-select: none;
-  }
-  #hintBtn1, #hintBtn2, #hintBtn3, #hintBtn4 {
-    height: 68px;
-    background: transparent;
-    text-align: left;
-    border: 0px;
-    border-radius:5px;
-    margin-bottom: 5px;
-    cursor: pointer;
-    padding: 0 0 0 10px;
-    color: #214a5a;
-    font-size: 10pt;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.3s ease;
+
+.tile {
+  box-shadow: 2px 2px 2px #732b2b;
+  border: 3px solid #041c47;
+  background-color: #121213;
+  color: white;
+}
+
+.correct {
+  background-color: #538d4e !important;
+}
+
+.present {
+  background-color: #b59f3b !important;
+}
+
+.absent {
+  background-color: #3a3a3c !important;
+}
+
+.key {
+  background-color: #818384;
+  color: white;
+}
+
+#hintBtn1, #hintBtn2, #hintBtn3, #hintBtn4 {
+  background: transparent;
+  color: #214a5a;
   border-bottom: 2px solid #81a4c7;
-  }
-#hintTitle {
-    width:auto;
-    text-align: center; 
-    text-transform: lowercase;
-    margin:0 auto;
-    font-weight: 700; 
-    font-style:italic;
-    font-family: 'Sansita', cursive;
-    margin-bottom: 10px; 
-    font-size: 1.3em; 
-    letter-spacing: 2pt;
-    position: relative; /* Establishes a positioning context for the ::before element */
-    display: inline-block; /* Makes the h2 only as wide as the text inside it */
 }
+
 #hintTitle::before {
-    height: 9px;
-    width: 105%; /* Makes the element as wide as the text */
-    left: -4%;     /* Aligns it to the start of the text */
-    bottom: -2px; 
-    z-index: -1;
-    content: "";
-    position: absolute;
-    opacity: 0.8;
-    background-color: #4f1868; /* Your desired "offset" color */
+  background-color: #4f1868;
 }
+
 #hintTitle:hover::before {
-  background-color: #1e0729; /* Your desired "offset" color */
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  background-color: #1e0729;
 }
-.hint-button {
-  display: none;
-}
+
 #hintButtons button {
-  width: 180px;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 4px;
-  padding: 5px 0;
-  letter-spacing: 1pt;
-  font-weight: bold;
   background: rgb(3, 39, 93);
   border: 2px solid rgb(14, 12, 43);
   border-left: 4px solid rgb(14, 12, 43);
   box-shadow: 0 0.2rem rgb(14, 12, 43);
-  border-radius: 10px;
-  margin: 4px 2px;
-  cursor: pointer;
   color: #c7d1d5;
-  font-size: 10pt;
-  white-space: normal;
-  overflow: hidden;
-  height: auto;
-  transition: background-color 0.3s ease;
 }
 
-  #hintButtons button.expanded {
-  opacity: 1;
-  max-height: 220px;
-  }
-  #hintButtons button:disabled {
-  cursor: default;
-  opacity: 1;
-}
-.hint-label {
-    text-transform: lowercase;
-    padding-bottom: 2px;
-    font-size: 11pt;
-    width: 100%;
-    letter-spacing: 1pt;
-    margin: 0;
-    font-family: 'Sansita', cursive;
-}
-  
-  .hint-label.hidden {
-      margin-right: 10px;
-  }
-
-.hint-text {
-  display: block;
-  font-weight: normal;
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-              opacity 0.5s ease, 
-              overflow 0s linear 0.5s;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.hint-text.visible {
-  opacity: 1;
-  padding: 7px 15px 7px 7px;
-  width: 435px;
-  text-transform: uppercase;
-  overflow: auto;
-  max-height: 68px;
-  font-size: 11pt;
-  text-align:right;
-  font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
-}
 #hintBtn1:hover, #hintBtn2:hover, #hintBtn3:hover, #hintBtn4:hover,
 #hintBtn1.clicked-hint, #hintBtn2.clicked-hint, #hintBtn3.clicked-hint, #hintBtn4.clicked-hint {
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
   background-color: #b3c4e0;
   border-bottom: 2px solid #81a4c7;
 }
+
 .styled-button {
-    background-color: transparent;
-    border: none;
-    width: auto;
-    color: rgb(255, 255, 255);
-    text-shadow: 2px 2px #000000;
-    font-size: 10pt;
-    font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
-    cursor: pointer;
-    margin: 0;
-    letter-spacing: 1px;
-}
-  #modalCopyBtn, #showStatsBtn, #showScoreboardBtn, #copy-url-btn, #start-playing-btn {
-    background-color: #e4e4e4;
-    border: none;
-    padding: 10px;
-    font-weight: bold;
-    font-size: 10pt;
-    width: 10em;
-    border-radius: 1rem;
-    color: rgb(35, 35, 35);
-    box-shadow: 0 0.4rem #1d1d1d;
-    border: 2px solid #1d1d1d;
-    cursor: pointer;
-    margin: 5px auto;
-    z-index: 100;
-  }
-  #modalCopyBtn:hover, #showStatsBtn:hover, #showScoreboardBtn:hover, #copy-url-btn:hover, #start-playing-btn:hover {
-    background-color: #e97251;
-    color: #e9e9e9;
-    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
-  }
-  #modal-stats-display {
-    text-align: center;
-  }
-
-  h1 { 
-    letter-spacing: 1pt;
-    border-bottom:1px solid rgb(34, 65, 78);
-    margin: 0;
-    background-color:rgb(3, 22, 27);
-    font-family: 'VT323', monospace;
-    box-sizing: border-box;
-    height: 75px;
-    position: relative; /* This is crucial for positioning the button groups */
-    text-align: center; /* This centers the <p> element */
-    padding: 0 150px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  background-color: transparent;
+  color: rgb(255, 255, 255);
+  text-shadow: 2px 2px #000000;
 }
 
-h1 > p {
-    margin: 0;
-    line-height: 33pt;
-    min-width:400px;
+#modalCopyBtn, #showStatsBtn, #showScoreboardBtn, #copy-url-btn, #start-playing-btn {
+  background-color: #e4e4e4;
+  color: rgb(35, 35, 35);
+  box-shadow: 0 0.4rem #1d1d1d;
+  border: 2px solid #1d1d1d;
 }
 
-.h1-button-group-left {
-    position: absolute;
-    left: 30px; /* Position from the left edge */
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    gap: 8px;
+#modalCopyBtn:hover, #showStatsBtn:hover, #showScoreboardBtn:hover, #copy-url-btn:hover, #start-playing-btn:hover {
+  background-color: #e97251;
+  color: #e9e9e9;
 }
 
-.h1-button-group-right {
-    position: absolute;
-    right: 30px; /* Position from the right edge */
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    gap: 8px;
-}
-/* Styling for the simple share modal */
-.share-popup {
-  /* Use the classic centering method for this modal */
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1001;
-  width: 400px;
-  
-  /* Hiding and transition */
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+h1 {
+  border-bottom: 1px solid rgb(34, 65, 78);
+  background-color: rgb(3, 22, 27);
 }
 
-/* Rule to show the share modal */
-.share-popup.show {
-  opacity: 1;
-  visibility: visible;
-}
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
   background-color: rgba(0, 0, 0, 0.6);
-  z-index: 1000;
-
-  /* Flexbox properties for centering */
-  display: flex;
-  align-items: center;     /* Vertical centering */
-  justify-content: center; /* Horizontal centering */
-  
-  /* Hiding and transition */
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-.modal {
-  position: relative;
-  /* The animation for the modal itself */
-  transform: scale(0.95);
-  opacity: 0;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  transition-delay: 0.1s; /* Small delay to let the overlay fade in first */
 }
 
-
-
-/* This class now controls the visibility of the overlay and the modal inside it */
-.modal-overlay.show {
-  opacity: 1;
-  visibility: visible;
-}
-/* When the overlay is shown, also animate the modal */
-.modal-overlay.show .modal {
-  transform: scale(1);
-  opacity: 1;
-}
-  #modal-message { font-size: 16pt; width:auto; font-family:monospace; }
-  .modal-content {
-  position: relative; 
-  max-height:80%;
+.modal-content {
   background-color: #e1dbd9;
-  border-top:20px solid rgb(206, 86, 17);
-  border-radius:10px;
-  padding: 15px 30px 30px 30px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 0px;
+  border-top: 20px solid rgb(206, 86, 17);
   color: rgb(33, 33, 33);
-  max-height: 85vh;      /* Set a max height relative to the screen */
-  overflow-y: auto;      /* Add a vertical scrollbar ONLY when needed */
-  }
-  #modal-summary {
-    white-space: pre-wrap;
-    font-family: monospace;
-    font-size: 1.2em;
-    color: rgb(33, 33, 33);
-    letter-spacing: 2pt;
-  }
-  #hintButtonsContainer {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 3px;
-    margin-top: 30px;
-  }
-  #secretWordColor {
-  color: #cd1616; /* Example: a bright orange color */
 }
+
+#modal-summary {
+  color: rgb(33, 33, 33);
+}
+
+#secretWordColor {
+  color: #cd1616;
+}
+
 .word-host-input {
   background: #021a24;
-  font-size:11pt;
   color: #c7d1d5;
-  border: none;
-  padding: 7px;
-  border-radius: 6px;
-  width: 200px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  margin-left: 30px;
-  text-align: center;
-  transition: background 0.2s ease; /* Smooth color change */
+  border: 2px solid rgb(92, 17, 17);
 }
+
 .host-input {
   background: #021a24;
-  font-size:11pt;
   color: #c7d1d5;
-  border: none;
-  padding: 7px;
-  border-radius: 6px;
-  width: 200px;
-  height:22px;
-  display: block;
-  margin: auto;
-  margin-top: 2px;
-  margin-bottom: 2px;
-  text-align: center;
-  transition: background 0.2s ease; /* Smooth color change */
 }
 
 .host-input::placeholder, .word-host-input::placeholder, #funFactInput::placeholder {
   color: #6f8a94;
 }
+
 .host-input:not(:placeholder-shown), .word-host-input:not(:placeholder-shown), #funFactInput:not(:placeholder-shown) {
   background: #010f15;
 }
-  .host-input, #funFactInput {
-    border: 1px solid var(--border-subtle);
-  }
+
+.host-input, #funFactInput {
+  border: 1px solid var(--border-subtle);
+}
+
 #hintInput4Container {
-  margin: auto;
-  margin-top: 3px;
-  margin-bottom: 3px;
-  display: block;
   background: #021a24;
-    border: 1px solid var(--border-subtle);
-  padding: 7px;
-  width: 200px;
-  border-radius: 6px;
-  text-align:center;
-  transition: background 0.2s ease; /* Smooth color change */
+  border: 1px solid var(--border-subtle);
 }
 
 #hintInput4Container.darkened {
@@ -438,910 +147,248 @@ h1 > p {
 }
 
 #modal-stats-container {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.5s ease-in-out, margin-top 0.5s ease-in-out;
-    background-color: #d8d8d8;
-    color: #333;
-    padding: 0 10px;
-    border-radius: 8px;
-  }
+  background-color: #d8d8d8;
+  color: #333;
+}
 
-  #modal-stats-container.expanded {
-    max-height: 500px;
-  }
-
-  .stats-line {
-    margin: 5px 0;
-    font-family: monospace;
-  }
-
-  .button-group {
-    display: inline-block;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-    align-items: center;
-  }
-  
-  .key:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-  /* Add the class to apply the animation */
-  .shake {
-    animation: shake 0.5s ease-in-out;
-  }
-  #funFactInput {
+#funFactInput {
   background: #021a24;
   color: #c7d1d5;
-  padding: 8px 28px;
-  min-height: 70px;
-  font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  border-radius: 6px;
-  font-size: 11pt;
-  width: 300px;
-  display: block;
-  margin: auto;
-  margin: 5px auto;
-  text-align: center;
-  transition: background 0.2s ease;
-  resize: vertical; /* Let users adjust height if they want */
-  line-height: 1.4;
-  }
-  .fun-fact-section {
-    background-color: #d8d8d8; /* A dark blue-gray background */
-    color: #333; /* A light off-white font color */
-    font-size: 11pt; /* Slightly larger font size */
-    box-shadow: 0 0.4rem #5d849f;
-    border:2px solid #5d849f;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 10px;
-    min-height:60px;
-    max-height:120px;
-    overflow:scroll;
-  }
-  .fun-fact-section h2 {
-    font-size:12pt;
-    margin:4px 0 6px 0;
-  }
-  .fun-fact-section::-webkit-scrollbar {
-  width: 10px; /* Width of the vertical scrollbar */
 }
-/* Scrollbar thumb */
+
+.fun-fact-section {
+  background-color: #d8d8d8;
+  color: #333;
+  box-shadow: 0 0.4rem #5d849f;
+  border: 2px solid #5d849f;
+}
+
 .fun-fact-section::-webkit-scrollbar-thumb {
-  background-color: #a14612; /* Color of the thumb */
-  border-radius: 0px 6px; /* Rounded corners for the thumb */
+  background-color: #a14612;
 }
-/* Track */
+
 .fun-fact-section::-webkit-scrollbar-corner {
   background: #4e1919;
-  border-radius: 6px 0px;
 }
+
 .help-button {
-    background: #07548a;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 29px;
-    height: 29px;
-    font-weight: bold;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 0.3s ease;
-    /* --- Add these properties for perfect centering --- */
-    display: flex;
-    align-items: center;     /* Vertically centers the emoji */
-    justify-content: center;  /* Horizontally centers the emoji */
-    font-size: 14px;          /* Set an explicit size for the emoji */
-    padding: 0;               /* Remove any padding that might interfere */
-    line-height: 1; 
+  background: #07548a;
+  color: white;
 }
 
 .help-button:hover {
   background-color: #0a73c2;
 }
+
 .help-popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   background: #e1dbd9;
   color: #212121;
-  max-width: 380px;
-  border-radius: 10px;
   box-shadow: 0 0 15px rgba(0,0,0,0.5);
-  z-index: 9999;
-  display: flex; /* Use flex by default */
-  flex-direction: column;
   outline: 2px solid orange;
-  padding: 2px 6px;
-}/* Hide when hidden attribute is present */
-.help-popup[hidden] {
-  display: none;
 }
+
 .help-popup:focus {
   outline: 2px solid orange;
 }
-.help-popup-content {
-  position: relative;
-  padding: 20px 45px;
-    overflow: scroll;
-    max-height: 550px;
-    font-size: 11.5pt;
-}
+
 .close-btn {
-  position: absolute;
-  top: -8px;
-  right: 0px;
-  width: 25px;
-  height: 25px;
-  border: none;
   background: transparent;
-  z-index: 1000;
-  border-radius: 50%;
-  font-size: 17pt;
-  cursor: pointer;
   color: rgb(185, 71, 5);
-  font-family: 'Sansita', cursive;
 }
+
 .language-popup .close-btn {
-    color: #707070;
+  color: #707070;
 }
+
 .close-btn:hover {
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
   color: #000;
 }
+
 .close-help-btn, .close-hint-btn {
-    position: absolute;
-    top: 0px;
-    right: 1px;
-    width: 30px;
-    height: 30px;
-    border: none;
-    background: transparent;
-    z-index: 1000;
-    border-radius: 50%;
-    font-size: 19pt;
-    cursor: pointer;
-    color: #707070;
-    font-family: 'Sansita', cursive;
+  background: transparent;
+  color: #707070;
 }
+
 .close-help-btn:hover, .close-hint-btn:hover {
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
   color: #000;
 }
-.close-hint-btn {
-  top:-3px;
-}
-/* The dark background overlay */
-#hintPopupOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* This z-index is crucial. It must be high. */
-  z-index: 999;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0s 0.3s;
-}
 
-/* The popup box itself */
 .hint-popup {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 10px;
   background-color: #d0d9dc;
-  border-radius: 10px;
   border: 2px solid #b3c4e0;
-  /* This must have a HIGHER z-index than the overlay. */
-  z-index: 1000;
-  transform: translateY(100%);
-  opacity: 0;
-  visibility: hidden;
-  transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s 0.3s;
 }
 
-/* --- The rest of the CSS remains the same --- */
-
-/* Active (visible) state for the popup */
-.hint-popup.show {
-  transform: translateY(0);
-  opacity: 1;
-  visibility: visible;
-  transition-delay: 0s;
-  bottom:10px;
-}
-
-/* When the popup is shown, also show the overlay */
-.hint-popup.show ~ #hintPopupOverlay {
-  opacity: 1;
-  visibility: visible;
-  transition-delay: 0s;
-}
 #share-message-box {
-    width: 100%;
-    height: 80px;
-    padding: 10px;
-    box-sizing: border-box;
-    background-color: #d8d8d8;
-    border: 2px dashed #ccc;
-    border-radius: 15px;
-    color: #4b819d;
-    font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
-    font-size: 1em;
-    resize: none;
+  background-color: #d8d8d8;
+  border: 2px dashed #ccc;
+  color: #4b819d;
 }
-#share-message-box:focus {
-    outline: none;
-}
-/* Container for the custom tooltip */
-.custom-tooltip {
-  position: relative; /* This is required for positioning the tooltip */
-  cursor: pointer;
-}
-  .custom-tooltip::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-top: 10px;
-  /* Appearance */
+
+.custom-tooltip::after {
   background-color: #d8d8d8;
   color: #4b819d;
-    font-weight:400;
-    padding: 8px;
-    border-radius: 4px;
-    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    font-size: 11pt;
-    z-index: 10; /* Ensure it appears above other elements */
-    white-space: normal;  /* Allow text to wrap */
-    max-width: 200px;     /* Prevent it from getting too wide */
-    text-align: center;   
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.1s ease, visibility 0.1s ease;
-    transition-delay: 0s;
 }
 
-/* Show the tooltip on hover */
-.custom-tooltip:hover::after {
-  opacity: 1;
-  visibility: visible;
-  transition-delay: 0s; /* No delay on showing */
-}
-
-table {
-  font-family: monospace;
-  font-size:10pt;
-  border-collapse: collapse;
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-}
-tr>:nth-child(2){
-  min-width: 35px;
-}
-tr>:nth-child(1), tr>:nth-child(4) {
-  max-width:20px;
-  text-align:center;
-}
-tr>:nth-child(3) {
-  max-width:30px;
-  text-align:center;
-}
-tr {
-  text-transform: uppercase;
-}
 td, th {
   border: 1px #ddd;
-  border-style: none solid solid none;
-  padding: 5px;
-  text-align:left;
 }
-td {
-  max-width: 10px;
-  overflow: scroll;
-}
-th {
-  border:0px;
-  text-transform: capitalize;
-}
-tr:first-child td:first-child { border-top-left-radius: 10px; }
-tr:first-child td:last-child { border-top-right-radius: 10px; }
 
-tr:last-child td:first-child { border-bottom-left-radius: 10px; }
-tr:last-child td:last-child { border-bottom-right-radius: 10px; }
-
-tr:first-child td { border-top-style: solid; }
-tr td:first-child { border-left-style: solid; }
-tr:nth-child(even){
+tr:nth-child(even) {
   background-color: #01222e;
 }
-#game-over-modal {
-  position: relative; /* Establishes a stacking context */ /* Acts as the positioning anchor */
-}
+
 .side-panel {
-  position: absolute;
-  top: 35px;
-  left: 100%;
-  z-index: 1;
-  /* --- MODIFIED --- */
-  width: 0;
-  overflow: hidden; /* This now hides the static inner content */
-  transition: width 0.4s ease-in-out;
-  padding: 0; /* Padding is now on the inner wrapper */
-  /* Your other styles */
-  height: 90%;
   background-color: #021a24;
   color: #fff;
-  border-radius: 0 12px 12px 0;
   box-shadow: 5px 0 15px rgba(0, 0, 0, 0.2);
-  pointer-events: none;
-}
-.side-panel.show {
-  width: 280px; /* The outer container still expands to this width */
-  pointer-events: auto;
-}
-/* --- ADD THIS NEW RULE --- */
-.side-panel-content {
-  /* This container has a fixed width, so the text inside doesn't reflow */
-  width: 280px;
-  padding: 20px;
-  height: 100%;
-  overflow: auto; /* Adds a scrollbar if content is too tall */
-  box-sizing: border-box; /* Keeps padding inside the defined width/height */
-}
-    /* Add these new styles for the scoreboard summary */
-    #scoreboard-summary-container {
-        padding: 10px 15px;
-        border-bottom: 1px solid #444; /* A separator line */
-        margin-bottom: 10px;
-    }
-
-    .summary-stat {
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 14px;
-    }
-
-    .summary-stat:last-child {
-        margin-bottom: 0;
-    }
-
-    .stat-label {
-        width: 90px; /* Helps align the labels */
-        text-align: center;
-        color: #c7d1d5;
-        flex-shrink: 0;
-    }
-
-    .stat-bar-container {
-        flex-grow: 1;
-        height: 20px;
-        border-right: 3px dotted #384d58;
-        overflow: hidden;
-    }
-
-    .stat-bar {
-        height: 100%;
-        background-color: rgb(92, 17, 17); /* A color that fits your theme */
-        border-radius: 5px;
-        transition: width 0.5s ease-in-out;
-        text-align: center;
-    text-shadow: 1px 2px #000000;
-    color: #e5e8ea;
-        font-weight: bold;
-        line-height: 20px; /* Vertically center text */
-        white-space: nowrap;
-    }
-.modal-button-container {
-  display: flex;
-  flex-direction: column; /* Stacks items vertically */
-  align-items: center;   /* Centers the buttons horizontally */
-  gap: 0px;             /* Adds some space between each button */
-  width: 100%;           /* Ensures the container takes up the available space */
 }
 
-/* Add this CSS to your stylesheet */
-
-#word-status-indicator {
-    font-size: 8pt;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    font-family: sans-serif;
-    height: 20px;
-    margin-left: 10px;
-    box-sizing: border-box;
-}
-
-#word-status-indicator.valid {
-    color: #10d63d;
-    border-radius: 15px;
-    border: 2px solid #05a400;
-    background-color: #116517;
-}
-
-#word-status-indicator.invalid {
-    color: #ff4127;
-    border-radius: 15px;
-    border: 2px solid #db1c02;
-    background-color: #8d1d1d;
-}
-
-/* Simple loading spinner */
-#word-status-indicator.loading::after {
-  content: '';
-  display: block;
-  width: 15px;
-  height: 15px;
-  border: 3px solid #7f8c8d;
-  border-top-color: #ecf0f1;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Shake animation for the input field on error */
-.shake {
-  animation: shake 0.5s;
-}
-
-@keyframes shake {
-  10%, 90% { transform: translateX(-1px); }
-  20%, 80% { transform: translateX(2px); }
-  30%, 50%, 70% { transform: translateX(-4px); }
-  40%, 60% { transform: translateX(4px); }
-}
-/* Add this new CSS rule */
-.input-with-indicator {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* --- Account Sidebar Styles --- */
-#account-sidebar {
-    font-family: monospace;
-    background-color: #01222e;
-    border-left: 2px solid rgb(34, 65, 78);
-    box-shadow: -5px 0 15px rgba(0,0,0,0.4);
-    z-index: 9999;
-    padding: 10px;
-    transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    color: #c7d1d5;
-    overflow-y: auto;
-}
-
-#account-sidebar.show {
-    right: 0; /* Slide into view */
-}
-
-#account-sidebar h2 {
-    text-align: center;
-    margin-top: 25px;
-    text-transform: lowercase;
-    font-family: 'Sansita', cursive;
-    position: relative; /* Establishes a positioning context for the ::before element */
-    display: inline-block; /* Makes the h2 only as wide as the text inside it */
-}
-
-#account-sidebar h2::before {
-    content: "";
-    position: absolute;
-    background-color: #4f1868;
-    height: 9px;
-    width: 110%; /* Makes the element as wide as the text */
-    left: -5%;     /* Aligns it to the start of the text */
-    bottom: -2px; 
-    z-index: -1;
-}
-
-.account-section {
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-.account-section:last-child {
-  margin-bottom:20px;
-}
-.user-games-title {
-    font-weight: 400;
-    text-transform: lowercase;
-    margin: 0 0 10px 0;
-    font-size: 11pt;
-}
-.games-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0px;
-    border-radius: 8px;
-    padding: 2px;
-    min-height: 30px;
-}
-
-.games-list a {
-    color: #81a4c7;
-    text-decoration: none;
-    background-color: transparent;
-    padding: 8px;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.2s ease;
-}
-
-.game-status {
-    font-size: 0.8em;
-    font-style: italic;
-    color: #c7d1d5;
-    opacity: 0.8;
-}
-
-.game-list-item {
-    background-color: transparent;
-    padding: 2px;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background-color 0.2s ease;
-}
-
-.game-list-item:hover {
-    background-color: #060e12;
-}
-
-.game-list-item a {
-    color: #edf6ff;
-    text-decoration: none;
-    letter-spacing: 1px;
-    font-size:9pt;
-}
-
-.game-item-actions {
-    display: flex;
-    gap: 0px;
-}
-
-.game-item-actions button {
-    background: transparent;
-    border: none;
-    color: #c7d1d5;
-    border-radius: 50%;
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
-    font-size: 12pt;
-    margin-top:2px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.game-item-actions button svg {
-    color: #1898cb;
-}
-.game-item-actions button:hover svg {
-    transition: background-color 0.2s ease, color 0.2s ease;
-    stroke: #E57373; /* A nice red color for the hover state */
-}
-.game-item-actions button:hover {
-    color: #fff;
-}
-
-.stat-value {
-    font-size: 1.4em;
-    font-weight: bold;
-    color: #fff;
+#scoreboard-summary-container {
+  border-bottom: 1px solid #444;
 }
 
 .stat-label {
-    font-size: 0.8em;
-    color: #81a4c7;
-    text-transform: uppercase;
+  color: #c7d1d5;
 }
-.login-prompt-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 5px; /* A smaller gap suitable for these elements */
-    width: 100%; /* Ensures it takes up space to center its contents */
+
+.stat-bar-container {
+  border-right: 3px dotted #384d58;
 }
-/* --- New Sidebar Loader and Content Styles --- */
+
+.stat-bar {
+  background-color: rgb(92, 17, 17);
+  text-shadow: 1px 2px #000000;
+  color: #e5e8ea;
+}
+
+#word-status-indicator.loading::after {
+  border: 3px solid #7f8c8d;
+  border-top-color: #ecf0f1;
+}
+
+#account-sidebar {
+  background-color: #01222e;
+  border-left: 2px solid rgb(34, 65, 78);
+  box-shadow: -5px 0 15px rgba(0,0,0,0.4);
+  color: #c7d1d5;
+}
+
+#account-sidebar h2::before {
+  background-color: #4f1868;
+}
+
+.games-list a {
+  color: #81a4c7;
+  background-color: transparent;
+}
+
+.game-status {
+  color: #c7d1d5;
+}
+
+.game-list-item {
+  background-color: transparent;
+}
+
+.game-list-item:hover {
+  background-color: #060e12;
+}
+
+.game-list-item a {
+  color: #edf6ff;
+}
+
+.game-item-actions button {
+  background: transparent;
+  color: #c7d1d5;
+}
+
+.game-item-actions button svg {
+  color: #1898cb;
+}
+
+.game-item-actions button:hover svg {
+  stroke: #E57373;
+}
+
+.game-item-actions button:hover {
+  color: #fff;
+}
+
+.stat-value {
+  color: #fff;
+}
+
 #sidebar-loader {
-    display: none; /* Hidden until we need it */
-    text-align: center;
-    margin-top: 50px;
-    font-size: 1.1em;
-    color: #81a4c7;
+  color: #81a4c7;
 }
 
-/* A simple CSS spinner animation */
 .spinner {
-    margin: 0 auto 15px auto;
-    border: 4px solid rgba(255, 255, 255, 0.2);
-    border-left-color: #fff;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 1s linear infinite;
-}
-
-#sidebar-content {
-    visibility: hidden; /* Hide the content until it's loaded */
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-}
-
-#sidebar-content.loaded {
-    visibility: visible;
-    opacity: 1;
-}
-/* --- Toast Notification Styles --- */
-#toast-container {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10003;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  pointer-events: none; /* Allows clicks to go "through" the container */
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-left-color: #fff;
 }
 
 .toast {
   background-color: #f0f0f0;
   color: #333;
-  padding: 12px 20px;
-  border-radius: 25px;
-  font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
-  font-size: 1em;
-  font-weight: bold;
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  animation: fadeInOut 3s ease-in-out forwards;
-  pointer-events: all; /* Toasts themselves can be interacted with if needed */
 }
 
-/* A special style for error messages */
 .toast.error {
   background-color: #c53a3a;
   color: white;
 }
 
-@keyframes fadeInOut {
-  0% {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  10%, 90% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-}
-/* --- FINAL UNIFIED LAYOUT & HEADER STYLES --- */
-
-/* 1. This styles the OUTER, full-width header bars */
 #header-setup {
-  display: none;
   background-color: #041c27;
-  padding: 5px 10px;
   border-bottom: 1px solid #06090a;
-  justify-content: center;
-  height:32px;
 }
 
-/* 2. This is the INNER wrapper that constrains the header content */
-.header-content-wrapper {
-  width: 100%;
-  max-width: 500px; /* Adjust this value to match your game board if needed */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-}
-
-/* 3. This creates the main centered column for your setup form and game */
-#setup,
-#game {
-  max-width: 500px;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  box-sizing: border-box; 
-  transition: opacity 0.4s ease-in-out;
-  display: none;
-}
-
-/* 4. This styles the individual sections INSIDE the wrapper (username, host, etc.) */
-.header-content-wrapper > div {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
-/* 5. This unifies the font and padding for text and buttons inside the header */
-.header-content-wrapper p,
-.header-content-wrapper button {
-  font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
-  font-size: 10pt;
-  letter-spacing: 1px;
+.header-content-wrapper p, .header-content-wrapper button {
   text-shadow: 2px 2px #000000;
-  margin: 0;
-  padding: 4px;
 }
-#setup-form-content {
-  transition: opacity 0.4s ease-in-out;
-}
+
 #host-credit {
-  font-size:9pt;
   color: #818384;
-  margin-top: 25px;
-  letter-spacing: 1px;
-  font-family:monospace;
-}
-/* --- Add these styles for the badges --- */
-#account-badges-container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: -10px 0 15px 0; /* Adjust spacing */
 }
 
 .badge {
-    background-color: #2b1868; /* A color that fits your theme */
-    color: #e5e8ea;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.8em;
-    font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: bold;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-/* REPLACE your existing graph CSS with this block */
-#account-graph-container, #modal-stats-container .stats-graph {
-    width: 100%;
-    padding: 10px 15px;
-    box-sizing: border-box;
-    margin-bottom: 5px;
-    font-family: monospace;
-}
-
-#account-graph-container h3, #modal-stats-container .stats-graph h3 {
-    text-align: center;
-    margin: 0 0 10px 0;
-    font-size: 11pt;
-    font-weight: 400;
-    text-transform: lowercase;
-    font-family: monospace;
+  background-color: #2b1868;
+  color: #e5e8ea;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .graph-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-    height: 20px;
-    color: #b4b4b4; /* Color for the numbers */
-}
-
-.graph-label {
-    width: 20px;
-    font-weight: bold;
+  color: #b4b4b4;
 }
 
 .graph-bar, .zero-count {
-    background-color: #054470; /* Default bar color (gray) */
-    color: white; /* Number color inside the bar */
-    height: 100%;
-    text-align: right;
-    padding-right: 8px;
-    box-sizing: border-box;
-    font-weight: bold;
-    min-width: 22px; /* Ensures even '1' is inside a visible bar */
-    transition: width 0.5s ease-in-out;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    border-radius: 5px;
+  background-color: #054470;
+  color: white;
 }
 
 .graph-bar.highlight {
-    background-color: #538d4e; /* The "correct" green color */
+  background-color: #538d4e;
 }
-/* Add these styles for the "I Give Up" button */
+
 #giveUpBtn {
-    background-color: #5c1111;
-    border: 2px solid #434445; /* Use the same color as the absent keys */
-    color: #fff;
-    width: 140px;
-    margin: 0 auto;
-    border-radius: 8px;
-    padding: 5px 10px;
-    font-family: monospace;
-    text-transform: lowercase;
-    font-size: 11pt;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 20px; /* Space it out from the keyboard */
-    transition: background-color 0.2s ease, color 0.2s ease;
+  background-color: #5c1111;
+  border: 2px solid #434445;
+  color: #fff;
 }
 
 #giveUpBtn:hover {
-    background-color: #c53a3a; /* A reddish color on hover */
+  background-color: #c53a3a;
 }
 
 #giveUpBtn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #5c1111; /* Reset hover effect when disabled */
+  background-color: #5c1111;
 }
 
-.word-host-input {
-    border:2px solid rgb(92, 17, 17);
-}
 #hintInput4Container p {
-    margin:0 0 5px 0; 
-    font-size:11pt; 
-    color:#c7d1d5;
-}
-#mainContent {
-  visibility: hidden;
-  opacity: 0;
-  transition: opacity 0.3s ease-in;
-}
-
-#mainContent.loaded {
-  visibility: visible;
-  opacity: 1;
-}
-
-#loader {
-  display: none; /* Hide loader by default */
-  margin-top: 100px;
-  font-size: 1.2em;
+  color: #c7d1d5;
 }
 
 .overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Dimming color */
-  z-index: 9998; /* Positioned just below the sidebar/popup */
-  opacity: 0;
-  visibility: hidden;
-  
-  /* The smooth transition effect */
-  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-}
-
-/* Active/visible state */
-.overlay.show {
-  opacity: 1;
-  visibility: visible;
+  background-color: rgba(0, 0, 0, 0.5);
 }
