@@ -3,6 +3,7 @@
 <head>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-check-compat.js"></script>
 <script src="definitions.js"></script>
 <script src="theme.js"></script>
 <link rel="icon" type="image/x-icon" href="/wortle/images/favicon.ico">
@@ -13,7 +14,12 @@
 
   <link id="theme-stylesheet" rel="stylesheet" href="style-light.css">
   <style>
-    #mainContent { visibility: hidden; }
+
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+    #mainContent { 
+      visibility: hidden;
+ }
     /* ADD THIS RULE FOR DISABLED INPUTS */
   input:disabled {
     opacity: 1;
@@ -384,6 +390,19 @@ input:checked + .slider:before {
     .modal-content {
       width:340px;
     }
+
+#word-status-indicator {
+    font-size: 8pt;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    font-family: sans-serif;
+    height: 20px;
+    margin-left: 10px;
+    box-sizing: border-box;
+}
+
     /* Style for the container span when the word is valid */
 #word-status-indicator.valid {
   color: #28a745; /* A nice success green */
@@ -438,7 +457,26 @@ input:checked + .slider:before {
   stroke-linejoin: round;
   animation: shake-in 0.4s ease-out; /* Add a shake animation */
 }
+    /* Style for the container span when the word is valid */
+#word-status-indicator.word-taken{
+  color: #e59400; /* A nice success green */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
+/* Style for the SVG icon itself */
+#word-status-indicator.word-taken .clock-svg {
+  width: 18px; /* Adjust size as needed */
+  height: 18px;
+  stroke: currentColor; /* Inherits the green color */
+  stroke-width: 3;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* Add a pop-in animation */
+  animation: pop-in 0.3s ease-out;
+}
 /* Keyframe animation for the shake effect */
 @keyframes shake-in {
   0% { transform: translateX(0) scale(0.5); opacity: 0; }
@@ -448,6 +486,1189 @@ input:checked + .slider:before {
   80% { transform: translateX(-3px); }
   90% { transform: translateX(3px); }
   100% { transform: translateX(0); }
+}
+#game {
+  display: flex;
+  flex-direction: column;
+}
+.hidden {
+  display: none !important;
+}
+/* Add this to your stylesheet */
+.game-list-item-no-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+/* Main CSS */
+body {
+  font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
+  text-align: center;
+  margin: 0 auto;
+      background-image: 
+        linear-gradient(var(--scanline-color) 50%, transparent 50%), 
+        linear-gradient(90deg, var(--scanline-color) 1px, transparent 1px);
+      background-size: 100% 5px, 5px 100%;
+}
+
+h1, h2, h3 {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.dimmed {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.board {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 5px;
+  margin: 20px;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(5, 60px);
+  gap: 10px;
+  justify-content: center;
+}
+
+.tile {
+  width: 60px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-radius: 5px;
+  transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-width: 600px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.key-row {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.key {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  font-weight: bold;
+  user-select: none;
+}
+
+#hintBtn1, #hintBtn2, #hintBtn3, #hintBtn4 {
+  height: 68px;
+  text-align: left;
+  border: 0px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  padding: 0 0 0 10px;
+  font-size: 10pt;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+#hintTitle {
+  width: auto;
+  text-align: center;
+  text-transform: lowercase;
+  margin: 0 auto;
+  font-weight: 700;
+  font-style: italic;
+  font-family: 'Sansita', cursive;
+  margin-bottom: 10px;
+  font-size: 1.3em;
+  letter-spacing: 2pt;
+  position: relative;
+  display: inline-block;
+}
+
+#hintTitle::before {
+  height: 9px;
+  width: 105%;
+  left: -4%;
+  bottom: -2px;
+  z-index: -1;
+  content: "";
+  position: absolute;
+  opacity: 0.8;
+}
+
+#hintTitle:hover::before {
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.hint-button {
+  display: none;
+}
+
+#hintButtons button {
+  width: 180px;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 4px;
+  padding: 5px 0;
+  letter-spacing: 1pt;
+  font-weight: bold;
+  border-radius: 10px;
+  margin: 4px 2px;
+  cursor: pointer;
+  font-size: 10pt;
+  white-space: normal;
+  overflow: hidden;
+  height: auto;
+  transition: background-color 0.3s ease;
+}
+
+#hintButtons button.expanded {
+  opacity: 1;
+  max-height: 220px;
+}
+
+#hintButtons button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.hint-label {
+  text-transform: lowercase;
+  padding-bottom: 2px;
+  font-size: 11pt;
+  width: 100%;
+  letter-spacing: 1pt;
+  margin: 0;
+  font-family: 'Sansita', cursive;
+}
+
+.hint-label.hidden {
+  margin-right: 10px;
+}
+
+.hint-text {
+  display: block;
+  font-weight: normal;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.5s ease,
+    overflow 0s linear 0.5s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.hint-text.visible {
+  opacity: 1;
+  padding: 7px 15px 7px 7px;
+  width: 435px;
+  text-transform: uppercase;
+  overflow: auto;
+  max-height: 68px;
+  font-size: 11pt;
+  text-align: right;
+  font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
+}
+
+#hintBtn1:hover, #hintBtn2:hover, #hintBtn3:hover, #hintBtn4:hover,
+#hintBtn1.clicked-hint, #hintBtn2.clicked-hint, #hintBtn3.clicked-hint, #hintBtn4.clicked-hint {
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.styled-button {
+  border: none;
+  width: auto;
+  font-size: 10pt;
+  font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
+  cursor: pointer;
+  margin: 0;
+  letter-spacing: 1px;
+}
+
+#modalCopyBtn, #showStatsBtn, #showScoreboardBtn, #copy-url-btn, #start-playing-btn {
+  padding: 10px;
+  font-weight: bold;
+  font-size: 10pt;
+  width: 10em;
+  border-radius: 1rem;
+  cursor: pointer;
+  margin: 5px auto;
+  z-index: 100;
+}
+
+#modalCopyBtn:hover, #showStatsBtn:hover, #showScoreboardBtn:hover, #copy-url-btn:hover, #start-playing-btn:hover {
+  transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+}
+
+#modal-stats-display {
+  text-align: center;
+}
+
+h1 {
+  letter-spacing: 1pt;
+  margin: 0;
+  font-family: 'VT323', monospace;
+  box-sizing: border-box;
+  height: 75px;
+  position: relative;
+  text-align: center;
+  padding: 0 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+h1 > p {
+  margin: 0;
+  line-height: 33pt;
+  min-width: 400px;
+}
+
+.h1-button-group-left {
+  position: absolute;
+  left: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.h1-button-group-right {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 8px;
+}
+
+.share-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+  width: 400px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.share-popup.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal {
+  position: relative;
+  transform: scale(0.95);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition-delay: 0.1s;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-overlay.show .modal {
+  transform: scale(1);
+  opacity: 1;
+}
+
+#modal-message {
+  font-size: 16pt;
+  width: auto;
+  font-family: monospace;
+}
+
+.modal-content {
+  position: relative;
+  max-height: 80%;
+  border-radius: 10px;
+  padding: 15px 30px 30px 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+#modal-summary {
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 1.2em;
+  letter-spacing: 2pt;
+}
+
+#hintButtonsContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 30px;
+}
+
+.word-host-input {
+  font-size: 11pt;
+  padding: 7px;
+  border-radius: 6px;
+  width: 200px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-left: 30px;
+  text-align: center;
+  transition: background 0.2s ease;
+}
+
+.host-input {
+  font-size: 11pt;
+  padding: 7px;
+  border-radius: 6px;
+  width: 200px;
+  height: 22px;
+  display: block;
+  margin: auto;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  text-align: center;
+  transition: background 0.2s ease;
+}
+
+#hintInput4Container {
+  margin: auto;
+  margin-top: 3px;
+  margin-bottom: 3px;
+  display: block;
+  padding: 7px;
+  width: 200px;
+  border-radius: 6px;
+  text-align: center;
+  transition: background 0.2s ease;
+}
+
+#modal-stats-container {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease-in-out, margin-top 0.5s ease-in-out;
+  padding: 0 10px;
+  border-radius: 8px;
+}
+
+#modal-stats-container.expanded {
+  max-height: 500px;
+}
+
+.stats-line {
+  margin: 5px 0;
+  font-family: monospace;
+}
+
+.button-group {
+  display: inline-block;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+  align-items: center;
+}
+
+.key:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+#funFactInput {
+  padding: 8px 28px;
+  min-height: 70px;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  border-radius: 6px;
+  font-size: 11pt;
+  width: 300px;
+  display: block;
+  margin: auto;
+  margin: 5px auto;
+  text-align: center;
+  transition: background 0.2s ease;
+  resize: vertical;
+  line-height: 1.4;
+}
+
+.fun-fact-section {
+  font-size: 11pt;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  min-height: 60px;
+  max-height: 120px;
+  overflow: scroll;
+}
+
+.fun-fact-section h2 {
+  font-size: 12pt;
+  margin: 4px 0 6px 0;
+}
+
+.fun-fact-section::-webkit-scrollbar {
+  width: 10px;
+}
+
+.help-button {
+  border: none;
+  border-radius: 50%;
+  width: 29px;
+  height: 29px;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  padding: 0;
+  line-height: 1;
+}
+
+.help-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 380px;
+  border-radius: 10px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  padding: 2px 6px;
+}
+
+.help-popup[hidden] {
+  display: none;
+}
+
+.help-popup-content {
+  position: relative;
+  padding: 20px 45px;
+  overflow: scroll;
+  max-height: 550px;
+  font-size: 11.5pt;
+}
+
+.close-btn {
+  position: absolute;
+  top: -8px;
+  right: 0px;
+  width: 25px;
+  height: 25px;
+  border: none;
+  z-index: 1000;
+  border-radius: 50%;
+  font-size: 17pt;
+  cursor: pointer;
+  font-family: 'Sansita', cursive;
+}
+
+.close-btn:hover {
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.close-help-btn, .close-hint-btn {
+  position: absolute;
+  top: 0px;
+  right: 1px;
+  width: 30px;
+  height: 30px;
+  border: none;
+  z-index: 1000;
+  border-radius: 50%;
+  font-size: 19pt;
+  cursor: pointer;
+  font-family: 'Sansita', cursive;
+}
+
+.close-help-btn:hover, .close-hint-btn:hover {
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.close-hint-btn {
+  top: -3px;
+}
+
+#hintPopupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s 0.3s;
+}
+
+.hint-popup {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 10px;
+  border-radius: 10px;
+  z-index: 1000;
+  transform: translateY(100%);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.3s ease, opacity 0.3s ease, visibility 0s 0.3s;
+}
+
+.hint-popup.show {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+  bottom: 10px;
+}
+
+.hint-popup.show ~ #hintPopupOverlay {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+#share-message-box {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  box-sizing: border-box;
+  border-radius: 15px;
+  font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
+  font-size: 1em;
+  resize: none;
+}
+
+#share-message-box:focus {
+  outline: none;
+}
+
+.custom-tooltip {
+  position: relative;
+  cursor: pointer;
+}
+
+.custom-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 10px;
+  font-weight: 400;
+  padding: 8px;
+  border-radius: 4px;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  font-size: 11pt;
+  z-index: 10;
+  white-space: normal;
+  max-width: 200px;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s ease, visibility 0.1s ease;
+  transition-delay: 0s;
+}
+
+.custom-tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+table {
+  font-family: monospace;
+  font-size: 10pt;
+  border-collapse: collapse;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+tr>:nth-child(2) {
+  min-width: 35px;
+}
+
+tr>:nth-child(1), tr>:nth-child(4) {
+  max-width: 20px;
+  text-align: center;
+}
+
+tr>:nth-child(3) {
+  max-width: 30px;
+  text-align: center;
+}
+
+tr {
+  text-transform: uppercase;
+}
+
+td, th {
+  border-style: none solid solid none;
+  padding: 5px;
+  text-align: left;
+}
+
+td {
+  max-width: 10px;
+  overflow: scroll;
+}
+
+th {
+  border: 0px;
+  text-transform: capitalize;
+}
+
+tr:first-child td:first-child {
+  border-top-left-radius: 10px;
+}
+
+tr:first-child td:last-child {
+  border-top-right-radius: 10px;
+}
+
+tr:last-child td:first-child {
+  border-bottom-left-radius: 10px;
+}
+
+tr:last-child td:last-child {
+  border-bottom-right-radius: 10px;
+}
+
+tr:first-child td {
+  border-top-style: solid;
+}
+
+tr td:first-child {
+  border-left-style: solid;
+}
+
+#game-over-modal {
+  position: relative;
+}
+
+.side-panel {
+  position: absolute;
+  top: 35px;
+  left: 100%;
+  z-index: 1;
+  width: 0;
+  overflow: hidden;
+  transition: width 0.4s ease-in-out;
+  padding: 0;
+  height: 90%;
+  border-radius: 0 12px 12px 0;
+  pointer-events: none;
+}
+
+.side-panel.show {
+  width: 280px;
+  pointer-events: auto;
+}
+
+.side-panel-content {
+  width: 280px;
+  padding: 20px;
+  height: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+#scoreboard-summary-container {
+  padding: 10px 15px;
+  margin-bottom: 10px;
+}
+
+.summary-stat {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.summary-stat:last-child {
+  margin-bottom: 0;
+}
+
+.stat-label {
+  width: 90px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.stat-bar-container {
+  flex-grow: 1;
+  height: 20px;
+  overflow: hidden;
+}
+
+.stat-bar {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease-in-out;
+  text-align: center;
+  font-weight: bold;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.modal-button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+  width: 100%;
+}
+
+#word-status-indicator.loading::after {
+  content: '';
+  display: block;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.shake {
+  animation: shake 0.5s;
+}
+
+@keyframes shake {
+  10%, 90% {
+    transform: translateX(-1px);
+  }
+
+  20%, 80% {
+    transform: translateX(2px);
+  }
+
+  30%, 50%, 70% {
+    transform: translateX(-4px);
+  }
+
+  40%, 60% {
+    transform: translateX(4px);
+  }
+}
+
+.input-with-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#account-sidebar {
+  font-family: monospace;
+  z-index: 9999;
+  padding: 10px;
+  transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow-y: auto;
+}
+
+#account-sidebar.show {
+  right: 0;
+}
+
+#account-sidebar h2 {
+  text-align: center;
+  margin-top: 25px;
+  text-transform: lowercase;
+  font-family: 'Sansita', cursive;
+  position: relative;
+  display: inline-block;
+}
+
+#account-sidebar h2::before {
+  content: "";
+  position: absolute;
+  height: 9px;
+  width: 110%;
+  left: -5%;
+  bottom: -2px;
+  z-index: -1;
+}
+
+.account-section {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.account-section:last-child {
+  margin-bottom: 20px;
+}
+
+.user-games-title {
+  font-weight: 400;
+  text-transform: lowercase;
+  margin: 0 0 10px 0;
+  font-size: 11pt;
+}
+
+.games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+  border-radius: 8px;
+  padding: 2px;
+  min-height: 30px;
+}
+
+.games-list a {
+  text-decoration: none;
+  padding: 8px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.game-status {
+  font-size: 0.8em;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.game-list-item {
+  padding: 2px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.game-list-item a {
+  text-decoration: none;
+  letter-spacing: 1px;
+  font-size: 9pt;
+}
+
+.game-item-actions {
+  display: flex;
+  gap: 0px;
+}
+
+.game-item-actions button {
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  font-size: 12pt;
+  margin-top: 2px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.stat-value {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.stat-label {
+  font-size: 0.8em;
+  text-transform: uppercase;
+}
+
+.login-prompt-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+}
+
+#sidebar-loader {
+  display: none;
+  text-align: center;
+  margin-top: 50px;
+  font-size: 1.1em;
+}
+
+.spinner {
+  margin: 0 auto 15px auto;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+}
+
+#sidebar-content {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+#sidebar-content.loaded {
+  visibility: visible;
+  opacity: 1;
+}
+
+#toast-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10003;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
+  font-size: 1em;
+  font-weight: bold;
+  animation: fadeInOut 3s ease-in-out forwards;
+  pointer-events: all;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  10%, 90% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+#header-setup {
+  display: none;
+  padding: 5px 10px;
+  justify-content: center;
+  height: 32px;
+}
+
+.header-content-wrapper {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+#setup,
+#game {
+  max-width: 500px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  transition: opacity 0.4s ease-in-out;
+  display: none;
+}
+
+.header-content-wrapper > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-content-wrapper p,
+.header-content-wrapper button {
+  font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
+  font-size: 10pt;
+  letter-spacing: 1px;
+  margin: 0;
+  padding: 4px;
+}
+
+#setup-form-content {
+  transition: opacity 0.4s ease-in-out;
+}
+
+#host-credit {
+  font-size: 9pt;
+  margin-top: 25px;
+  letter-spacing: 1px;
+  font-family: monospace;
+}
+
+#account-badges-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: -10px 0 15px 0;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-family: 'Trebuchet MS', Helvetica, Arial, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+}
+
+#account-graph-container, #modal-stats-container .stats-graph {
+  width: 100%;
+  padding: 10px 15px;
+  box-sizing: border-box;
+  margin-bottom: 5px;
+  font-family: monospace;
+}
+
+#account-graph-container h3, #modal-stats-container .stats-graph h3 {
+  text-align: center;
+  margin: 0 0 10px 0;
+  font-size: 11pt;
+  font-weight: 400;
+  text-transform: lowercase;
+  font-family: monospace;
+}
+
+.graph-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  height: 20px;
+}
+
+.graph-label {
+  width: 20px;
+  font-weight: bold;
+}
+
+.graph-bar, .zero-count {
+  height: 100%;
+  text-align: right;
+  padding-right: 8px;
+  box-sizing: border-box;
+  font-weight: bold;
+  min-width: 22px;
+  transition: width 0.5s ease-in-out;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  border-radius: 5px;
+}
+
+#giveUpBtn {
+  width: 140px;
+  margin: 0 auto;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-family: monospace;
+  text-transform: lowercase;
+  font-size: 11pt;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#hintInput4Container p {
+  margin: 0 0 5px 0;
+  font-size: 11pt;
+}
+
+#mainContent {
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+#mainContent.loaded {
+  visibility: visible;
+  opacity: 1;
+}
+
+#loader {
+  display: none;
+  margin-top: 100px;
+  font-size: 1.2em;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+.overlay.show {
+  opacity: 1;
+  visibility: visible;
 }
 
   </style>
@@ -481,13 +1702,15 @@ input:checked + .slider:before {
   <div class="h1-button-group-left">
     <!-- <button id="practiceBtn" aria-label="Practice Mode" class="help-button custom-tooltip" data-tooltip="Practice Mode">🎯</button>-->
     <button id="globalScoreboardBtn" aria-label="Global Scoreboard" class="help-button custom-tooltip" data-tooltip="Global Scoreboard">🌐</button>
+    <!-- <button id="dailyWordleBtn" aria-label="Daily Wørtle" class="help-button custom-tooltip" data-tooltip="Daily Wørtle">📅</button>-->
+    <button onclick="window.location.href='calculator.html'" aria-label="Guess Calculator" class="help-button custom-tooltip" data-tooltip="Guess Calculator">🧮</button>
     <button id="themeToggleBtn" aria-label="Toggle Theme" class="help-button custom-tooltip" data-tooltip="Switch Theme">🌙</button>
   </div>
   <p><span style="color:var(--accent-color);">Cross-Germanic</span> WØRTLE</p>
   <div class="h1-button-group-right">
-    <button id="newGameBtn" aria-label="Create New Game" class="help-button custom-tooltip" data-tooltip="New Wørtle">+</button>
-    <button id="helpBtn" aria-label="Show Help" data-tooltip="Info" class="help-button custom-tooltip">?</button>
-    <button id="accountBtn" aria-label="My Account" class="help-button custom-tooltip" data-tooltip="My Account">U</button>
+    <button id="newGameBtn" aria-label="Create New Game" class="help-button custom-tooltip" data-tooltip="New Wørtle">✏️</button>
+    <button id="helpBtn" aria-label="Show Help" data-tooltip="Info" class="help-button custom-tooltip">❔</button>
+    <button id="accountBtn" aria-label="My Account" class="help-button custom-tooltip" data-tooltip="My Account">👤</button>
   </div>
 </h1>
 <div id="loader">Loading Wørtle...</div>
@@ -737,6 +1960,7 @@ let badgesRef = null;      // <-- Ensure this line exists
 let badgesListener = null;
 let langRef = null;      // ADD THIS
 let langListener = null; // ADD THIS
+let isDailyGame = false;
 // Near the top of your script with other global variables
 let gameNumber = null;
 let hostUsername = null;
@@ -799,6 +2023,11 @@ firebase.initializeApp(firebaseConfig);
 // Create a database reference for your other functions to use
 const database = firebase.database();
 
+const appCheck = firebase.appCheck();
+appCheck.activate(
+  '6LeTUrwrAAAAACSN9R3SWj35hT29H-vRgHvxUskR', // Paste the site key you got from Google here
+  true);
+
 // --- NEW: Debounce timer for live validation ---
 let debounceTimer;
 
@@ -853,6 +2082,7 @@ async function validateSecretWord() {
     const switchBtn = document.getElementById('switch-language-btn');
     const langInput = document.getElementById('hintInput');
     const word = germanFriendlyUpperCase(secretInput.value.trim());
+    const wordTakenSvg = `<svg class="clock-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 12"></polyline></svg>`; // ✅ ADD THIS
     const invalidSvg = `<svg class="x-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
     // --- Reset state on every validation check ---
@@ -888,8 +2118,8 @@ async function validateSecretWord() {
         const snapshot = await gameRef.once('value');
 
         if (snapshot.exists()) {
-            indicator.innerHTML = invalidSvg; 
-            indicator.className = 'invalid';
+            indicator.innerHTML = wordTakenSvg; // ✅ This shows the new clock icon
+            indicator.className = 'word-taken'; // Add a new class for styling
             langInput.value = ''; // Clear language if word is taken
             return false;
         } else {
@@ -1030,15 +2260,13 @@ function loadSetupState() {
 }
 
 function generateShareURL(word, hint1, hint2, hint3, hint4, funFact) {
-  const url = new URL(window.location);
+  const url = new URL(window.location.origin + window.location.pathname);
   url.searchParams.set("w", base64Encode(word));
   if (hint1) url.searchParams.set("h1", base64Encode(hint1));
   if (hint2) url.searchParams.set("h2", base64Encode(hint2));
   if (hint3) url.searchParams.set("h3", base64Encode(hint3));
   if (hint4) url.searchParams.set("h4", base64Encode(hint4));
   if (funFact) url.searchParams.set("ff", base64Encode(funFact));
-  const today = new Date().toISOString();
-  url.searchParams.set("d", base64Encode(today));
   return url.href;
 }
 
@@ -1262,13 +2490,19 @@ async function startGame() {
     startBtn.onclick = () => {
         shareModal.classList.remove("show");
         window.history.replaceState({}, "", longUrl);
-        
-        const gameDiv = document.getElementById("game");
-        const setupDiv = document.getElementById("setup");
-        
-        // The setup header is already visible, so we just hide the setup form.
-        setupDiv.style.display = "none";
-        
+
+      const gameDiv = document.getElementById("game");
+      const setupDiv = document.getElementById("setup");
+      const headerSetup = document.getElementById("header-setup");
+
+      // 1. Hide the setup view by adding the .hidden class
+      setupDiv.classList.add('hidden');
+      setupDiv.style.display = 'none'; // Also set style for immediate effect
+
+      // 2. Show the game view by REMOVING the .hidden class
+      headerSetup.classList.remove('hidden');
+      gameDiv.classList.remove('hidden');
+          
         // Show the game board. The header remains visible.
         gameDiv.style.display = "flex";
         gameDiv.style.flexDirection = "column";
@@ -1294,6 +2528,19 @@ async function checkUserStatus() {
 
     try {
         const sanitizedUsername = savedUsername.replace(/[.#$[\]]/g, '_');
+
+        // ✅ ADD THIS BLOCK to check for an ongoing daily game first
+        if (isDailyGame) {
+            const ongoingDailyRef = database.ref(`userProfiles/${sanitizedUsername}/ongoingDailyGame`);
+            const dailySnapshot = await ongoingDailyRef.once('value');
+            // Check if a temp game exists AND if its word matches today's secret word
+            if (dailySnapshot.exists() && dailySnapshot.val().word === secret) {
+                loadOngoingGame(dailySnapshot.val());
+                return; // Exit early since we found the game
+            }
+        }
+
+        // The rest of the function continues as before, checking the permanent list
         const playedGameRef = database.ref(`userProfiles/${sanitizedUsername}/playedGames/${secret}`);
         const playedGameSnapshot = await playedGameRef.once('value');
 
@@ -1305,15 +2552,13 @@ async function checkUserStatus() {
                 gameElement.classList.add("dimmed");
                 loadCompletedGame(playedGameData);
                 return;
-            } 
-            // ✅ NEW: If the game is found in Firebase with 'ongoing' status, load it.
+            }
             else if (gameStatus === 'ongoing') {
                 loadOngoingGame(playedGameData);
                 return;
             }
         }
         
-        // If no game is found in Firebase, start a fresh game.
         loadGameFromStorage();
 
     } catch (error) {
@@ -1321,7 +2566,6 @@ async function checkUserStatus() {
         loadGameFromStorage();
     }
 }
-
 function loadGameFromStorage() {
     let savedUsername = localStorage.getItem("gerNordleUsername");
     const gameElement = document.getElementById("game");
@@ -1573,7 +2817,7 @@ async function submitGuess() {
                 currentRowDiv.classList.add("shake");
                 setTimeout(() => { currentRowDiv.classList.remove("shake"); }, 500);
             }
-            showToast(hardModeViolation, "error"); // Use the returned message directly
+            showToast(hardModeViolation, "error");
             isAnimating = false;
             return;
         }
@@ -1826,23 +3070,28 @@ function showHint(hintNumber) {
 }
 
 function generateResultText(isForDisplay, history, colors, won, hintStatus) {
-    // Get and format the current date
-    const dateToUse = gameCreatedDate || new Date();
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-    const dateString = dateToUse.toLocaleDateString('en-GB', options);
+    let text = '';
+    const guessCountText = `(${won ? history.length : 'X'}/${rows})`;
 
-    let headerLine = `WØRTLE ${won ? history.length : 'X'}/${rows}`;
-    if (gameNumber) {
-        headerLine = `WØRTLE #${gameNumber} (${won ? history.length : 'X'}/${rows})`;
+    // ✅ MODIFIED: Check if it's a daily game to change the header and add the date.
+    if (isDailyGame) {
+        const headerLine = `DAILY WØRTLE ${guessCountText}`;
+        
+        // Get and format the current date for the daily game
+        const today = new Date();
+        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+        const dateString = today.toLocaleDateString('en-GB', options);
+        
+        // Assemble the text with the header and date on separate lines
+        text = headerLine + '\n' + dateString + '\n';
+    } else {
+        // This is the original logic for custom games
+        let headerLine = `WØRTLE ${guessCountText}`;
+        if (gameNumber) {
+            headerLine = `WØRTLE #${gameNumber} ${guessCountText}`;
+        }
+        text = headerLine + '\n'; // Add extra newline for spacing
     }
-
-    let text = headerLine + '\n'; // Add extra newline for spacing
-    // --- ADD THIS BLOCK ---
-    // Add the "Created by" line if the host's name is known
-    // if (hostUsername) {
-    //     text += `By ${hostUsername}\n`;
-    // }
-    // --- END OF NEW BLOCK ---
 
     // Count the total number of hints used
     let hintCount = 0;
@@ -1901,48 +3150,70 @@ window.onload = async () => {
 
     const loader = document.getElementById('loader');
     const mainContent = document.getElementById('mainContent');
-    
-    secret = getSecretFromURL();
+    const params = new URLSearchParams(window.location.search);
+
     const setupDiv = document.getElementById("setup");
     const gameDiv = document.getElementById("game");
     const messageEl = document.getElementById("message");
     const headerSetup = document.getElementById("header-setup");
-
-    // Default state
-    gameDiv.style.display = "none";
-    headerSetup.style.display = "none";
-    setupDiv.style.display = "none";
-    loader.style.display = 'block';
-
-    const params = new URLSearchParams(window.location.search);
-
-    if (secret) {
-        // This is the normal game-playing logic
-        const gameRef = database.ref('games/' + secret);
-        const snapshot = await gameRef.once('value');
-
-        loader.style.display = 'none';
-
-        if (snapshot.exists()) {
-            // --- ADD THIS ---
-            // Fetch the game number from the metadata
-            const metadata = snapshot.val().metadata;
-            if (metadata && metadata.gameNumber) {
-                gameNumber = metadata.gameNumber;
+    setupDiv.classList.add('hidden');
+    gameDiv.classList.add('hidden');
+    headerSetup.classList.add('hidden');
+    let viewToShow = null; 
+    
+    // --- Step 1: Determine the secret word FIRST ---
+    const isDaily = params.get("daily") === 'true';
+    if (isDaily) {
+        isDailyGame = true;
+        try {
+            const dailyRef = database.ref('dailyChallenge/word');
+            const snapshot = await dailyRef.once('value');
+            if (snapshot.exists()) {
+                secret = snapshot.val().toUpperCase();
+            } else {
+                messageEl.textContent = "The Daily Wørtle has not been set yet. Please check back later!";
+                loader.style.display = 'none';
+                mainContent.classList.add('loaded');
+                return; // Stop the function
             }
-            hostUsername = metadata.host;
-            headerSetup.style.display = "flex";
-            gameDiv.style.display = "flex";
-            gameDiv.style.flexDirection = "column"; 
-            checkUserStatus();
-        } else {
-            messageEl.innerHTML = `The game you are looking for does not exist or has been deleted.<br><br><a href="/wortle" style="text-decoration: underline;">Create a new game</a>`;
-            messageEl.style.marginTop = '50px';
+        } catch (error) {
+            console.error("Could not fetch Daily Wørtle:", error);
+            messageEl.textContent = "Could not load the Daily Wørtle. Please try again.";
+            loader.style.display = 'none';
+            mainContent.classList.add('loaded');
+            return; // Stop the function
         }
+    } else {
+        // This is the original logic for custom games
+        secret = getSecretFromURL();
+    }
+
+    // --- Step 2: NOW, based on whether we have a secret, render the correct page ---
+    if (secret) {
+        // This block now runs for BOTH daily and custom games.
+        
+        // For custom games, we need to fetch metadata. For daily games, we skip this.
+        if (!isDaily) {
+            const gameRef = database.ref('games/' + secret);
+            const snapshot = await gameRef.once('value');
+            if (!snapshot.exists()) {
+                messageEl.innerHTML = `The game you are looking for does not exist or has been deleted.<br><br><a href="/wortle" style="text-decoration: underline;">Create a new game</a>`;
+                loader.style.display = 'none';
+                mainContent.classList.add('loaded');
+                return; // Stop if the custom game doesn't exist
+            }
+            const metadata = snapshot.val().metadata;
+            if (metadata) {
+                gameNumber = metadata.gameNumber;
+                hostUsername = metadata.host;
+            }
+        }
+        
+        checkUserStatus(); // This will load the board for play
+        viewToShow = 'game';
 
     } else {
-        // This is the normal setup/host page logic
-        loader.style.display = 'none';
+        // This logic only runs if it's not a daily game and no custom game is in the URL
         headerSetup.style.display = "flex";
         setupDiv.style.display = "block";
     
@@ -1971,6 +3242,16 @@ window.onload = async () => {
         setupInputs.forEach(input => input.addEventListener('input', saveSetupState));
         // --- THIS LINE IS NOW CORRECTED ---
         document.querySelectorAll('.specialCharCheckbox').forEach(cb => cb.addEventListener('change', saveSetupState));
+        viewToShow = 'setup';
+
+      }
+
+    if (viewToShow === 'game') {
+        headerSetup.classList.remove('hidden');
+        gameDiv.classList.remove('hidden');
+    } else if (viewToShow === 'setup') {
+        headerSetup.classList.remove('hidden');
+        setupDiv.classList.remove('hidden');
     }
 
     loader.style.display = 'none';
@@ -1997,49 +3278,83 @@ if (secretInput) {
         });
     }
 };
+
 function renderPlayedGames(snapshot) {
-    playedGamesList.innerHTML = '';
+    const playedGamesList = document.getElementById('played-games-list');
     const titleElement = document.getElementById('played-games-title');
 
     if (!snapshot.exists()) {
         if (titleElement) titleElement.textContent = 'Played Games (0)';
         playedGamesList.innerHTML = '<p style="padding: 10px;">You have not played any games.</p>';
-        if (resolvePlayedGames) {
-            resolvePlayedGames();
-            resolvePlayedGames = null;
-        }
+        if (resolvePlayedGames) resolvePlayedGames();
         return;
     }
 
     const gamesObject = snapshot.val();
-    const games = [];
+    const allGames = [];
     for (const word in gamesObject) {
-        games.push({ word: word, ...gamesObject[word] });
+        allGames.push({ word: word, ...gamesObject[word] });
     }
 
-    if (titleElement) titleElement.textContent = `Played Games (${games.length})`;
+    // --- ✅ UPDATED: LOGIC FOR FORMATTING THE TITLE ---
+    if (titleElement) {
+        const currentUsername = localStorage.getItem("gerNordleUsername");
+        let gamesByOthersCount = 0;
+        let gamesBySelfCount = 0;
 
-    if (games.length === 0) {
-        playedGamesList.innerHTML = '<p style="padding: 10px;">You have not played any games.</p>';
-        if (resolvePlayedGames) {
-            resolvePlayedGames();
-            resolvePlayedGames = null;
+        for (const game of allGames) {
+            if (game.host && game.host === currentUsername) {
+                gamesBySelfCount++;
+            } else {
+                gamesByOthersCount++;
+            }
         }
-        return;
-    }
-    
-    const currentUsername = localStorage.getItem("gerNordleUsername");
 
-    games.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
-    const metaPromises = games.map(game => database.ref(`games/${game.word}/metadata`).once('value'));
+        // Check if any self-hosted games have been played
+        if (gamesBySelfCount > 0) {
+            titleElement.textContent = `Played Games (${gamesByOthersCount}, ${gamesBySelfCount})`;
+        } else {
+            titleElement.textContent = `Played Games (${gamesByOthersCount})`;
+        }
+    }
+    // --- END OF UPDATED LOGIC ---
+
+    const currentUsername = localStorage.getItem("gerNordleUsername");
+    const renderedElements = [];
+
+    // --- NEW: Separate daily games from custom games ---
+    const dailyGames = allGames.filter(game => game.host === 'WØRTLE');
+    const customGames = allGames.filter(game => game.host !== 'WØRTLE');
+
+    // First, create the HTML for daily games (they don't need metadata)
+    dailyGames.forEach(gameData => {
+        const gameElement = document.createElement('div');
+        gameElement.className = 'game-list-item-no-link';
+
+        const wordSpan = document.createElement('span');
+        wordSpan.innerHTML = `${gameData.word} <span style="color: var(--accent-color); font-weight: bold;">(Daily)</span>`;
+        
+        const statusSpan = document.createElement('span');
+        statusSpan.className = 'game-status';
+        if (gameData.status === 'won') statusSpan.textContent = `Won (${gameData.guesses}/${rows})`;
+        else if (gameData.status === 'lost') statusSpan.textContent = 'Lost';
+        else statusSpan.textContent = 'In progress';
+
+        gameElement.appendChild(wordSpan);
+        gameElement.appendChild(statusSpan);
+        renderedElements.push({ element: gameElement, date: new Date(gameData.createdDate) });
+    });
+
+    // Now, fetch metadata ONLY for the custom games
+    const metaPromises = customGames.map(game => database.ref(`games/${game.word}/metadata`).once('value'));
 
     Promise.all(metaPromises).then(metaSnapshots => {
-        const fragment = document.createDocumentFragment();
         metaSnapshots.forEach((metaSnap, idx) => {
             if (metaSnap.exists()) {
                 const meta = metaSnap.val();
-                const gameData = games[idx];
+                const gameData = customGames[idx];
                 const gameLink = document.createElement('a');
+                gameLink.className = 'game-list-item';
                 gameLink.href = generateShareURL(meta.word, meta.hint1, meta.hint2, meta.hint3, meta.hint4, meta.funFact);
                 
                 const wordSpan = document.createElement('span');
@@ -2058,9 +3373,17 @@ function renderPlayedGames(snapshot) {
                 
                 gameLink.appendChild(wordSpan);
                 gameLink.appendChild(statusSpan);
-                fragment.appendChild(gameLink);
+                renderedElements.push({ element: gameLink, date: new Date(gameData.createdDate) });
             }
         });
+
+        // Sort all the generated elements by date
+        renderedElements.sort((a, b) => b.date - a.date);
+        
+        const fragment = document.createDocumentFragment();
+        renderedElements.forEach(item => fragment.appendChild(item.element));
+        
+        playedGamesList.innerHTML = ''; // Clear any previous content
         playedGamesList.appendChild(fragment);
 
         if (resolvePlayedGames) {
@@ -2069,6 +3392,7 @@ function renderPlayedGames(snapshot) {
         }
     });
 }
+
 async function saveOngoingGame(username, encodedSecret) {
     if (!username || !encodedSecret) return;
     
@@ -2076,18 +3400,12 @@ async function saveOngoingGame(username, encodedSecret) {
     if (!word) return;
 
     const sanitizedUsername = username.replace(/[.#$[\]]/g, '_');
-    const playedGameRef = database.ref(`userProfiles/${sanitizedUsername}/playedGames/${word}`);
-
-    // First, check for an existing record to preserve the original createdDate
-    const snapshot = await playedGameRef.once('value');
-    const existingData = snapshot.val();
-    const createdDate = existingData?.createdDate || new Date().toISOString();
-
+    
     // Package the entire current game state
     const ongoingStateForFirebase = {
+        word: secret, // Store the secret word to prevent loading the wrong game
         status: 'ongoing',
-        createdDate: createdDate,
-        lastPlayedDate: new Date().toISOString(), // Useful for sorting later
+        lastPlayedDate: new Date().toISOString(),
         grid: grid,
         currentRow: currentRow,
         guessHistory: guessHistory,
@@ -2098,25 +3416,38 @@ async function saveOngoingGame(username, encodedSecret) {
         hintStatus: { hintUsed1, hintUsed2, hintUsed3, hintUsed4, hintExpanded1, hintExpanded2, hintExpanded3, hintExpanded4 }
     };
 
-    // Use .set() to save the complete ongoing state to Firebase
-    await playedGameRef.set(ongoingStateForFirebase);
-
-    // The logic to add a player to the central /games list on their first guess remains
-    const isFirstGuess = guessHistory.length === 1;
-    if (isFirstGuess) {
-        const centralPlayerListRef = database.ref(`games/${word}/players/${sanitizedUsername}`);
-        await centralPlayerListRef.set(true);
+    // ✅ CHANGE: Check if it's a daily game
+    if (isDailyGame) {
+        // For daily games, save to a temporary, singular location
+        const dailyGameRef = database.ref(`userProfiles/${sanitizedUsername}/ongoingDailyGame`);
+        await dailyGameRef.set(ongoingStateForFirebase);
+    } else {
+        // For custom games, save to the permanent "playedGames" list as before
+        const playedGameRef = database.ref(`userProfiles/${sanitizedUsername}/playedGames/${word}`);
+        const snapshot = await playedGameRef.once('value');
+        const existingData = snapshot.val();
+        const createdDate = existingData?.createdDate || new Date().toISOString();
+        ongoingStateForFirebase.createdDate = createdDate; // Add createdDate for custom games
+        
+        await playedGameRef.set(ongoingStateForFirebase);
+        
+        const isFirstGuess = guessHistory.length === 1;
+        if (isFirstGuess) {
+            const centralPlayerListRef = database.ref(`games/${word}/players/${sanitizedUsername}`);
+            await centralPlayerListRef.set(true);
+        }
     }
     
-    // We still save to local storage for quick refreshes on the same device
+    // Local storage saving can remain for both for quick refreshes
     const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
     if (!allGameData[username]) allGameData[username] = {};
     allGameData[username][encodedSecret] = {
-        ongoingState: ongoingStateForFirebase, // Save the same object
-        createdDate: createdDate
+        ongoingState: ongoingStateForFirebase,
+        createdDate: ongoingStateForFirebase.createdDate || new Date().toISOString()
     };
     localStorage.setItem("gerNordleGameData", JSON.stringify(allGameData));
 }
+
 
 const helpBtn = document.getElementById("helpBtn");
 const helpPopup = document.getElementById("helpPopup");
@@ -3152,7 +4483,6 @@ function stopUserDeletionListener() {
         userListener = { ref: null, listener: null };
     }
 }
-
 async function saveCompletedGameData(won) {
     const username = localStorage.getItem("gerNordleUsername");
     if (!username || !secret) return;
@@ -3161,64 +4491,37 @@ async function saveCompletedGameData(won) {
     const guesses = won ? (currentRow + 1) : -1;
     const userProfileRef = database.ref(`userProfiles/${sanitizedUsername}`);
 
+    const today = new Date();
+    const todayString = today.toDateString();
+
     try {
-        const hostNameRef = database.ref(`games/${secret}/metadata/host`);
-        const hostSnapshot = await hostNameRef.once('value');
-        const hostName = hostSnapshot.val();
-
-        // --- Step 1: ALWAYS save the result to the player's personal history ---
-        // This applies to both the host and regular players.
-        const creationDateToSave = new Date().toISOString();
-        const finalPlayedGameData = {
-            status: won ? 'won' : 'lost',
-            guesses: guesses,
-            createdDate: creationDateToSave,
-            guessHistory: guessHistory,
-            colorHistory: colorHistory,
-            hintStatus: { hintUsed1, hintUsed2, hintUsed3, hintUsed4 },
-            wasHardMode: !hardModeWasDisabled,
-            host: hostName
-        };
-        await userProfileRef.child('playedGames').child(secret).set(finalPlayedGameData);
-
-        // Also ALWAYS update localStorage to mark the game as finished
-        const encodedSecret = base64Encode(secret);
-        const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
-        if (!allGameData[username]) allGameData[username] = {};
-        const finalGameRecord = {
-            ...finalPlayedGameData,
-            keyColors: keyColors
-        };
-        delete finalGameRecord.ongoingState;
-        allGameData[username][encodedSecret] = finalGameRecord;
-        localStorage.setItem("gerNordleGameData", JSON.stringify(allGameData));
-
-
-        // --- Step 2: ONLY if the player is NOT the host, update public stats and badges ---
-        if (username !== hostName) {
-            // A) Post score to the game's public scoreboard
+        if (isDailyGame) {
             const finalScoreData = {
                 username: username,
                 guesses: guesses,
                 timestamp: new Date().toISOString(),
-                hintCount: (hintUsed1 ? 1:0) + (hintUsed2 ? 1:0) + (hintUsed3 ? 1:0) + (hintUsed4 ? 1:0),
+                hintCount: 0, // Daily games don't have hints
                 wasHardMode: !hardModeWasDisabled
             };
-            const publicScoreUpdates = {};
-            publicScoreUpdates[`/games/${secret}/${sanitizedUsername}`] = finalScoreData;
-            publicScoreUpdates[`/games/${secret}/players/${sanitizedUsername}`] = null;
-            await database.ref().update(publicScoreUpdates);
+            const dailyScoreRef = database.ref(`/games/${secret}/${sanitizedUsername}`);
+            await dailyScoreRef.set(finalScoreData);
+            // --- LOGIC FOR DAILY WØRTLE ---
+            const finalPlayedGameData = {
+                status: won ? 'won' : 'lost',
+                guesses: guesses,
+                createdDate: new Date().toISOString(),
+                guessHistory: guessHistory,
+                colorHistory: colorHistory,
+                hintStatus: { hintUsed1: false, hintUsed2: false, hintUsed3: false, hintUsed4: false },
+                wasHardMode: !hardModeWasDisabled,
+                host: "WØRTLE"
+            };
+            await userProfileRef.child('playedGames').child(secret).set(finalPlayedGameData);
 
-            // B) Update the user's global stats
             await updateStats(username, won, guesses);
-
-            // C) Process all badge logic
             const profileSnapshot = await userProfileRef.once('value');
             const userProfile = profileSnapshot.val() || {};
-            const today = new Date();
-            const todayString = today.toDateString();
-            
-            // Handle Play Streak
+
             const lastPlayed = userProfile.lastPlayedDate;
             if (lastPlayed !== todayString) {
                 let playStreak = userProfile.playStreak || 0;
@@ -3234,55 +4537,58 @@ async function saveCompletedGameData(won) {
                 awardBadge(username, 'daily_dedication');
             }
 
-            // Handle Win Streak
             if (won) {
+                // CORRECTLY UPDATE GUESS DISTRIBUTION
+                const guessCount = guessHistory.length;
+                const guessDistRef = userProfileRef.child('stats/guessDistribution').child(String(guessCount));
+                await guessDistRef.transaction(currentCount => (currentCount || 0) + 1);
+
+                // CORRECTLY UPDATE WIN STREAK
                 const lastWin = userProfile.lastWinDate;
                 if (lastWin !== todayString) {
-                    // CORRECTED: Read from the top-level userProfile object
                     let winStreak = userProfile.winStreak || 0;
-                    
                     if (isConsecutiveDay(lastWin, today) || isFridayToMondayJump(lastWin, today)) {
                         winStreak++;
                     } else {
                         winStreak = 1;
                     }
-
-                    // CORRECTED: Write to the top-level userProfile path
                     userProfileRef.child('winStreak').set(winStreak);
                     userProfileRef.child('lastWinDate').set(todayString);
                 }
                 
-                // CORRECTED: Read from the top-level for badge checks
+                // BADGE CHECKS
                 if ((userProfile.winStreak || 0) >= 3) awardBadge(username, 'on_a_roll');
                 if ((userProfile.winStreak || 0) >= 10) awardBadge(username, 'dominating');
             
-                if (customHint1) {
-                    const lang = customHint1.trim().toLowerCase();
+                // For daily games, find the language by checking the client-side word lists
+                const dailyGameLanguage = findWordLanguages(secret.toLowerCase())[0];
+                if (dailyGameLanguage) {
+                    const lang = dailyGameLanguage;
                     if (SUPPORTED_LANGUAGES.includes(lang)) {
                         await userProfileRef.child('playedLanguages').child(lang).set(true);
                         if (!userProfile.playedLanguages) userProfile.playedLanguages = {};
                         userProfile.playedLanguages[lang] = true;
-                    }
-                }
 
-                if (userProfile.playedLanguages) {
-                    const solvedLangs = new Set(Object.keys(userProfile.playedLanguages));
-                    if (solvedLangs.size >= 5) awardBadge(username, 'polyglot');
-                    const nativeLang = userProfile.nativeLanguage ? userProfile.nativeLanguage.toLowerCase() : null;
-                    if (nativeLang) {
-                        const nonNativeLangs = SUPPORTED_LANGUAGES.filter(lang => lang !== nativeLang);
-                        if (nonNativeLangs.length >= 4 && nonNativeLangs.every(lang => solvedLangs.has(lang))) {
-                            awardBadge(username, 'globetrotter');
+                        // Check language badges
+                        if (userProfile.playedLanguages) {
+                            const solvedLangs = new Set(Object.keys(userProfile.playedLanguages));
+                            if (solvedLangs.size >= 5) awardBadge(username, 'polyglot');
+                            const nativeLang = userProfile.nativeLanguage ? userProfile.nativeLanguage.toLowerCase() : null;
+                            if (nativeLang) {
+                                const nonNativeLangs = SUPPORTED_LANGUAGES.filter(lang => lang !== nativeLang);
+                                if (nonNativeLangs.length >= 4 && nonNativeLangs.every(lang => solvedLangs.has(lang))) {
+                                    awardBadge(username, 'globetrotter');
+                                }
+                            }
                         }
                     }
                 }
-
+                
+                // Other non-hint/host related badges
                 if (guessHistory.length === 1) awardBadge(username, 'prodigy');
                 if (guessHistory.length <= 2) awardBadge(username, 'genius');
                 if (currentRow === rows - 1) awardBadge(username, 'clutch_victory');
                 if (!colorHistory.flat().includes('absent')) awardBadge(username, 'flawless');
-                const hintsAvailable = customHint1 || customHint2 || customHint3 || customHint4;
-                if (hintsAvailable && !(hintUsed1 || hintUsed2 || hintUsed3 || hintUsed4)) awardBadge(username, 'natural_talent');
                 if (/[ÄÖÜ]/.test(secret)) awardBadge(username, 'umlaut_enthusiast');
                 if (/[ÆØÅ]/.test(secret)) awardBadge(username, 'nordic_explorer');
                 const uniqueVowels = new Set(secret.toUpperCase().match(/[AEIOU]/g));
@@ -3297,20 +4603,150 @@ async function saveCompletedGameData(won) {
             } else {
                 userProfileRef.child('winStreak').set(0);
             }
+            
+            const encodedSecret = base64Encode(secret);
+            const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
+            if (!allGameData[username]) allGameData[username] = {};
+            const finalGameRecord = { ...finalPlayedGameData, keyColors: keyColors };
+            delete finalGameRecord.ongoingState;
+            allGameData[username][encodedSecret] = finalGameRecord;
+            localStorage.setItem("gerNordleGameData", JSON.stringify(allGameData));
+            await database.ref(`userProfiles/${sanitizedUsername}/ongoingDailyGame`).remove();
 
-            if (hostName && hostName !== username) {
-                const playedHostsRef = userProfileRef.child('playedHosts').child(hostName);
-                await playedHostsRef.set(true);
-                const playedHostsSnapshot = await userProfileRef.child('playedHosts').once('value');
-                if (playedHostsSnapshot.numChildren() >= 10) awardBadge(username, 'wortle_wanderer');
-                const gamePlayersRef = database.ref(`games/${secret}`);
-                const gamePlayersSnapshot = await gamePlayersRef.once('value');
-                const data = gamePlayersSnapshot.val() || {};
-                const playerCount = Object.keys(data).filter(key => key !== 'metadata' && key !== 'players').length;
-                if (playerCount >= 10) awardBadge(hostName, 'crowd_pleaser');
+        } else {
+            // --- LOGIC FOR CUSTOM GAMES ---
+            const hostNameRef = database.ref(`games/${secret}/metadata/host`);
+            const hostSnapshot = await hostNameRef.once('value');
+            const hostName = hostSnapshot.val();
+
+            const finalPlayedGameData = {
+                status: won ? 'won' : 'lost',
+                guesses: guesses,
+                createdDate: new Date().toISOString(),
+                guessHistory: guessHistory,
+                colorHistory: colorHistory,
+                hintStatus: { hintUsed1, hintUsed2, hintUsed3, hintUsed4 },
+                wasHardMode: !hardModeWasDisabled,
+                host: hostName
+            };
+            await userProfileRef.child('playedGames').child(secret).set(finalPlayedGameData);
+
+            const encodedSecret = base64Encode(secret);
+            const allGameData = JSON.parse(localStorage.getItem("gerNordleGameData") || "{}");
+            if (!allGameData[username]) allGameData[username] = {};
+            const finalGameRecord = { ...finalPlayedGameData, keyColors: keyColors };
+            delete finalGameRecord.ongoingState;
+            allGameData[username][encodedSecret] = finalGameRecord;
+            localStorage.setItem("gerNordleGameData", JSON.stringify(allGameData));
+
+            if (username !== hostName) {
+                const finalScoreData = {
+                    username: username,
+                    guesses: guesses,
+                    timestamp: new Date().toISOString(),
+                    hintCount: (hintUsed1 ? 1:0) + (hintUsed2 ? 1:0) + (hintUsed3 ? 1:0) + (hintUsed4 ? 1:0),
+                    wasHardMode: !hardModeWasDisabled
+                };
+                const publicScoreUpdates = {};
+                publicScoreUpdates[`/games/${secret}/${sanitizedUsername}`] = finalScoreData;
+                publicScoreUpdates[`/games/${secret}/players/${sanitizedUsername}`] = null;
+                await database.ref().update(publicScoreUpdates);
+
+                await updateStats(username, won, guesses);
+
+                const profileSnapshot = await userProfileRef.once('value');
+                const userProfile = profileSnapshot.val() || {};
+                
+                const lastPlayed = userProfile.lastPlayedDate;
+                if (lastPlayed !== todayString) {
+                    let playStreak = userProfile.playStreak || 0;
+                    if (isConsecutiveDay(lastPlayed, today) || isFridayToMondayJump(lastPlayed, today)) {
+                        playStreak++;
+                    } else {
+                        playStreak = 1;
+                    }
+                    userProfileRef.child('playStreak').set(playStreak);
+                    userProfileRef.child('lastPlayedDate').set(todayString);
+                }
+                if ((userProfile.playStreak || 0) >= 7) {
+                    awardBadge(username, 'daily_dedication');
+                }
+
+                if (won) {
+                    const guessCount = guessHistory.length;
+                    const guessDistRef = userProfileRef.child('stats/guessDistribution').child(String(guessCount));
+                    await guessDistRef.transaction(currentCount => (currentCount || 0) + 1);
+
+                    const lastWin = userProfile.lastWinDate;
+                    if (lastWin !== todayString) {
+                        let winStreak = userProfile.winStreak || 0;
+                        if (isConsecutiveDay(lastWin, today) || isFridayToMondayJump(lastWin, today)) {
+                            winStreak++;
+                        } else {
+                            winStreak = 1;
+                        }
+                        userProfileRef.child('winStreak').set(winStreak);
+                        userProfileRef.child('lastWinDate').set(todayString);
+                    }
+                    
+                    if ((userProfile.winStreak || 0) >= 3) awardBadge(username, 'on_a_roll');
+                    if ((userProfile.winStreak || 0) >= 10) awardBadge(username, 'dominating');
+                
+                    if (customHint1) {
+                        const lang = customHint1.trim().toLowerCase();
+                        if (SUPPORTED_LANGUAGES.includes(lang)) {
+                            await userProfileRef.child('playedLanguages').child(lang).set(true);
+                            if (!userProfile.playedLanguages) userProfile.playedLanguages = {};
+                            userProfile.playedLanguages[lang] = true;
+                        }
+                    }
+
+                    if (userProfile.playedLanguages) {
+                        const solvedLangs = new Set(Object.keys(userProfile.playedLanguages));
+                        if (solvedLangs.size >= 5) awardBadge(username, 'polyglot');
+                        const nativeLang = userProfile.nativeLanguage ? userProfile.nativeLanguage.toLowerCase() : null;
+                        if (nativeLang) {
+                            const nonNativeLangs = SUPPORTED_LANGUAGES.filter(lang => lang !== nativeLang);
+                            if (nonNativeLangs.length >= 4 && nonNativeLangs.every(lang => solvedLangs.has(lang))) {
+                                awardBadge(username, 'globetrotter');
+                            }
+                        }
+                    }
+
+                    if (guessHistory.length === 1) awardBadge(username, 'prodigy');
+                    if (guessHistory.length <= 2) awardBadge(username, 'genius');
+                    if (currentRow === rows - 1) awardBadge(username, 'clutch_victory');
+                    if (!colorHistory.flat().includes('absent')) awardBadge(username, 'flawless');
+                    const hintsAvailable = customHint1 || customHint2 || customHint3 || customHint4;
+                    if (hintsAvailable && !(hintUsed1 || hintUsed2 || hintUsed3 || hintUsed4)) awardBadge(username, 'natural_talent');
+                    if (/[ÄÖÜ]/.test(secret)) awardBadge(username, 'umlaut_enthusiast');
+                    if (/[ÆØÅ]/.test(secret)) awardBadge(username, 'nordic_explorer');
+                    const uniqueVowels = new Set(secret.toUpperCase().match(/[AEIOU]/g));
+                    if (uniqueVowels && uniqueVowels.size >= 4) awardBadge(username, 'vowel_virtuoso');
+                    const currentHour = new Date().getHours();
+                    if (currentHour >= 0 && currentHour <= 4) awardBadge(username, 'night_owl');
+                    if (currentHour >= 5 && currentHour <= 8) awardBadge(username, 'early_bird');
+                    const vowels = new Set(['A', 'E', 'I', 'O', 'U', 'Y', 'Ä', 'Ö', 'Ü', 'Æ', 'Ø', 'Å']);
+                    if (new Set([...secret].filter(char => !vowels.has(char.toUpperCase()))).size >= 4) {
+                        awardBadge(username, 'consonant_crusher');
+                    }
+                } else {
+                    userProfileRef.child('winStreak').set(0);
+                }
+
+                if (hostName && hostName !== username) {
+                    const playedHostsRef = userProfileRef.child('playedHosts').child(hostName);
+                    await playedHostsRef.set(true);
+                    const playedHostsSnapshot = await userProfileRef.child('playedHosts').once('value');
+                    if (playedHostsSnapshot.numChildren() >= 10) awardBadge(username, 'wortle_wanderer');
+                    const gamePlayersRef = database.ref(`games/${secret}`);
+                    const gamePlayersSnapshot = await gamePlayersRef.once('value');
+                    const data = gamePlayersSnapshot.val() || {};
+                    const playerCount = Object.keys(data).filter(key => key !== 'metadata' && key !== 'players').length;
+                    if (playerCount >= 10) awardBadge(hostName, 'crowd_pleaser');
+                }
             }
         }
-
     } catch (error) {
         console.error("Failed to save final game data:", error);
         throw error;
@@ -3617,9 +5053,23 @@ function renderAccountStats(snapshot) {
             <span class="stat-label">Avg. Guesses</span>
         </div>
     `;
+    
+    // ✅ 1. Get the current user's name
+    const currentUsername = localStorage.getItem("gerNordleUsername");
+    
+    const playedGames = userProfile.playedGames || {};
+    const calculatedDistribution = {};
 
-    // ✅ Call the reusable function to render the graph. That's all you need!
-    renderGuessDistribution(graphContainer, stats.guessDistribution, null);
+    for (const gameId in playedGames) {
+        const gameData = playedGames[gameId];
+        
+        // ✅ 2. Add a check to ensure the current user is NOT the host
+        if (gameData.status === 'won' && gameData.guesses > 0 && gameData.host !== currentUsername) {
+            const guessCount = gameData.guesses;
+            calculatedDistribution[guessCount] = (calculatedDistribution[guessCount] || 0) + 1;
+        }
+    }
+    renderGuessDistribution(graphContainer, calculatedDistribution, null);
 }
 
 function showToast(message, type = '') {
@@ -3869,7 +5319,7 @@ async function populateGameScoreboard(word) {
             .map(key => scoresData[key]);
 
         if (playerScores.length === 0) {
-            container.innerHTML = '<p>No one has won this Wørtle yet.</p>';
+            container.innerHTML = '<p>No one has played this Wørtle yet.</p>';
             return;
         }
         
@@ -4028,6 +5478,15 @@ function isFridayToMondayJump(lastDateString, todayDate) {
         return expectedMonday.toDateString() === todayDate.toDateString();
     }
     return false;
+}
+
+// Add this with your other button event listeners
+const dailyWordleBtn = document.getElementById('dailyWordleBtn');
+if (dailyWordleBtn) {
+    dailyWordleBtn.addEventListener('click', () => {
+        // Navigate to the special URL for the daily game
+        window.location.href = window.location.pathname + '?daily=true';
+    });
 }
 
 </script>
