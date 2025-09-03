@@ -1551,6 +1551,7 @@ async function submitGuess() {
             setTimeout(() => { currentRowDiv.classList.remove("shake"); }, 500);
         }
         showToast("Not enough letters", "error");
+        isAnimating = false;
         return;
     }
 
@@ -1560,6 +1561,7 @@ async function submitGuess() {
             setTimeout(() => { currentRowDiv.classList.remove("shake"); }, 500);
         }
         showToast("Not in word list", "error");
+        isAnimating = false;
         return;
     }
 
@@ -1572,6 +1574,7 @@ async function submitGuess() {
                 setTimeout(() => { currentRowDiv.classList.remove("shake"); }, 500);
             }
             showToast(hardModeViolation, "error"); // Use the returned message directly
+            isAnimating = false;
             return;
         }
     }
