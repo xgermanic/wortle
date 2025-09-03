@@ -97,16 +97,16 @@ async function displayGlobalScoreboard() {
             }
         }
 
-        // 4. --- Rank the Players (your adjusted ranking logic) ---
+        // 4. --- ✅ RANK THE PLAYERS (NEW RANKING LOGIC) ---
         players.sort((a, b) => {
-            // 1. Primary: Sort by Win Percentage (highest first)
-            if (b.winPct !== a.winPct) {
-                return b.winPct - a.winPct;
-            }
-
-            // 2. Secondary: Sort by Total Wins (highest first)
+            // 1. Primary: Sort by Total Wins (highest first)
             if (b.wins !== a.wins) {
                 return b.wins - a.wins;
+            }
+
+            // 2. Secondary: Sort by Win Percentage (highest first)
+            if (b.winPct !== a.winPct) {
+                return b.winPct - a.winPct;
             }
 
             // 3. Tertiary: Sort by Hard Mode Percentage (highest first)
@@ -204,4 +204,39 @@ function renderTable(players, container) {
 
 document.addEventListener('DOMContentLoaded', () => {
   displayGlobalScoreboard();
+});
+
+async function displayWeeklyWinners() {
+    const winnersRef = database.ref('weeklyWinners/current');
+    try {
+        const snapshot = await winnersRef.once('value');
+        if (!snapshot.exists()) {
+            console.log("No weekly winners found yet.");
+            return;
+        }
+        const winners = snapshot.val();
+
+        const populateCard = (id, data) => {
+            const nameEl = document.querySelector(`#${id} .winner-name`);
+            const statEl = document.querySelector(`#${id} .winner-stat`);
+            if (nameEl && statEl && data) {
+                nameEl.textContent = data.username;
+                statEl.textContent = data.value;
+            }
+        };
+
+        populateCard('weekly-guesser', winners.bestGuesser);
+        populateCard('weekly-host', winners.mostHosted);
+        populateCard('weekly-improver', winners.bestImprovement);
+        populateCard('weekly-butterfly', winners.socialButterfly);
+
+    } catch (error) {
+        console.error("Could not load weekly winners:", error);
+    }
+}
+
+// In scoreboard.js, make sure to call the function
+document.addEventListener('DOMContentLoaded', () => {
+  displayGlobalScoreboard();
+  displayWeeklyWinners(); // Call the new function
 });
