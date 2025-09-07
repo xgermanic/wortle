@@ -13,6 +13,11 @@
   --shadow: rgba(93, 64, 55, 0.1);
   --accent-color: #F08B51;
   --scanline-color: rgba(192, 198, 12, 0.04);
+  --shape-color-1: #84a98c;
+  --shape-color-2: #e56b6f;
+  --shape-color-3: #61a5c2;
+  --shape-color-4: #e8ac65;
+  --shape-color-5: #9b5de5;
 }
 
 body {
