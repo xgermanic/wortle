@@ -4,6 +4,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-check-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-functions-compat.js"></script>
 <script src="definitions.js"></script>
 <script src="theme.js"></script>
 <link rel="icon" type="image/x-icon" href="/wortle/images/favicon.ico">
@@ -1671,6 +1672,150 @@ tr td:first-child {
   visibility: visible;
 }
 
+#letter-pattern-container {
+  display: none; /* Hidden by default, JS will make it flex initially */
+  justify-content: center;
+  align-items: center; 
+  margin: 5px auto 5px auto;
+  height: 30px; 
+}
+
+#pattern-shapes-wrapper {
+  display: none; /* The shapes are hidden by default */
+  gap: 8px;
+  perspective: 800px; /* Creates the 3D space needed for the flip effect */
+}
+
+#show-pattern-btn {
+  /* --- Previous styles --- */
+  background-color: var(--bg-panel);
+  color: var(--text-primary);
+  border: 0px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 5px 15px;
+  font-family:monospace;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-transform: lowercase;
+  /* --- New animation styles --- */
+  opacity: 1;
+  transition: opacity 0.3s ease-out; /* Smooth fade-out transition */
+}
+
+#show-pattern-btn:hover {
+    background-color: var(--bg-panel);
+}
+
+/* New class to control the button's hidden state */
+#show-pattern-btn.is-hidden {
+  opacity: 0;
+  pointer-events: none; /* Prevents clicking the invisible button */
+}
+
+/* This is the wrapper for each individual shape SVG */
+#pattern-shapes-wrapper > div {
+  opacity: 0; /* Shapes start invisible */
+  transform: rotateY(90deg); /* Shapes start flipped backwards */
+}
+
+/* The animation class we will add with JS */
+.is-flipping {
+  animation: flip-in 0.2s ease-out forwards;
+}
+
+@keyframes flip-in {
+  from {
+    transform: rotateY(90deg);
+    opacity: 0;
+  }
+  to {
+    transform: rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+.pattern-shape {
+  width: 35px;
+  height: 35px;
+  fill: var(--text-secondary); 
+}
+#daily-hints-container {
+  display: none; /* Hidden by default */
+  flex-direction: row; /* ✅ Stack items vertically */
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  min-height: 30px; /* Reserve space to prevent layout shift */
+}
+
+.daily-hint-btn {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 0px solid var(--border-subtle);
+  padding: 5px 15px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.hint-wrapper {
+  position: relative; /* This is crucial for positioning the tooltip */
+  background-color: var(--bg-panel);
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.hint-tooltip {
+  position: absolute;
+  bottom: 110%; /* Position it right above the button */
+  left: 50%;
+  transform: translateX(-50%);
+  
+  background-color: var(--correct-bg); /* Use a theme color for contrast */
+  color: var(--bg-primary); /* A contrasting text color */
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 1rem;
+  white-space: nowrap;
+  z-index: 10;
+  
+  /* Hidden by default */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, bottom 0.3s ease;
+}
+
+/* The small arrow pointing down from the bubble */
+.hint-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--correct-bg) transparent transparent transparent;
+}
+
+/* The class to make the tooltip appear */
+.hint-tooltip.is-visible {
+  opacity: 1;
+  visibility: visible;
+  bottom: 120%; /* Move it up slightly for a nice pop effect */
+}
+
+/* Style for the button after it's been clicked */
+.daily-hint-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
   </style>
   
 </head>
@@ -1798,6 +1943,8 @@ tr td:first-child {
 <div id="game">
 
   <div id="board" class="board"></div>
+  <div id="letter-pattern-container"></div>
+  <div id="daily-hints-container"></div>
 
 <div id="hintButtons" style="display: none;">
   <div id="hintTitle" style="cursor:pointer;">Need a hint?</div>
@@ -1968,6 +2115,7 @@ let isModalOpen = false;
 let userListener = { ref: null, listener: null };
 let availableLanguagesForWord = [];
 let currentLanguageIndex = 0;
+document.addEventListener('click', closeAllTooltips);
 const hintTitle = document.getElementById("hintTitle");
 const hintPopup = document.getElementById("hintPopup");
 const hintPopupOverlay = document.getElementById("hintPopupOverlay");
@@ -1991,6 +2139,7 @@ const languageToCountryCode = {
 };
 const SUPPORTED_LANGUAGES = ['german', 'norwegian', 'english', 'swedish', 'danish']; // <-- Add all your file names here (without .txt)
 const wordLists = new Map();
+let allWordsSet = new Set();
 const practiceBtn = document.getElementById('practiceBtn');
 if (practiceBtn) {
     practiceBtn.addEventListener('click', () => {
@@ -2466,14 +2615,15 @@ async function startGame() {
     setupDiv.inert = true;
 
     try {
-        const response = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(longUrl)}`);
-        if (!response.ok) throw new Error('TinyURL service is not available.');
-        const shortUrl = await response.text();
-        shareMessageBox.value = `${shortUrl}`;
+        const shortenUrlFunction = firebase.functions().httpsCallable('shortenUrl');
+        const result = await shortenUrlFunction({ url: longUrl });
+        const shortUrl = result.data.shortUrl;
+        
+        shareMessageBox.value = shortUrl;
         await metadataRef.update({ shortUrl: shortUrl });
     } catch (error) {
-        console.error("Could not shorten URL:", error);
-        shareMessageBox.value = `${longUrl}`;
+        console.error("Could not shorten URL via Cloud Function:", error);
+        shareMessageBox.value = longUrl; // Fallback to the long URL
     } finally {
         copyBtn.disabled = false;
         startBtn.disabled = false;
@@ -2752,6 +2902,14 @@ async function loadAllWordLists() {
             });
             wordLists.set(lang, wordSet); // Add the language-specific set to our Map
         });
+
+        // ✅ ADD THIS BLOCK to populate the global set
+        allWordsSet.clear(); // Clear it first in case this is ever re-run
+        for (const wordSet of wordLists.values()) {
+            for (const word of wordSet) {
+                allWordsSet.add(word);
+            }
+        }
 
         const totalWords = Array.from(wordLists.values()).reduce((sum, set) => sum + set.size, 0);
         console.log(`All word lists loaded! Total valid words: ${totalWords}`);
@@ -3170,6 +3328,7 @@ window.onload = async () => {
             const snapshot = await dailyRef.once('value');
             if (snapshot.exists()) {
                 secret = snapshot.val().toUpperCase();
+                displayLetterPattern(secret);
             } else {
                 messageEl.textContent = "The Daily Wørtle has not been set yet. Please check back later!";
                 loader.style.display = 'none';
@@ -4227,97 +4386,109 @@ let hostedGamesRef = null;
 let playedGamesRef = null;
 
 function renderHostedGames(snapshot) {
-    hostedGamesList.innerHTML = '';
-    const titleElement = document.getElementById('hosted-games-title');
+    hostedGamesList.innerHTML = '';
+    const titleElement = document.getElementById('hosted-games-title');
 
-    if (!snapshot.exists()) {
-        if (titleElement) titleElement.textContent = 'Hosted Games (0)';
-        hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
-        if (resolveHostedGames) {
-            resolveHostedGames();
-            resolveHostedGames = null;
-        }
-        return;
-    }
+    if (!snapshot.exists()) {
+        if (titleElement) titleElement.textContent = 'Hosted Games (0)';
+        hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
+        if (resolveHostedGames) {
+            resolveHostedGames();
+            resolveHostedGames = null;
+        }
+        return;
+    }
 
-    const gamesObject = snapshot.val();
-    const games = [];
-    for (const word in gamesObject) {
-        games.push({ word: word, ...gamesObject[word] });
-    }
-    
-    if (titleElement) titleElement.textContent = `Hosted Games (${games.length})`;
+    const gamesObject = snapshot.val();
+    const games = [];
+    for (const word in gamesObject) {
+        games.push({ word: word, ...gamesObject[word] });
+    }
+    
+    if (titleElement) titleElement.textContent = `Hosted Games (${games.length})`;
 
-    games.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
-    const metaPromises = games.map(game => database.ref(`games/${game.word}/metadata`).once('value'));
+    games.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+    const metaPromises = games.map(game => database.ref(`games/${game.word}/metadata`).once('value'));
 
-    Promise.all(metaPromises).then(metaSnapshots => {
-        const fragment = document.createDocumentFragment();
-        metaSnapshots.forEach((metaSnap, idx) => {
-            if (metaSnap.exists()) {
-                const meta = metaSnap.val();
-                const listItem = document.createElement('div');
-                listItem.className = 'game-list-item';
-                const gameLink = document.createElement('a');
-                const fullUrl = generateShareURL(meta.word, meta.hint1, meta.hint2, meta.hint3, meta.hint4, meta.funFact);
-                gameLink.href = fullUrl;
-                gameLink.textContent = meta.word;
-                const actionsDiv = document.createElement('div');
-                actionsDiv.className = 'game-item-actions';
-                
-                const scoreboardBtn = document.createElement('button');
-                scoreboardBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>`;
-                scoreboardBtn.title = 'View Scoreboard';
-                scoreboardBtn.onclick = (event) => {
-                    event.stopPropagation(); 
-                    showGameScoreboard(meta.word);
-                };
+    Promise.all(metaPromises).then(metaSnapshots => {
+        const fragment = document.createDocumentFragment();
+        metaSnapshots.forEach((metaSnap, idx) => {
+            if (metaSnap.exists()) {
+                const meta = metaSnap.val();
+                const listItem = document.createElement('div');
+                listItem.className = 'game-list-item';
+                const gameLink = document.createElement('a');
+                const fullUrl = generateShareURL(meta.word, meta.hint1, meta.hint2, meta.hint3, meta.hint4, meta.funFact);
+                gameLink.href = fullUrl;
+                gameLink.textContent = meta.word;
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'game-item-actions';
+                
+                const scoreboardBtn = document.createElement('button');
+                scoreboardBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>`;
+                scoreboardBtn.title = 'View Scoreboard';
+                scoreboardBtn.onclick = (event) => {
+                    event.stopPropagation(); 
+                    showGameScoreboard(meta.word);
+                };
 
-                const copyBtn = document.createElement('button');
-                const linkIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
-                const checkIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-                
-                copyBtn.innerHTML = linkIconSVG;
-                copyBtn.title = 'Copy Link';
-                
-                // --- START: CORRECTED on-click LOGIC ---
-                copyBtn.onclick = (event) => {
-                    event.stopPropagation();
-                    const urlToCopy = meta.shortUrl || fullUrl;
-                    // The .then() block runs after the copy is successful
-                    navigator.clipboard.writeText(urlToCopy).then(() => {
-                        copyBtn.innerHTML = checkIconSVG; // Show checkmark
-                        setTimeout(() => {
-                            copyBtn.innerHTML = linkIconSVG; // Revert to link icon
-                        }, 2000);
-                    });
-                };
-                // --- END: CORRECTED on-click LOGIC ---
+                const copyBtn = document.createElement('button');
+                const linkIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>`;
+                const checkIconSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+                
+                copyBtn.innerHTML = linkIconSVG;
+                copyBtn.title = 'Copy Link';
+                
+                copyBtn.onclick = (event) => {
+                    event.stopPropagation();
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
-                deleteBtn.title = 'Delete Game';
-                deleteBtn.onclick = (event) => {
-                    event.stopPropagation();
-                    deleteGame(meta.word);
-                };
-                
-                actionsDiv.appendChild(scoreboardBtn);
-                actionsDiv.appendChild(copyBtn);
-                actionsDiv.appendChild(deleteBtn);
-                
-                listItem.appendChild(gameLink);
-                listItem.appendChild(actionsDiv);
-                fragment.appendChild(listItem);
-            }
-        });
-        hostedGamesList.appendChild(fragment);
+                    // --- ✅ NEW DATE-BASED LOGIC ---
+                    const cutoffDate = new Date('2025-09-06T00:00:00Z'); // Midnight UTC on Sep 6th, 2025
+                    const gameData = games[idx];
+                    const gameCreationDate = new Date(gameData.createdDate);
+                    
+                    let urlToCopy;
+                    if (gameCreationDate < cutoffDate) {
+                        // Game is old, so copy the full URL
+                        urlToCopy = fullUrl;
+                    } else {
+                        // Game is new, so prefer the short URL
+                        urlToCopy = meta.shortUrl || fullUrl;
+                    }
+                    // --- END OF NEW LOGIC ---
 
-        if (resolveHostedGames) {
-            resolveHostedGames();
-            resolveHostedGames = null;
-        }
-    });
+                    navigator.clipboard.writeText(urlToCopy).then(() => {
+                        copyBtn.innerHTML = checkIconSVG;
+                        setTimeout(() => {
+                            copyBtn.innerHTML = linkIconSVG;
+                        }, 2000);
+                    });
+                };
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+                deleteBtn.title = 'Delete Game';
+                deleteBtn.onclick = (event) => {
+                    event.stopPropagation();
+                    deleteGame(meta.word);
+                };
+                
+                actionsDiv.appendChild(scoreboardBtn);
+                actionsDiv.appendChild(copyBtn);
+                actionsDiv.appendChild(deleteBtn);
+                
+                listItem.appendChild(gameLink);
+                listItem.appendChild(actionsDiv);
+                fragment.appendChild(listItem);
+            }
+        });
+        hostedGamesList.appendChild(fragment);
+
+        if (resolveHostedGames) {
+            resolveHostedGames();
+            resolveHostedGames = null;
+        }
+    });
 }
 
 // Replace your existing closeAccountSidebar function
@@ -5488,7 +5659,187 @@ if (dailyWordleBtn) {
         window.location.href = window.location.pathname + '?daily=true';
     });
 }
+function displayLetterPattern(word) {
+  const patternContainer = document.getElementById('letter-pattern-container');
+  const hintsContainer = document.getElementById('daily-hints-container');
+  if (!patternContainer || !hintsContainer) return;
 
+  // --- SETUP PATTERN BUTTON AND SHAPES (No change) ---
+  patternContainer.innerHTML = '';
+  const showPatternButton = document.createElement('button');
+  showPatternButton.id = 'show-pattern-btn';
+  showPatternButton.textContent = 'Show pattern';
+  
+  const shapesWrapper = document.createElement('div');
+  shapesWrapper.id = 'pattern-shapes-wrapper';
+  
+  patternContainer.appendChild(showPatternButton);
+  patternContainer.appendChild(shapesWrapper);
+  
+  // (The shape and color generation logic is unchanged)
+  // ... (omitted for brevity, no changes here) ...
+  const shapes = [
+    '<svg viewBox="0 0 100 100" class="pattern-shape"><rect x="10" y="10" width="80" height="80"/></svg>',
+    '<svg viewBox="0 0 100 100" class="pattern-shape"><circle cx="50" cy="50" r="40"/></svg>',
+    '<svg viewBox="0 0 100 100" class="pattern-shape"><polygon points="50,10 90,90 10,90"/></svg>',
+    '<svg viewBox="0 0 100 100" class="pattern-shape"><polygon points="50,10 61,35 90,35 68,55 78,85 50,70 22,85 32,55 10,35 39,35"/></svg>',
+    '<svg viewBox="0 0 100 100" class="pattern-shape"><polygon points="50,10 90,50 50,90 10,50"/></svg>'
+  ];
+  const colors = ["var(--shape-color-1)", "var(--shape-color-2)", "var(--shape-color-3)", "var(--shape-color-4)", "var(--shape-color-5)"];
+  for (let i = shapes.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [shapes[i], shapes[j]] = [shapes[j], shapes[i]]; }
+  for (let i = colors.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [colors[i], colors[j]] = [colors[j], colors[i]]; }
+  const letterToShapeMap = new Map();
+  let shapeIndex = 0;
+  for (const letter of word) {
+    if (!letterToShapeMap.has(letter)) {
+      const shapeSvg = shapes[shapeIndex % shapes.length];
+      const color = colors[shapeIndex % colors.length];
+      const coloredShapeSvg = shapeSvg.replace('class="pattern-shape"', `class="pattern-shape" style="fill: ${color};"`);
+      letterToShapeMap.set(letter, coloredShapeSvg);
+      shapeIndex++;
+    }
+  }
+  for (const letter of word) {
+    const shapeHtml = letterToShapeMap.get(letter);
+    const shapeDiv = document.createElement('div');
+    shapeDiv.innerHTML = shapeHtml;
+    shapesWrapper.appendChild(shapeDiv);
+  }
+
+  // --- HINT BUTTON LOGIC ---
+  hintsContainer.innerHTML = ''; 
+  
+  const langWrapper = document.createElement('div');
+  langWrapper.className = 'hint-wrapper';
+  const langButton = document.createElement('button');
+  langButton.className = 'daily-hint-btn custom-tooltip';
+  langButton.dataset.tooltip = 'Reveal Language';
+  langButton.textContent = '🏳️';
+  langButton.onclick = (event) => {
+      event.stopPropagation();
+      closeAllTooltips();      
+      langButton.disabled = true;
+      const languages = findWordLanguages(word.toLowerCase());
+      const langText = languages.map(l => l.charAt(0).toUpperCase() + l.slice(1)).join(', ');
+      
+      const tooltip = document.createElement('span');
+      tooltip.className = 'hint-tooltip';
+      tooltip.textContent = langText;
+      langWrapper.appendChild(tooltip);
+
+      setTimeout(() => { tooltip.classList.add('is-visible'); }, 10);
+  };
+  langWrapper.appendChild(langButton);
+  
+  const specialCharWrapper = document.createElement('div');
+  specialCharWrapper.className = 'hint-wrapper';
+  const specialCharButton = document.createElement('button');
+  specialCharButton.className = 'daily-hint-btn custom-tooltip';
+  specialCharButton.dataset.tooltip = 'Reveal Special Characters';
+  specialCharButton.textContent = '💬';
+  specialCharButton.onclick = (event) => {
+      event.stopPropagation();
+      closeAllTooltips();
+      specialCharButton.disabled = true;
+      const specialChars = ['J', 'Q', 'X', 'Z', 'Æ', 'Ø', 'Å', 'Ö', 'Ä', 'Ü', 'ẞ'];
+      const foundChars = [...new Set(word)].filter(char => specialChars.includes(char));
+      
+      const tooltip = document.createElement('span');
+      tooltip.className = 'hint-tooltip';
+      tooltip.textContent = foundChars.length > 0 ? foundChars.join(', ') : 'No special characters';
+      specialCharWrapper.appendChild(tooltip);
+
+      setTimeout(() => { tooltip.classList.add('is-visible'); }, 10);
+  };
+  specialCharWrapper.appendChild(specialCharButton);
+  
+  // ✅ UPDATED: Similar Word Hint
+  const similarWordWrapper = document.createElement('div');
+  similarWordWrapper.className = 'hint-wrapper';
+  const similarWordButton = document.createElement('button');
+  similarWordButton.className = 'daily-hint-btn custom-tooltip';
+  similarWordButton.dataset.tooltip = 'Reveal Similar Word';
+  similarWordButton.textContent = '🤝';
+  similarWordButton.onclick = (event) => {
+    event.stopPropagation();
+    closeAllTooltips();
+    similarWordButton.disabled = true;
+    
+    // Call the new helper function to get a similar word
+    const similarWord = findSimilarWord(word, allWordsSet);
+    
+    const tooltip = document.createElement('span');
+    tooltip.className = 'hint-tooltip';
+    tooltip.textContent = similarWord;
+    similarWordWrapper.appendChild(tooltip);
+
+    setTimeout(() => { tooltip.classList.add('is-visible'); }, 10);
+  };
+  similarWordWrapper.appendChild(similarWordButton);
+
+  hintsContainer.appendChild(langWrapper);
+  hintsContainer.appendChild(specialCharWrapper);
+  hintsContainer.appendChild(similarWordWrapper); // Add the new button to the container
+
+  // --- MAIN ONCLICK HANDLER ---
+  showPatternButton.onclick = () => {
+    showPatternButton.disabled = true;
+    showPatternButton.style.opacity = '0';
+    setTimeout(() => {
+      showPatternButton.style.display = 'none';
+      shapesWrapper.style.display = 'flex';
+      
+      const shapeDivs = shapesWrapper.querySelectorAll('div');
+      shapeDivs.forEach((shape, index) => {
+        setTimeout(() => {
+          shape.classList.add('is-flipping');
+        }, index * 100);
+      });
+    }, 300);
+  };
+
+  patternContainer.style.display = 'flex';
+  hintsContainer.style.display = 'flex';
+}
+function closeAllTooltips() {
+  // Find and remove all visible tooltips
+  document.querySelectorAll('.hint-tooltip').forEach(tooltip => tooltip.remove());
+  
+  // Find and re-enable all hint buttons
+  document.querySelectorAll('.daily-hint-btn').forEach(button => button.disabled = false);
+}
+function findSimilarWord(secretWord, allWordsSet) {
+  const lowercasedSecret = secretWord.toLowerCase();
+  const similarWords = [];
+
+  // Iterate through the entire dictionary
+  for (const word of allWordsSet) {
+    // Skip the secret word itself
+    if (word === lowercasedSecret) {
+      continue;
+    }
+
+    let matchCount = 0;
+    // Compare each word letter-by-letter to the secret word
+    for (let i = 0; i < 5; i++) {
+      if (word[i] === lowercasedSecret[i]) {
+        matchCount++;
+      }
+    }
+
+    // If it has exactly 3 matching letters in the same positions, add it
+    if (matchCount === 3) {
+      similarWords.push(word);
+    }
+  }
+
+  if (similarWords.length > 0) {
+    // Return a random word from the list of matches
+    return similarWords[Math.floor(Math.random() * similarWords.length)].toUpperCase();
+  } else {
+    return "No similar word found";
+  }
+}
 </script>
 </body>
 </html>
