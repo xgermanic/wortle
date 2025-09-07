@@ -9,6 +9,11 @@
   --border-subtle: #052737;
   --present-bg: #011219;
   --scanline-color: rgba(0, 231, 193, 0.01);
+  --shape-color-1: #035d3f;
+  --shape-color-2: #8d1134;
+  --shape-color-3: #004a6a;
+  --shape-color-4: #9c5601;
+  --shape-color-5: #5000b1;
 }
 
 body {
