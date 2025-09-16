@@ -581,7 +581,9 @@ h1, h2, h3 {
 #hintBtn1, #hintBtn2, #hintBtn3, #hintBtn4 {
   height: 68px;
   text-align: left;
-  border: 0px;
+  border-top:0;
+  border-left:0;
+  border-right:0;
   border-radius: 5px;
   margin-bottom: 5px;
   cursor: pointer;
@@ -3795,7 +3797,6 @@ function updateHintButtons() {
                         hintTextSpan.classList.add('visible');
                     }
                     btn.classList.add('expanded');
-                    btn.querySelector('.hint-label').classList.add('hidden');
                 }
             } else {
                 btn.disabled = false;
