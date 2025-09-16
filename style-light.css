@@ -84,7 +84,7 @@ a {
 
 #hintBtn1:hover, #hintBtn2:hover, #hintBtn3:hover, #hintBtn4:hover,
 #hintBtn1.clicked-hint, #hintBtn2.clicked-hint, #hintBtn3.clicked-hint, #hintBtn4.clicked-hint {
-  background-color: var(--bg-panel);
+  background-color: var(--bg-main);
   border-bottom: 2px solid var(--border-subtle);
 }
 
