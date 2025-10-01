@@ -386,10 +386,10 @@ input:checked + .slider:before {
     height: 100%;
     }
     .modal {
-      width:400px;
+      width:450px;
     }
     .modal-content {
-      width:340px;
+      width:390px;
     }
 
 #word-status-indicator {
@@ -821,6 +821,7 @@ h1 > p {
   font-size: 16pt;
   width: auto;
   font-family: monospace;
+    margin: 10px 0;
 }
 
 .modal-content {
@@ -841,6 +842,36 @@ h1 > p {
   font-family: monospace;
   font-size: 1.2em;
   letter-spacing: 2pt;
+  margin: 10px 0 0 0;
+}
+
+#modal-hints-container {
+  width:auto;
+  margin:0 auto;
+  font-size: 11pt;
+  padding: 10px;
+  border-radius: 8px;
+  max-height: 120px;
+  min-height:45px;
+  overflow: scroll;
+  background-color: var(--hint-panel);
+  color: var(--text-secondary);
+}
+
+#modal-hints-container h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 12pt;
+  display: none;
+}
+
+#modal-hints-container p {
+  margin: 2px 0;
+  padding: 2px;
+  font-size: 10pt;
+  font-family:'Courier New', Courier, monospace;
+  background-color: var(--bg-secondary);
+  border: var(--border-style);
 }
 
 #hintButtonsContainer {
@@ -1979,12 +2010,14 @@ tr td:first-child {
       <button id="closeModalBtn" class="close-btn">&times;</button>
     <div class="modal-content">
       <p id="modal-message"></p>
+      <div id="modal-hints-container"></div>
       <pre id="modal-summary"></pre>
 
       <div class="modal-button-container">
         <button id="modalCopyBtn">Copy Result</button>
         <button id="showScoreboardBtn">View Scoreboard</button>
       </div>
+
     </div>
 
   </div>
@@ -4342,6 +4375,38 @@ function setupUsernameInterface(config) {
     }
 }
 
+function populateModalHints() {
+    const hintsContainer = document.getElementById('modal-hints-container');
+    // ✅ This line was changed to only include hints 1, 2, and 3
+    const hints = [customHint1, customHint2, customHint3]
+        .filter(h => h && h.trim() !== "");
+
+    hintsContainer.innerHTML = ''; // Clear previous content
+
+    if (hints.length > 0) {
+        const title = document.createElement('h2');
+        title.textContent = "Hints for This Word:";
+        hintsContainer.appendChild(title);
+
+        // Loop through the hints in pairs
+        for (let i = 0; i < hints.length; i += 2) {
+            const hint1 = hints[i];
+            const hint2 = hints[i + 1];
+
+            const rowElement = document.createElement('p');
+            
+            let rowText = hint1;
+
+            if (hint2) {
+                rowText += ` - ${hint2}`;
+            }
+
+            rowElement.textContent = rowText;
+            hintsContainer.appendChild(rowElement);
+        }
+    }
+}
+
 // This helper function displays the game-over modal with the correct information.
 async function showGameOverModal(isSolved, guessHistory, colorHistory, hintStatus, funFactText) {
 const overlay = document.getElementById("game-over-overlay");
@@ -4369,6 +4434,7 @@ const overlay = document.getElementById("game-over-overlay");
         document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
     }
 
+    populateModalHints();
     bindModalButtons(guessHistory, colorHistory, isSolved, hintStatus);
     overlay.classList.add('show');
 }
