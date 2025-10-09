@@ -2217,8 +2217,11 @@ const database = firebase.database();
 
 const appCheck = firebase.appCheck();
 appCheck.activate(
+  new firebase.appCheck.ReCaptchaEnterpriseProvider(
   '6LeZ-LwrAAAAALts-h7cHaX434txCE2jbRW-SS6f', // Paste the site key you got from Google here
-  true);
+  ),
+  true // Set to true to allow auto-refresh.
+);
 
 // --- NEW: Debounce timer for live validation ---
 let debounceTimer;
