@@ -158,10 +158,10 @@ h1 > p {
 }
 
 .game-card {
-    font-family: monospace;
+    font-family: 'VT323', monospace;
     background-color: var(--bg-panel);
     opacity:0.6;
-    border: 0px solid var(--border-subtle);
+    border: 2px solid var(--border-subtle);
     border-radius: 8px;
     padding: 15px;
     text-decoration: none;
@@ -181,8 +181,8 @@ h1 > p {
 .game-card.played {
     opacity:1;
     background-color: var(--bg-panel); /* Sets the background to green */
-    border-color: #6aaa64; /* Use a slightly brighter green for the border */
-    color: var(--shape-color-1); /* Make all text inside the card white for readability */
+    border-color: var(--border-subtle); /* Use a slightly brighter green for the border */
+    color: var(--game-word);
 }
 
 /* Ensure all text elements inside the card turn white */
@@ -193,14 +193,10 @@ h1 > p {
 }
 
 .game-card.played:hover {
-    border-color: #8cce86;
+    border-color: var(--game-word);
 }
 
-
 .game-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
     font-family: 'VT323', monospace;
 }
 
@@ -210,10 +206,9 @@ h1 > p {
 }
 
 .game-word {
-    font-size: 12pt;
+    font-size: 18pt;
     text-transform: uppercase;
-    font-weight: bold;
-    margin: 10px 0 15px 0;
+    margin: 10px 0 20px 0;
     text-align: center;
 }
 
@@ -222,17 +217,6 @@ h1 > p {
     color: var(--text-secondary);
     font-style: italic;
     letter-spacing: 1px; /* Spreads out the question marks */
-}
-
-.game-host {
-    font-size: 14px;
-    color: var(--text-secondary);
-    text-align: right;
-}
-
-.game-host span {
-    font-weight: bold;
-    color: var(--text-primary);
 }
 
 /* --- Loading Spinner --- */
@@ -281,6 +265,32 @@ h1 > p {
     margin: -15px 0 15px 5px; /* Positions it neatly below the filters */
     display: none; /* Hidden by default, JS will show it */
 }
+/* --- UPDATED: Card internal layout --- */
+.game-card-header, .game-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.game-host { font-size: 12pt; color: var(--text-secondary); text-align: right; }
+.game-host span { font-weight: bold; color: var(--text-primary); }
+
+/* --- NEW: Styles for the new elements --- */
+.language-flag {
+    font-size: 20px;
+}
+.player-count {
+    font-size: 12px;
+    font-family: 'Trebuchet MS', sans-serif;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.game-card.played .player-count {
+    color: #8f8f8f; /* Ensure player count is also white on played cards */
+}
+
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
