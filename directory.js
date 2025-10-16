@@ -15,43 +15,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const database = firebase.database();
 
-    // --- NEW: Helper functions for creating flags (copied from your main script) ---
-    const languageToCountryCode = {
-        bulgarian: 'BG', croatian: 'HR', czech: 'CZ', danish: 'DK',
-        dutch: 'NL', english: 'GB', estonian: 'EE', finnish: 'FI',
-        french: 'FR', german: 'DE', greek: 'GR', hungarian: 'HU',
-        irish: 'IE', italian: 'IT', latvian: 'LV', lithuanian: 'LT',
-        polish: 'PL', portuguese: 'PT', romanian: 'RO',
-        slovak: 'SK', slovenian: 'SI', spanish: 'ES', swedish: 'SE',
-        norwegian: 'NO', russian: 'RU', turkish: 'TR'
-    };
+    // Helper functions for flags...
+    const languageToCountryCode = { bulgarian: 'BG', croatian: 'HR', czech: 'CZ', danish: 'DK', dutch: 'NL', english: 'GB', estonian: 'EE', finnish: 'FI', french: 'FR', german: 'DE', greek: 'GR', hungarian: 'HU', irish: 'IE', italian: 'IT', latvian: 'LV', lithuanian: 'LT', polish: 'PL', portuguese: 'PT', romanian: 'RO', slovak: 'SK', slovenian: 'SI', spanish: 'ES', swedish: 'SE', norwegian: 'NO', russian: 'RU', turkish: 'TR' };
+    function getFlagEmoji(countryCode) { const codePoints = countryCode.toUpperCase().split('').map(char => 127397 + char.charCodeAt()); return String.fromCodePoint(...codePoints); }
 
-    function getFlagEmoji(countryCode) {
-        const codePoints = countryCode
-            .toUpperCase()
-            .split('')
-            .map(char => 127397 + char.charCodeAt());
-        return String.fromCodePoint(...codePoints);
-    }
-
-    // --- Helper functions for creating game URLs ---
+    // Helper functions for URLs...
     function base64Encode(str) { return btoa(unescape(encodeURIComponent(str))); }
-    function generateShareURL(word, hint1, hint2, hint3, hint4, funFact) {
-        const url = new URL("/wortle/", window.location.origin); 
-        url.searchParams.set("w", base64Encode(word));
-        if (hint1) url.searchParams.set("h1", base64Encode(hint1));
-        if (hint2) url.searchParams.set("h2", base64Encode(hint2));
-        if (hint3) url.searchParams.set("h3", base64Encode(hint3));
-        if (hint4) url.searchParams.set("h4", base64Encode(hint4));
-        if (funFact) url.searchParams.set("ff", base64Encode(funFact));
-        return url.href;
-    }
+    function generateShareURL(word, hint1, hint2, hint3, hint4, funFact) { const url = new URL("/wortle/", window.location.origin); url.searchParams.set("w", base64Encode(word)); if (hint1) url.searchParams.set("h1", base64Encode(hint1)); if (hint2) url.searchParams.set("h2", base64Encode(hint2)); if (hint3) url.searchParams.set("h3", base64Encode(hint3)); if (hint4) url.searchParams.set("h4", base64Encode(hint4)); if (funFact) url.searchParams.set("ff", base64Encode(funFact)); return url.href; }
 
+    // --- UPDATED: Get references to ALL UI elements ---
     const gameListContainer = document.getElementById('game-list');
     const loader = document.getElementById('loader');
     const searchInput = document.getElementById('searchInput');
     const statusFilter = document.getElementById('statusFilter');
     const hostFilter = document.getElementById('hostFilter');
+    const languageFilter = document.getElementById('languageFilter'); // ADDED THIS
     const gameCountHeader = document.getElementById('game-count');
 
     let allGames = [];
@@ -83,11 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // --- UPDATED: Calculate player count while fetching ---
             const gamesArray = Object.keys(gamesData).map(word => {
                 const game = gamesData[word];
                 if (game.metadata) {
-                    // Count all keys that are not 'metadata' or 'players'
                     const playerCount = Object.keys(game).filter(key => key !== 'metadata' && key !== 'players').length;
                     return { ...game.metadata, word, playerCount };
                 }
@@ -98,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             allGames = gamesArray;
             populateHostFilter(allGames);
+            populateLanguageFilter(allGames); // ADDED THIS CALL
             applyFilters();
 
         } catch (error) {
@@ -122,37 +99,76 @@ document.addEventListener('DOMContentLoaded', () => {
             option.textContent = host;
             hostFilter.appendChild(option);
         });
+        }
+
+    function populateLanguageFilter(games) {
+        // This now populates based on ALL games in the directory
+        const languages = new Set(games.map(game => game.hint1).filter(Boolean));
+        const sortedLanguages = [...languages].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+        while (languageFilter.options.length > 1) {
+            languageFilter.remove(1);
+        }
+
+        sortedLanguages.forEach(lang => {
+            const option = document.createElement('option');
+            option.value = lang.toLowerCase();
+            option.textContent = lang;
+            languageFilter.appendChild(option);
+        });
+    }
+function applyFilters() {
+    const query = searchInput.value.toLowerCase().trim();
+    let selectedStatus = statusFilter.value;
+    const selectedHost = hostFilter.value;
+    const selectedLanguage = languageFilter.value;
+    
+    // If a language is selected, automatically switch the status filter to "played".
+    if (selectedLanguage !== 'all') {
+        selectedStatus = 'played';
+        statusFilter.value = 'played'; // Update the dropdown UI to match
+    }
+    
+    let filteredGames = [...allGames];
+
+    // 1. Apply Status Filter (now includes empty/with_players logic)
+    if (selectedStatus === 'played') {
+        filteredGames = filteredGames.filter(game => playedGamesSet.has(game.word));
+    } else if (selectedStatus === 'unplayed') {
+        filteredGames = filteredGames.filter(game => !playedGamesSet.has(game.word));
+    } else if (selectedStatus === 'empty') {
+        filteredGames = filteredGames.filter(game => game.playerCount === 0);
+    } else if (selectedStatus === 'with_players') {
+        filteredGames = filteredGames.filter(game => game.playerCount > 0);
+    }
+    
+    // 2. Apply Host Filter
+    if (selectedHost !== 'all') {
+        filteredGames = filteredGames.filter(game => game.host === selectedHost);
     }
 
-    function applyFilters() {
-        // ... (This function remains unchanged)
-        const query = searchInput.value.toLowerCase().trim();
-        const selectedStatus = statusFilter.value;
-        const selectedHost = hostFilter.value;
-        let filteredGames = [...allGames];
-        if (selectedStatus === 'played') {
-            filteredGames = filteredGames.filter(game => playedGamesSet.has(game.word));
-        } else if (selectedStatus === 'unplayed') {
-            filteredGames = filteredGames.filter(game => !playedGamesSet.has(game.word));
-        }
-        if (selectedHost !== 'all') {
-            filteredGames = filteredGames.filter(game => game.host === selectedHost);
-        }
-        if (query) {
-            filteredGames = filteredGames.filter(game => {
-                const hasPlayed = playedGamesSet.has(game.word);
-                const host = (game.host || '').toLowerCase();
-                const gameNumber = String(game.gameNumber || '');
-                if (host.includes(query) || gameNumber.includes(query)) return true;
-                if (hasPlayed) {
-                    const word = game.word.toLowerCase();
-                    if (word.includes(query)) return true;
-                }
-                return false;
-            });
-        }
-        renderGames(filteredGames);
+    // 3. Apply Language Filter
+    if (selectedLanguage !== 'all') {
+        filteredGames = filteredGames.filter(game => (game.hint1 || '').toLowerCase() === selectedLanguage);
     }
+    
+    // 4. Apply Search Filter
+    if (query) {
+        filteredGames = filteredGames.filter(game => {
+            const hasPlayed = playedGamesSet.has(game.word);
+            const host = (game.host || '').toLowerCase();
+            const gameNumber = String(game.gameNumber || '');
+            if (host.includes(query) || gameNumber.includes(query)) return true;
+            if (hasPlayed) {
+                const word = game.word.toLowerCase();
+                if (word.includes(query)) return true;
+            }
+            return false;
+        });
+    }
+    
+    renderGames(filteredGames);
+}
 
     function renderGames(gamesToRender) {
         const count = gamesToRender.length;
@@ -201,10 +217,35 @@ document.addEventListener('DOMContentLoaded', () => {
             gameListContainer.appendChild(card);
         });
     }
-    
+
+    // All basic filters just call applyFilters
     searchInput.addEventListener('input', applyFilters);
-    statusFilter.addEventListener('change', applyFilters);
     hostFilter.addEventListener('change', applyFilters);
 
-    fetchAllGames();
+    // The language filter has special logic
+    languageFilter.addEventListener('change', () => {
+        // If the user selects a language, it must be for played games.
+        // This implicitly forces the filter.
+        if (statusFilter.value !== 'played') {
+            statusFilter.value = 'played';
+        }
+        applyFilters();
+    });
+
+    // The status filter now controls the language filter's state
+    statusFilter.addEventListener('change', () => {
+        if (statusFilter.value === 'played') {
+            // ENABLE the language filter only when 'My Played Games' is selected
+            languageFilter.disabled = false;
+        } else {
+            // DISABLE the language filter for all other statuses
+            languageFilter.disabled = true;
+            // Also reset its value to avoid getting stuck
+            languageFilter.value = 'all';
+        }
+        // Then, apply all filters with the new state
+        applyFilters();
+    });
+
+fetchAllGames();
 });
