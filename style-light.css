@@ -20,6 +20,8 @@
   --shape-color-4: #e8ac65;
   --shape-color-5: #9b5de5;
   --game-word: #9cc46c;
+  --button: #84a98c;
+  --button-bg: #fff3eb;
 }
 
 body {
@@ -132,27 +134,30 @@ h1 {
   color: var(--correct-bg);
 }
 
-.word-host-input, .host-input, #funFactInput {
+.host-input, #funFactInput {
   background: var(--bg-panel);
   color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
+  border: 2px solid var(--border-subtle);
 }
 
-.word-host-input {
-    border: 2px solid rgb(232 56 56);
+.word-host-input, .word-host-input:not(:placeholder-shown) {
+  background: var(--button-bg);
+  color: var(--text-primary);
+  border: 2px solid rgb(231, 177, 177);
+  box-shadow: 0 2px 2px rgba(0,0,0,0.1);
 }
 
 .host-input::placeholder, .word-host-input::placeholder, #funFactInput::placeholder {
   color: #8a7a74;
 }
 
-.host-input:not(:placeholder-shown), .word-host-input:not(:placeholder-shown), #funFactInput:not(:placeholder-shown) {
+.host-input:not(:placeholder-shown), #funFactInput:not(:placeholder-shown) {
   background: var(--bg-panel);
 }
 
 #hintInput4Container {
   background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
+  border: 2px solid var(--border-subtle);
 }
 
 #hintInput4Container.darkened {
