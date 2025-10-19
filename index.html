@@ -734,38 +734,67 @@ h1 {
   margin: 0;
   font-family: 'VT323', monospace;
   box-sizing: border-box;
-  height: 75px;
-  position: relative;
   text-align: center;
-  padding: 0 150px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    justify-content: space-between; /* Pushes button groups to the edges */
+    align-items: center;
+    height: 75px;
+    padding: 0 20px; /* Use smaller, responsive padding */
+    position: relative; /* Allows centering the title */
 }
 
+/* 2. Center the title text, independent of the buttons */
 h1 > p {
-  margin: 0;
-  line-height: 33pt;
-  min-width: 400px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    line-height: 1.2;
+    /* This prevents the title from shrinking if buttons need more space */
+    flex-shrink: 0;
 }
 
-.h1-button-group-left {
-  position: absolute;
-  left: 30px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  gap: 8px;
+/* 3. Style the new button wrapper */
+.header-buttons-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%; /* Make it span the full width of the h1 */
 }
 
+/* 4. Basic style for the button groups within the wrapper */
+.h1-button-group-left,
 .h1-button-group-right {
-  position: absolute;
-  right: 30px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  gap: 8px;
+    display: flex;
+    gap: 8px;
 }
+
+.h1-button-group-left,
+.h1-button-group-right {
+    margin: 0 12px;
+}
+
+@media (max-width: 768px) {
+    h1 {
+        flex-direction: column; /* Stacks title and buttons vertically */
+        height: auto; /* Allows height to grow */
+        padding: 15px 10px;
+        gap: 15px; /* Space between title and button container */
+    }
+
+    h1 > p {
+        position: static; /* Let the title flow normally */
+        transform: none;
+        order: -1; /* Ensure title is on top */
+        min-width: 0; /* --- THIS IS THE FIX --- */
+    }
+
+    .header-buttons-container {
+        width: 100%;
+        justify-content: center; /* Center all buttons */
+        flex-wrap: wrap; /* Allow buttons to wrap */
+    }
+}
+
 
 .share-popup {
   position: fixed;
@@ -891,6 +920,7 @@ h1 > p {
   margin-bottom: 5px;
   margin-left: 30px;
   text-align: center;
+  font-weight:bold;
   transition: background 0.2s ease;
 }
 
@@ -1856,6 +1886,216 @@ tr td:first-child {
     opacity: 0.7;
     cursor: not-allowed;
 }
+#setup button[onclick="startGame()"], #generateWordBtn, #apply-constraints-btn {
+    background-color: var(--button);
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color: #FFFFFF;
+    font-weight: bold;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: none;
+    letter-spacing:0.5px;
+    font-size: 9pt;
+    cursor: pointer;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+#addConstraintsBtn {
+    background-color: transparent;
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    color: #797979;
+    font-weight: bold;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: none;
+    letter-spacing:0.5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+#setup button[onclick="startGame()"] {
+  font-size:11pt;
+}
+/* Container for the two random word buttons */
+.random-word-controls {
+    display: flex;
+    justify-content: center;
+    gap: 0px;
+    margin: 5px 0 7px 46px;
+}
+.random-word-controls button {
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-subtle);
+    background-color: var(--hint-panel);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+.random-word-controls button:hover {
+    background-color: var(--border-subtle);
+}
+
+/* Subtitle style for the modal */
+.modal-subtitle {
+    font-size: 14pt;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    margin-bottom: 25px;
+}
+
+/* ---- UPDATED: Styles for Constraints Form ---- */
+
+/* Form layout inside the modal */
+.constraints-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Increased gap for better separation */
+    margin-bottom: 25px;
+    text-align: left;
+}
+.form-group-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.form-group-column label {
+    font-weight: bold;
+    text-align:center;
+}
+
+/* Container for the radio button options */
+.radio-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    justify-content: center;
+}
+
+/* Individual radio button label style */
+.radio-options label {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background-color: var(--hint-panel);
+    padding: 6px 8px;
+    font-size:10pt;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.radio-options input[type="radio"],
+.radio-options input[type="checkbox"] {
+    display: none;
+}
+
+/* Style the custom radio button dot */
+.radio-options span::before {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--border-subtle);
+    background-color: var(--hint-panel);
+    margin-right: 8px;
+    vertical-align: middle;
+    transition: all 0.2s ease;
+}
+.radio-options input[type="radio"]:checked + span,
+.radio-options input[type="checkbox"]:checked + span {
+    color: var(--correct-bg);
+    font-weight: bold;
+}
+
+/* Style the circle when selected (applies to both) */
+.radio-options input[type="radio"]:checked + span::before,
+.radio-options input[type="checkbox"]:checked + span::before {
+    border-color: var(--correct-bg);
+    background-color: var(--correct-bg);
+    box-shadow: inset 0 0 0 3px var(--hint-panel);/* Creates the inner dot effect */
+}
+/* ---- NEW: Header Notepad Styles ---- */
+
+/* A wrapper to position the dropdown relative to the button */
+.notepad-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* The dropdown panel itself (hidden by default) */
+.notepad-dropdown {
+    position: absolute;
+    top: 120%; /* Position it below the button */
+    right: 0;
+    width: 200px;
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    padding: 10px 10px 5px 10px;
+    z-index: 1001; /* Ensure it appears above other content */
+
+    /* Animation for smooth appearance */
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+}
+
+/* The class to show the dropdown */
+.notepad-dropdown.show {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* The textarea inside the dropdown */
+#notepadTextarea {
+    width: 100%;
+    height: 160px;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    resize: none;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+#notepadTextarea:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+/* ---- NEW: Modal Button Group Styles ---- */
+
+.modal-button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px; /* Add some space above the buttons */
+}
+
+/* Make the apply button fill the remaining space */
+#apply-constraints-btn {
+    flex-grow: 1; /* This makes the apply button larger */
+    width: auto;  /* Allow flexbox to control the width */
+}
+
+/* Style for the new secondary 'Reset' button */
+.modal-button-group button.secondary {
+    background-color: var(--shape-color-2);
+    color: #FFFFFF;
+    font-weight: bold;
+    padding: 10px 14px;
+    border-radius: 6px;
+    border: none;
+    letter-spacing: 0.5px;
+    font-size: 9pt;
+    cursor: pointer;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
 
   </style>
   
@@ -1885,19 +2125,27 @@ tr td:first-child {
 </div>
 
 <h1>
-  <div class="h1-button-group-left">
-    <!-- <button id="practiceBtn" aria-label="Practice Mode" class="help-button custom-tooltip" data-tooltip="Practice Mode">🎯</button>-->
-    <button id="globalScoreboardBtn" aria-label="Global Scoreboard" class="help-button custom-tooltip" data-tooltip="Global Scoreboard">🌐</button>
-    <!-- <button id="dailyWordleBtn" aria-label="Daily Wørtle" class="help-button custom-tooltip" data-tooltip="Daily Wørtle">📅</button>-->
-    <button onclick="window.location.href='directory.html'" aria-label="Game Directory" class="help-button custom-tooltip" data-tooltip="Game Directory">📚</button>
-    <button onclick="window.location.href='calculator.html'" aria-label="Guess Calculator" class="help-button custom-tooltip" data-tooltip="Guess Calculator">🧮</button>
-    <button id="themeToggleBtn" aria-label="Toggle Theme" class="help-button custom-tooltip" data-tooltip="Switch Theme">🌙</button>
-  </div>
   <p><span style="color:var(--accent-color);">Cross-Germanic</span> WØRTLE</p>
-  <div class="h1-button-group-right">
-    <button id="newGameBtn" aria-label="Create New Game" class="help-button custom-tooltip" data-tooltip="New Wørtle">✏️</button>
-    <button id="helpBtn" aria-label="Show Help" data-tooltip="Info" class="help-button custom-tooltip">❔</button>
-    <button id="accountBtn" aria-label="My Account" class="help-button custom-tooltip" data-tooltip="My Account">👤</button>
+  <div class="header-buttons-container">
+    <div class="h1-button-group-left">
+        <!-- <button id="practiceBtn" aria-label="Practice Mode" class="help-button custom-tooltip" data-tooltip="Practice Mode">🎯</button>-->
+        <button id="globalScoreboardBtn" aria-label="Global Scoreboard" class="help-button custom-tooltip" data-tooltip="Global Scoreboard">🌐</button>
+        <!-- <button id="dailyWordleBtn" aria-label="Daily Wørtle" class="help-button custom-tooltip" data-tooltip="Daily Wørtle">📅</button>-->
+        <button onclick="window.location.href='directory.html'" aria-label="Game Directory" class="help-button custom-tooltip" data-tooltip="Game Directory">📚</button>
+        <button onclick="window.location.href='calculator.html'" aria-label="Guess Calculator" class="help-button custom-tooltip" data-tooltip="Guess Calculator">🧮</button>
+        <button id="themeToggleBtn" aria-label="Toggle Theme" class="help-button custom-tooltip" data-tooltip="Switch Theme">🌙</button>
+      </div>
+      <div class="h1-button-group-right">
+        <div class="notepad-wrapper">
+            <button id="notepadBtn" aria-label="Notepad" class="help-button custom-tooltip" data-tooltip="Notepad">🗒️</button>
+            <div id="notepadDropdown" class="notepad-dropdown">
+                <textarea id="notepadTextarea" placeholder="Note down f.ex. some good words..."></textarea>
+            </div>
+        </div>
+        <button id="newGameBtn" aria-label="Create New Game" class="help-button custom-tooltip" data-tooltip="New Wørtle">✏️</button>
+        <button id="helpBtn" aria-label="Show Help" data-tooltip="Info" class="help-button custom-tooltip">❔</button>
+        <button id="accountBtn" aria-label="My Account" class="help-button custom-tooltip" data-tooltip="My Account">👤</button>
+      </div>
   </div>
 </h1>
 <div id="loader">Loading Wørtle...</div>
@@ -1908,6 +2156,7 @@ tr td:first-child {
     <div class="header-content-wrapper">
       <div id="setup-username-area" class="user-info-area"></div>
     </div>
+
 </div>
 
 <div id="setup" style="padding-bottom:10px;">
@@ -1917,7 +2166,12 @@ tr td:first-child {
     <input type="text" id="secretInput" maxlength="5" placeholder="Secret word" class="word-host-input"/>
     <span id="word-status-indicator"></span>
   </div>
-    <button id="generateWordBtn" style="margin:5px 0 7px 0;">Pick Random Word</button>
+<div class="random-word-controls">
+    <button id="generateWordBtn">Pick Random Word</button>
+    <button id="addConstraintsBtn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+    </button>
+</div>
     <!-- 
     <div id="special-char-keyboard" class="keyboard mini-keyboard">
     <div class="key-row">
@@ -2118,6 +2372,63 @@ tr td:first-child {
 
 <div id="hintPopupOverlay" class="popup-overlay"></div>
 
+<div id="constraints-overlay" class="modal-overlay">
+    <div id="constraints-modal" class="modal">
+        <button id="close-constraints-btn" class="close-btn">&times;</button>
+        <div class="modal-content">
+            <p class="modal-subtitle">Apply filters to the random word generator:</p>
+            <div class="constraints-form">
+                <div class="form-group-column">
+                    <label>Language</label>
+                    <div class="radio-options" id="constraint-language-options">
+                        <label><input type="radio" name="constraint-language" value="all" checked><span>Any</span></label>
+                    </div>
+                </div>
+                <div class="form-group-column">
+                    <label>Vowel count</label>
+                    <div class="radio-options">
+                        <label><input type="radio" name="constraint-vowels" value="any" checked><span>Any</span></label>
+                        <label><input type="radio" name="constraint-vowels" value="1"><span>1 vowel</span></label>
+                        <label><input type="radio" name="constraint-vowels" value="2"><span>2 vowels</span></label>
+                        <label><input type="radio" name="constraint-vowels" value="3+"><span>3 or more</span></label>
+                    </div>
+                </div>
+                <div class="form-group-column">
+                    <label>Contains special character(s)</label>
+                    <div class="radio-options">
+                        <label><input type="radio" name="constraint-special" value="any" checked><span>Any</span></label>
+                        <label><input type="radio" name="constraint-special" value="1"><span>Exactly 1</span></label>
+                        <label><input type="radio" name="constraint-special" value="2+"><span>2 or more</span></label>
+                    </div>
+                </div>
+              <div class="form-group-column">
+                  <label>Contains uncommon letter(s)</label>
+                  <div class="radio-options"> <label><input type="checkbox" name="constraint-uncommon" value="J"><span>J</span></label>
+                      <label><input type="checkbox" name="constraint-uncommon" value="Q"><span>Q</span></label>
+                      <label><input type="checkbox" name="constraint-uncommon" value="X"><span>X</span></label>
+                      <label><input type="checkbox" name="constraint-uncommon" value="Y"><span>Y</span></label>
+                      <label><input type="checkbox" name="constraint-uncommon" value="Z"><span>Z</span></label>
+                  </div>
+              </div>
+                <div class="form-group-column">
+                    <label>Letter pattern</label>
+                    <div class="radio-options">
+                        <label><input type="radio" name="constraint-pattern" value="any" checked><span>Any</span></label>
+                        <label><input type="radio" name="constraint-pattern" value="no-repeats"><span>5 unique</span></label>
+                        <label><input type="radio" name="constraint-pattern" value="2"><span>2 repeat</span></label>
+                        <label><input type="radio" name="constraint-pattern" value="3"><span>3 repeat</span></label>
+                        <label><input type="radio" name="constraint-pattern" value="palindrome"><span>Palindrome</span></label>
+                    </div>
+                </div>
+                </div>
+          <div class="modal-button-group">
+              <button id="reset-constraints-btn" class="secondary">Reset</button>
+              <button id="apply-constraints-btn">Apply Constraints</button>
+          </div>
+        </div>
+    </div>
+</div>
+
 <script>
 let secret = "";
 let customHint1 = "";
@@ -2152,7 +2463,13 @@ let badgesListener = null;
 let langRef = null;      // ADD THIS
 let langListener = null; // ADD THIS
 let isDailyGame = false;
-// Near the top of your script with other global variables
+let randomWordConstraints = {
+    language: 'all',
+    specialChars: 'any',
+    vowelCount: 'any',
+    letterPattern: 'any',
+    uncommonLetters: [] // CHANGED: from uncommonLetter: 'any'
+};
 let gameNumber = null;
 let hostUsername = null;
 let isModalOpen = false;
@@ -2474,18 +2791,22 @@ async function updateStats(username, won, guesses) {
 
     try {
         await statsRef.transaction(currentStats => {
-            // If stats object doesn't exist at all, create a default one.
             if (currentStats === null) {
-                currentStats = { gamesPlayed: 0, wins: 0, totalGuesses: 0 };
+                currentStats = { gamesPlayed: 0, wins: 0, totalGuesses: 0, lastGameTrend: null };
             }
 
-            // ✅ ADD THIS BLOCK: This is the key fix.
-            // It ensures each property is a number before we use it.
+            // Ensure all properties are numbers before use
             currentStats.gamesPlayed = currentStats.gamesPlayed || 0;
             currentStats.wins = currentStats.wins || 0;
             currentStats.totalGuesses = currentStats.totalGuesses || 0;
 
-            // Now we can safely do the math
+            // --- NEW BADGE LOGIC: The Comeback Kid ---
+            // Check the trend BEFORE updating it. If the last game was a loss and this one is a win...
+            if (won && currentStats.lastGameTrend === "down") {
+                awardBadge(username, 'the_comeback_kid');
+            }
+            // --- END OF NEW LOGIC ---
+
             currentStats.gamesPlayed++;
             if (won) {
                 currentStats.wins++;
@@ -2496,7 +2817,6 @@ async function updateStats(username, won, guesses) {
             return currentStats;
         });
 
-        // The badge check can remain here, it's correct.
         const newStatsSnapshot = await statsRef.once('value');
         const newStats = newStatsSnapshot.val();
         if (newStats && newStats.gamesPlayed >= 25) {
@@ -2504,7 +2824,6 @@ async function updateStats(username, won, guesses) {
         }
 
     } catch (error) {
-        // This will now catch the NaN error if it ever happens again.
         console.error("Could not update stats in Firebase:", error);
     }
 }
@@ -2638,9 +2957,26 @@ async function startGame() {
 
         const userProfileRef = database.ref('userProfiles/' + sanitizedUsername);
         const newGameData = {};
-        // Use the current date for the hosted game entry
-        newGameData[`/hostedGames/${secret}`] = { createdDate: new Date().toISOString() };
+        newGameData[`/hostedGames/${secret}`] = { 
+            createdDate: new Date().toISOString(),
+            language: customHint1 // Also save the language here for easier lookup
+        };
         await userProfileRef.update(newGameData);
+
+                // --- NEW BADGE LOGIC: Linguistic Ambassador ---
+        const allHostedSnapshot = await userProfileRef.child('hostedGames').once('value');
+        if (allHostedSnapshot.exists()) {
+            const hostedGames = allHostedSnapshot.val();
+            const uniqueLanguages = new Set();
+            for (const gameKey in hostedGames) {
+                if (hostedGames[gameKey].language) {
+                    uniqueLanguages.add(hostedGames[gameKey].language.toLowerCase());
+                }
+            }
+            if (uniqueLanguages.size >= 3) {
+                awardBadge(hostUsername, 'linguistic_ambassador');
+            }
+        }
 
     } catch (error) {
         console.error("Firebase save failed:", error);
@@ -3032,6 +3368,16 @@ async function submitGuess() {
     document.getElementById("message").textContent = "";
 
     guessHistory.push(guess);
+
+        // --- NEW BADGE LOGIC: Unique Streak ---
+    if (guessHistory.length === 3) {
+        const firstThreeGuesses = guessHistory.slice(0, 3);
+        const hasUniqueLetters = (word) => new Set(word).size === word.length;
+        
+        if (firstThreeGuesses.every(hasUniqueLetters)) {
+            awardBadge(window.currentUsername, 'unique_streak');
+        }
+    }
     
     // ...The rest of the function is correct and remains the same...
 
@@ -3352,6 +3698,7 @@ function resetHints() {
 }
 window.onload = async () => {
     await loadAllWordLists();
+    populateConstraintLanguages();
 
     const loader = document.getElementById('loader');
     const mainContent = document.getElementById('mainContent');
@@ -3393,7 +3740,6 @@ window.onload = async () => {
         // This is the original logic for custom games
         secret = getSecretFromURL();
     }
-
     // --- Step 2: NOW, based on whether we have a secret, render the correct page ---
     if (secret) {
         // This block now runs for BOTH daily and custom games.
@@ -3484,6 +3830,58 @@ if (secretInput) {
         });
     }
 };
+// --- NEW: Header Notepad Functionality ---
+
+const notepadBtn = document.getElementById('notepadBtn');
+const notepadDropdown = document.getElementById('notepadDropdown');
+const notepadTextarea = document.getElementById('notepadTextarea');
+
+if (notepadBtn && notepadDropdown && notepadTextarea) {
+    // 1. Load saved notes from localStorage when the page loads
+    notepadTextarea.value = localStorage.getItem('wortleHeaderNotepad') || '';
+
+    // 2. Save new notes to localStorage every time the user types
+    notepadTextarea.addEventListener('input', () => {
+        localStorage.setItem('wortleHeaderNotepad', notepadTextarea.value);
+    });
+
+    // 3. Toggle the dropdown when the notepad button is clicked
+    notepadBtn.addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevents the window click listener from immediately closing it
+        notepadDropdown.classList.toggle('show');
+    });
+    
+    // 4. Prevent clicks inside the dropdown from closing it
+    notepadDropdown.addEventListener('click', (event) => {
+        event.stopPropagation();
+    });
+
+    // 5. Add a listener to close the dropdown when clicking anywhere else
+    window.addEventListener('click', () => {
+        if (notepadDropdown.classList.contains('show')) {
+            notepadDropdown.classList.remove('show');
+        }
+    });
+}
+function populateConstraintLanguages() {
+    const container = document.getElementById('constraint-language-options');
+    if (!container) return;
+
+    SUPPORTED_LANGUAGES.forEach(lang => {
+        const label = document.createElement('label');
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'constraint-language';
+        radio.value = lang;
+
+        const span = document.createElement('span');
+        span.textContent = lang.charAt(0).toUpperCase() + lang.slice(1);
+
+        label.appendChild(radio);
+        label.appendChild(span);
+        container.appendChild(label);
+    });
+}
 
 function renderPlayedGames(snapshot) {
     const playedGamesList = document.getElementById('played-games-list');
@@ -3565,7 +3963,9 @@ function renderPlayedGames(snapshot) {
                 
                 const wordSpan = document.createElement('span');
                 let wordText = (gameData.status === 'won' || gameData.status === 'lost') ? meta.word : '?????';
-
+                if (meta.gameNumber) {
+                    wordText += ` (${meta.gameNumber})`;
+                }
                 if (meta.host && meta.host === currentUsername) {
                     wordText += ` <span style="color: #951414; font-weight: bold;">H</span>`;
                 }
@@ -3946,73 +4346,124 @@ if (hintPopup) {
 }
 // --- Add this new function to your script ---
 
+// --- 3. Replace the generateRandomWord function ---
 async function generateRandomWord() {
     const generateBtn = document.getElementById("generateWordBtn");
     const secretInput = document.getElementById("secretInput");
     const indicator = document.getElementById("word-status-indicator");
 
-    // CHANGED: Check the new wordLists Map instead of the old Set.
     if (wordLists.size === 0) {
-        showToast("Word lists are still loading. Please wait a moment and try again.", "error");
+        showToast("Word lists are still loading. Please try again.", "error");
         return;
     }
 
-    // Set the UI to a "loading" state
     if (generateBtn) generateBtn.disabled = true;
     secretInput.value = '';
     indicator.innerHTML = '';
     indicator.className = 'loading';
 
-    // CHANGED: Create a flat array of all words from all languages in the Map.
-    const allWordsArray = [...wordLists.values()].flatMap(wordSet => [...wordSet]);
+    // --- HELPER FUNCTIONS (Unchanged) ---
+    const specialCharsSet = new Set(['Ä', 'Ö', 'Ü', 'ẞ', 'Æ', 'Ø', 'Å']); // Add this back
+    const vowels = new Set(['A', 'E', 'I', 'O', 'U', 'Y', 'Ä', 'Ö', 'Ü', 'Æ', 'Ø', 'Å']);
+    const isPalindrome = (word) => word === [...word].reverse().join('');
+    const countSpecialChars = (word) => [...word].filter(c => specialCharsSet.has(c.toUpperCase())).length; // Add this back
+    const countVowels = (word) => [...word].filter(c => vowels.has(c.toUpperCase())).length;
+    const hasRepeatedLetters = (word, requiredCount) => {
+        const counts = {};
+        for (const letter of word) {
+            counts[letter] = (counts[letter] || 0) + 1;
+            if (counts[letter] >= requiredCount) return true;
+        }
+        return false;
+    };
+    const hasNoRepeatedLetters = (word) => new Set(word).size === word.length;
+
+    // --- FILTERING LOGIC ---
+    let allWordsArray = [...allWordsSet].map(w => w.toUpperCase());
+
+    const eligibleWords = allWordsArray.filter(word => {
+        // Language constraint
+        if (randomWordConstraints.language !== 'all') {
+            if (!findWordLanguages(word.toLowerCase()).includes(randomWordConstraints.language)) return false;
+        }
+
+        // ADD THIS BLOCK BACK: Special characters constraint
+        const specialCount = countSpecialChars(word);
+        if (randomWordConstraints.specialChars === '1' && specialCount !== 1) return false;
+        if (randomWordConstraints.specialChars === '2+' && specialCount < 2) return false;
+
+        // Vowel count constraint
+        const vowelCount = countVowels(word);
+        if (randomWordConstraints.vowelCount === '1' && vowelCount !== 1) return false;
+        if (randomWordConstraints.vowelCount === '2' && vowelCount !== 2) return false;
+        if (randomWordConstraints.vowelCount === '3+' && vowelCount < 3) return false;
+
+        // Uncommon letter constraint
+        if (randomWordConstraints.uncommonLetters.length > 0) {
+            // .every() ensures the word contains ALL selected letters
+            if (!randomWordConstraints.uncommonLetters.every(letter => word.includes(letter))) {
+                return false;
+            }
+        }
+        // Consolidated Letter Pattern constraint
+        switch (randomWordConstraints.letterPattern) {
+            case 'no-repeats':
+                if (!hasNoRepeatedLetters(word)) return false;
+                break;
+            case '2':
+                if (!hasRepeatedLetters(word, 2)) return false;
+                break;
+            case '3':
+                if (!hasRepeatedLetters(word, 3)) return false;
+                break;
+            case 'palindrome':
+                if (!isPalindrome(word)) return false;
+                break;
+        }
+
+        return true;
+    });
+
+    if (eligibleWords.length === 0) {
+        showToast("No words found with these constraints.", "error");
+        indicator.className = 'invalid';
+        indicator.innerHTML = '❌';
+        if (generateBtn) generateBtn.disabled = false;
+        return;
+    }
+
+    // --- FIND AN UNUSED WORD (Unchanged) ---
     let foundWord = null;
     let attempts = 0;
-    const maxAttempts = 50; // Safety limit to prevent an infinite loop
-    let hadError = false;
+    const maxAttempts = Math.min(50, eligibleWords.length);
 
     while (!foundWord && attempts < maxAttempts) {
         attempts++;
-        const randomIndex = Math.floor(Math.random() * allWordsArray.length);
-        const randomWord = allWordsArray[randomIndex].toUpperCase();
+        const randomIndex = Math.floor(Math.random() * eligibleWords.length);
+        const randomWord = eligibleWords[randomIndex];
 
         try {
-            const gameRef = database.ref('games/' + randomWord);
-            const snapshot = await gameRef.once('value');
+            const snapshot = await database.ref('games/' + randomWord).once('value');
             if (!snapshot.exists()) {
-                foundWord = randomWord; // We found an available word!
+                foundWord = randomWord;
             }
         } catch (error) {
             console.error("Database error while finding a random word:", error);
-            hadError = true;
-            break; // Exit the loop on a database error
+            break;
         }
     }
-
-    // --- Final UI update after the search is complete ---
-
-    // Always remove the loading spinner
-    indicator.className = '';
-    indicator.innerHTML = '';
 
     if (foundWord) {
         secretInput.value = foundWord;
-        // ADDED: Call validateSecretWord() to trigger the check mark AND auto-populate hints.
         validateSecretWord();
     } else {
-        // If we failed, show an error icon briefly
-        console.warn("Could not find an available random word after several attempts.");
-        if (hadError) {
-            indicator.innerHTML = '⚠️';
-            indicator.className = 'invalid';
-            // Clear the error icon after a few seconds
-            setTimeout(() => { indicator.innerHTML = ''; indicator.className = ''; }, 2500);
-        }
+        showToast("Couldn't find an unused word with these constraints. Try again.", "error");
+        indicator.className = '';
+        indicator.innerHTML = '';
     }
 
-    // Always re-enable the button
     if (generateBtn) generateBtn.disabled = false;
 }
-
 // --- Add this event listener to make the button work ---
 
 // Find the new button in the document
@@ -4499,7 +4950,11 @@ function renderHostedGames(snapshot) {
                 const gameLink = document.createElement('a');
                 const fullUrl = generateShareURL(meta.word, meta.hint1, meta.hint2, meta.hint3, meta.hint4, meta.funFact);
                 gameLink.href = fullUrl;
-                gameLink.textContent = meta.word;
+                if (meta.gameNumber) {
+                  gameLink.innerHTML = `${meta.word.toUpperCase()} (${meta.gameNumber})`;
+                } else {
+                  gameLink.textContent = meta.word.toUpperCase();
+                }
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'game-item-actions';
                 
@@ -4733,6 +5188,7 @@ function stopUserDeletionListener() {
         userListener = { ref: null, listener: null };
     }
 }
+
 async function saveCompletedGameData(won) {
     const username = localStorage.getItem("gerNordleUsername");
     if (!username || !secret) return;
@@ -4750,12 +5206,12 @@ async function saveCompletedGameData(won) {
                 username: username,
                 guesses: guesses,
                 timestamp: new Date().toISOString(),
-                hintCount: 0, // Daily games don't have hints
+                hintCount: 0,
                 wasHardMode: !hardModeWasDisabled
             };
             const dailyScoreRef = database.ref(`/games/${secret}/${sanitizedUsername}`);
             await dailyScoreRef.set(finalScoreData);
-            // --- LOGIC FOR DAILY WØRTLE ---
+            
             const finalPlayedGameData = {
                 status: won ? 'won' : 'lost',
                 guesses: guesses,
@@ -4788,12 +5244,10 @@ async function saveCompletedGameData(won) {
             }
 
             if (won) {
-                // CORRECTLY UPDATE GUESS DISTRIBUTION
                 const guessCount = guessHistory.length;
                 const guessDistRef = userProfileRef.child('stats/guessDistribution').child(String(guessCount));
                 await guessDistRef.transaction(currentCount => (currentCount || 0) + 1);
 
-                // CORRECTLY UPDATE WIN STREAK
                 const lastWin = userProfile.lastWinDate;
                 if (lastWin !== todayString) {
                     let winStreak = userProfile.winStreak || 0;
@@ -4806,11 +5260,9 @@ async function saveCompletedGameData(won) {
                     userProfileRef.child('lastWinDate').set(todayString);
                 }
                 
-                // BADGE CHECKS
                 if ((userProfile.winStreak || 0) >= 3) awardBadge(username, 'on_a_roll');
                 if ((userProfile.winStreak || 0) >= 10) awardBadge(username, 'dominating');
-            
-                // For daily games, find the language by checking the client-side word lists
+                
                 const dailyGameLanguage = findWordLanguages(secret.toLowerCase())[0];
                 if (dailyGameLanguage) {
                     const lang = dailyGameLanguage;
@@ -4819,7 +5271,6 @@ async function saveCompletedGameData(won) {
                         if (!userProfile.playedLanguages) userProfile.playedLanguages = {};
                         userProfile.playedLanguages[lang] = true;
 
-                        // Check language badges
                         if (userProfile.playedLanguages) {
                             const solvedLangs = new Set(Object.keys(userProfile.playedLanguages));
                             if (solvedLangs.size >= 5) awardBadge(username, 'polyglot');
@@ -4834,7 +5285,6 @@ async function saveCompletedGameData(won) {
                     }
                 }
                 
-                // Other non-hint/host related badges
                 if (guessHistory.length === 1) awardBadge(username, 'prodigy');
                 if (guessHistory.length <= 2) awardBadge(username, 'genius');
                 if (currentRow === rows - 1) awardBadge(username, 'clutch_victory');
@@ -4894,7 +5344,7 @@ async function saveCompletedGameData(won) {
                     username: username,
                     guesses: guesses,
                     timestamp: new Date().toISOString(),
-                    hintCount: (hintUsed1 ? 1:0) + (hintUsed2 ? 1:0) + (hintUsed3 ? 1:0) + (hintUsed4 ? 1:0),
+                    hintCount: (hintUsed1 ? 1 : 0) + (hintUsed2 ? 1 : 0) + (hintUsed3 ? 1 : 0) + (hintUsed4 ? 1 : 0),
                     wasHardMode: !hardModeWasDisabled
                 };
                 const publicScoreUpdates = {};
@@ -4906,6 +5356,41 @@ async function saveCompletedGameData(won) {
 
                 const profileSnapshot = await userProfileRef.once('value');
                 const userProfile = profileSnapshot.val() || {};
+                
+                // --- START: NEW BADGE LOGIC ---
+                if (won) {
+                    // Badge: Super Sleuth
+                    const availableHints = [customHint1, customHint2, customHint3, customHint4].filter(h => h && h.trim() !== "").length;
+                    const usedHints = [hintUsed1, hintUsed2, hintUsed3, hintUsed4].filter(Boolean).length;
+                    if (availableHints > 0 && usedHints >= availableHints) {
+                        awardBadge(username, 'super_sleuth');
+                    }
+
+                    // Badges: Holiday Guesser
+                    const month = today.getMonth(); // 0-11
+                    const day = today.getDate();
+                    if (month === 9 && day >= 25) { // October (month is 9)
+                        awardBadge(username, 'spooky_solver');
+                    }
+                    if (month === 11 && day >= 22) { // December (month is 11)
+                        awardBadge(username, 'festive_guesser');
+                    }
+                }
+
+                // Badge: Dedicated Fan
+                if (hostName) {
+                    const playedGames = userProfile.playedGames || {};
+                    let gamesFromThisHost = 0;
+                    for (const gameKey in playedGames) {
+                        if (playedGames[gameKey].host === hostName) {
+                            gamesFromThisHost++;
+                        }
+                    }
+                    if (gamesFromThisHost >= 10) {
+                        awardBadge(username, 'dedicated_fan');
+                    }
+                }
+                // --- END OF NEW BADGE LOGIC ---
                 
                 const lastPlayed = userProfile.lastPlayedDate;
                 if (lastPlayed !== todayString) {
@@ -5919,6 +6404,75 @@ function findSimilarWord(secretWord, allWordsSet) {
     return "No similar word found";
   }
 }
+// --- UPDATED: Constraints Popup Logic with New Options ---
+const addConstraintsBtn = document.getElementById('addConstraintsBtn');
+const constraintsOverlay = document.getElementById('constraints-overlay');
+const closeConstraintsBtn = document.getElementById('close-constraints-btn');
+const applyConstraintsBtn = document.getElementById('apply-constraints-btn');
+const resetConstraintsBtn = document.getElementById('reset-constraints-btn'); // NEW
+
+function showConstraintsModal() {
+    // Populate form with current constraint values
+    document.querySelector(`input[name="constraint-language"][value="${randomWordConstraints.language}"]`).checked = true;
+    document.querySelector(`input[name="constraint-special"][value="${randomWordConstraints.specialChars}"]`).checked = true;
+    document.querySelector(`input[name="constraint-vowels"][value="${randomWordConstraints.vowelCount}"]`).checked = true;
+    document.querySelector(`input[name="constraint-pattern"][value="${randomWordConstraints.letterPattern}"]`).checked = true;
+
+    // UPDATED: Handle multiple checkboxes for uncommon letters
+    // First, uncheck all of them
+    document.querySelectorAll('input[name="constraint-uncommon"]').forEach(cb => cb.checked = false);
+    // Then, check the ones that are in our saved array
+    randomWordConstraints.uncommonLetters.forEach(letter => {
+        const checkbox = document.querySelector(`input[name="constraint-uncommon"][value="${letter}"]`);
+        if (checkbox) checkbox.checked = true;
+    });
+
+    constraintsOverlay.classList.add('show');
+}
+
+function hideConstraintsModal() {
+    constraintsOverlay.classList.remove('show');
+}
+
+if (addConstraintsBtn) addConstraintsBtn.addEventListener('click', showConstraintsModal);
+if (closeConstraintsBtn) closeConstraintsBtn.addEventListener('click', hideConstraintsModal);
+if (constraintsOverlay) constraintsOverlay.addEventListener('click', (e) => {
+    if (e.target === constraintsOverlay) hideConstraintsModal();
+});
+
+if (applyConstraintsBtn) {
+    applyConstraintsBtn.addEventListener('click', () => {
+        // Save the new values from the form
+        randomWordConstraints.language = document.querySelector('input[name="constraint-language"]:checked').value;
+        randomWordConstraints.specialChars = document.querySelector('input[name="constraint-special"]:checked').value;
+        randomWordConstraints.vowelCount = document.querySelector('input[name="constraint-vowels"]:checked').value;
+        randomWordConstraints.letterPattern = document.querySelector('input[name="constraint-pattern"]:checked').value;
+        
+        // UPDATED: Build an array of the checked uncommon letters
+        const checkedUncommon = document.querySelectorAll('input[name="constraint-uncommon"]:checked');
+        randomWordConstraints.uncommonLetters = Array.from(checkedUncommon).map(cb => cb.value);
+
+        showToast('Constraints applied!', 'success');
+        hideConstraintsModal();
+    });
+}
+
+if (resetConstraintsBtn) {
+    resetConstraintsBtn.addEventListener('click', () => {
+        // Reset the global constraints object to its default state
+        randomWordConstraints = {
+            language: 'all',
+            specialChars: 'any',
+            vowelCount: 'any',
+            letterPattern: 'any',
+            uncommonLetters: []
+        };
+        // Update the form UI to match the reset state
+        showConstraintsModal(); 
+    });
+}
+
+
 </script>
 </body>
 </html>
