@@ -30,4 +30,17 @@ const BADGE_DEFINITIONS = {
     nordic_explorer: { name: 'Nordic Explorer 🇳🇴', description: 'Solved a word containing a Nordic character (Æ, Ø, or Å).' },
     polyglot: { name: 'Polyglot 🌐', description: 'Solved at least one word from each of the 5 supported languages.' },
     globetrotter: { name: 'Globetrotter 🌎', description: 'Solved at least one word from each of your non-native languages.' },
+
+    // Persistence & Playstyle
+    the_comeback_kid: { name: 'The Comeback Kid 💪', description: 'Won a game right after losing the previous one.' },
+    super_sleuth: { name: 'Super Sleuth 🕵️‍♀️', description: 'Used all available hints to solve a puzzle.' },
+    unique_streak: { name: 'Unique Streak ✨', description: 'Your first three guesses in a single game contained no repeated letters.' },
+    
+    // Advanced Community & Hosting
+    linguistic_ambassador: { name: 'Linguistic Ambassador 🧑‍🏫', description: 'Hosted games in at least 3 different languages.' },
+    dedicated_fan: { name: 'Dedicated Fan 🙌', description: 'Played 10 games created by the same host (who is not yourself).' },
+
+    // Holiday & Time-Based
+    festive_guesser: { name: 'Festive Guesser 🎄', description: 'Solved a game during the last two weeks of December.' },
+    spooky_solver: { name: 'Spooky Solver 🎃', description: 'Solved a game during the last week of October.' },
 };
