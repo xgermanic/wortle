@@ -34,11 +34,11 @@ const BADGE_DEFINITIONS = {
     // Persistence & Playstyle
     the_comeback_kid: { name: 'The Comeback Kid 💪', description: 'Won a game right after losing the previous one.' },
     super_sleuth: { name: 'Super Sleuth 🕵️‍♀️', description: 'Used all available hints to solve a puzzle.' },
-    unique_streak: { name: 'Unique Streak ✨', description: 'Your first three guesses in a single game contained no repeated letters.' },
+    unique_streak: { name: 'Unique Streak ✨', description: 'Your first three guesses in a single game contained 15 unique letters.' },
     
     // Advanced Community & Hosting
     linguistic_ambassador: { name: 'Linguistic Ambassador 🧑‍🏫', description: 'Hosted games in at least 3 different languages.' },
-    dedicated_fan: { name: 'Dedicated Fan 🙌', description: 'Played 10 games created by the same host (who is not yourself).' },
+    dedicated_fan: { name: 'Dedicated Fan 🙌', description: 'Played 10 games created by the same host.' },
 
     // Holiday & Time-Based
     festive_guesser: { name: 'Festive Guesser 🎄', description: 'Solved a game during the last two weeks of December.' },
