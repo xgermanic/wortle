@@ -3372,9 +3372,11 @@ async function submitGuess() {
         // --- NEW BADGE LOGIC: Unique Streak ---
     if (guessHistory.length === 3) {
         const firstThreeGuesses = guessHistory.slice(0, 3);
-        const hasUniqueLetters = (word) => new Set(word).size === word.length;
+        // Combine all letters from the three words into one string
+        const combinedLetters = firstThreeGuesses.join(''); 
         
-        if (firstThreeGuesses.every(hasUniqueLetters)) {
+        // Check if the total number of unique letters across all 15 slots is exactly 15
+        if (new Set(combinedLetters).size === 15) {
             awardBadge(window.currentUsername, 'unique_streak');
         }
     }
