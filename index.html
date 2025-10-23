@@ -3863,6 +3863,11 @@ if (notepadBtn && notepadDropdown && notepadTextarea) {
         if (notepadDropdown.classList.contains('show')) {
             notepadDropdown.classList.remove('show');
         }
+    });    
+    
+    notepadTextarea.addEventListener('keydown', (event) => {
+        // Stop the event from bubbling up to the window's keydown listener
+        event.stopPropagation(); 
     });
 }
 function populateConstraintLanguages() {
