@@ -2096,6 +2096,22 @@ tr td:first-child {
     box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
     transition: background-color 0.2s ease, transform 0.1s ease;
 }
+.kudos-section {
+    text-align: center;
+}
+
+#kudosBtn:hover #kudosHeart {
+    transform: scale(1.1);
+}
+
+#kudosBtn:active #kudosHeart {
+    transform: scale(0.9);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
   </style>
   
@@ -2228,8 +2244,11 @@ tr td:first-child {
   <input type="checkbox" value="Å" class="specialCharCheckbox is-auto-populated" disabled>
   <span class="custom-checkmark"></span>Å</label>
 </div>
-  <textarea id="funFactInput" placeholder="Fun fact about the word (to be shown after the game is over)"></textarea>
-  <button onclick="startGame()" style="margin:10px;">Create Game</button>
+    <textarea id="funFactInput" placeholder="Fun fact about the word (to be shown after the game is over)"></textarea>
+        <div id="wordCountDisplay" style="font-size: 0.85rem; color: #666; margin-top: 5px; margin-bottom:10px; text-align: center;">
+            Word count: <span id="currentWordCount">0</span>
+        </div>
+    <button onclick="startGame()" style="margin:10px;">Create Game</button>
 </div>
 </div>
 
@@ -2940,6 +2959,16 @@ async function startGame() {
         // 1. Check for 'Master Hintsmith' badge
         if (inputHint1 && inputHint2 && inputHint3 && inputHint4 && inputFunFact) {
             awardBadge(hostUsername, 'master_hintsmith');
+        }
+
+        // --- NEW: Check for 'Star Novelist' badge ---
+        if (inputFunFact) {
+            // Split by whitespace and filter out empty strings to get an accurate word count
+            const wordCount = inputFunFact.trim().split(/\s+/).filter(word => word.length > 0).length;
+            
+            if (wordCount > 120) {
+                awardBadge(hostUsername, 'star_novelist');
+            }
         }
 
         // 2. Check for 'Prolific Host' and 'Community Pillar' badges
@@ -3794,6 +3823,34 @@ window.onload = async () => {
             document.getElementById('funFactInput')
         ];
         setupInputs.forEach(input => input.addEventListener('input', saveSetupState));
+        // --- START: Word Counter Logic for Star Novelist Badge ---
+        const funFactInput = document.getElementById('funFactInput');
+        const wordCountSpan = document.getElementById('currentWordCount');
+        const wordCountDisplay = document.getElementById('wordCountDisplay');
+
+        if (funFactInput && wordCountSpan) {
+            // 1. Define the counting logic in a reusable function
+            const updateWordCount = () => {
+                const text = funFactInput.value.trim();
+                const words = text ? text.split(/\s+/).filter(word => word.length > 0).length : 0;
+                
+                wordCountSpan.textContent = words;
+
+                if (words > 120) {
+                    wordCountDisplay.style.color = "#43a047"; // Wordle green
+                    wordCountDisplay.style.fontWeight = "bold";
+                } else {
+                    wordCountDisplay.style.color = "#666";
+                    wordCountDisplay.style.fontWeight = "normal";
+                }
+            };
+
+            // 2. Run it whenever the user types
+            funFactInput.addEventListener('input', updateWordCount);
+            
+            // 3. RUN IT IMMEDIATELY to catch text loaded by loadSetupState()
+            updateWordCount();
+        }        
         // --- THIS LINE IS NOW CORRECTED ---
         document.querySelectorAll('.specialCharCheckbox').forEach(cb => cb.addEventListener('change', saveSetupState));
         viewToShow = 'setup';
@@ -4906,7 +4963,84 @@ const overlay = document.getElementById("game-over-overlay");
 
     populateModalHints();
     bindModalButtons(guessHistory, colorHistory, isSolved, hintStatus);
+
+// --- KUDOS LOGIC (Firebase Account Version) ---
+const existingKudos = document.querySelector(".kudos-section");
+if (existingKudos) existingKudos.remove();
+
+const currentUsername = localStorage.getItem("gerNordleUsername");
+const isHost = hostUsername && currentUsername === hostUsername;
+
+const kudosDiv = document.createElement('div');
+kudosDiv.classList.add('kudos-section');
+kudosDiv.style.cssText = "margin-top:20px; text-align:center;";
+
+// SVG Heart: Empty (white/transparent inside) with red border
+const heartSVG = `
+<svg id="kudosHeart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="transparent" stroke="crimson" stroke-width="2" style="transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow: visible;">
+    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+</svg>`;
+
+kudosDiv.innerHTML = `
+    <button id="kudosBtn" disabled style="background:none; border:none; color:#bc5252; display:flex; align-items:center; justify-content:center; width:auto; margin:auto; gap:10px; font-family: inherit;">
+        <span id="kudosText">Loading...</span>
+        ${heartSVG}
+    </button>
+`;
+document.querySelector("#game-over-modal .modal-content").appendChild(kudosDiv);
+
+// --- THE FIX: Define and execute the status check immediately ---
+const btn = document.getElementById('kudosBtn');
+const heart = document.getElementById('kudosHeart');
+const textEl = document.getElementById('kudosText');
+
+if (currentUsername) {
+    database.ref(`users/${currentUsername}/likedGames/${secret}`).once('value').then((snapshot) => {
+        const hasLiked = snapshot.exists();
+        
+        if (isHost) {
+            textEl.textContent = "I Love This Wørtle!";
+            btn.style.cursor = "not-allowed";
+        } else if (hasLiked) {
+            textEl.textContent = "You Loved This Wørtle!";
+            heart.setAttribute('fill', 'pink');
+            btn.style.color = "#43a047"; 
+            btn.style.cursor = "default";
+        } else {
+            textEl.textContent = "I Love This Wørtle!";
+            btn.disabled = false;
+            btn.style.cursor = "pointer";
+            btn.onclick = handleKudosClick;
+        }
+    });
+} else {
+    textEl.textContent = "Log in to give kudos";
+    btn.style.cursor = "default";
+}
+
     overlay.classList.add('show');
+}
+
+async function handleKudosClick() {
+    const currentUsername = localStorage.getItem("gerNordleUsername");
+    const gameKudosRef = database.ref(`games/${secret}/metadata/kudos`);
+    const userLikeRef = database.ref(`users/${currentUsername}/likedGames/${secret}`);
+    
+    const btn = document.getElementById('kudosBtn');
+    const heart = document.getElementById('kudosHeart');
+    const text = document.getElementById('kudosText');
+
+    try {
+        await userLikeRef.set({ likedAt: firebase.database.ServerValue.TIMESTAMP });
+        gameKudosRef.transaction((current) => (current || 0) + 1);
+
+        btn.disabled = true;
+        btn.style.color = "#43a047"; 
+        text.textContent = "You Loved This Wørtle!"; // Updated text
+        heart.setAttribute('fill', 'pink');
+    } catch (e) { 
+        console.error("Kudos failed", e); 
+    }
 }
 // --- Account Sidebar Logic ---
 const accountBtn = document.getElementById('accountBtn');
