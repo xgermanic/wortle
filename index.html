@@ -4971,77 +4971,82 @@ if (existingKudos) existingKudos.remove();
 const currentUsername = localStorage.getItem("gerNordleUsername");
 const isHost = hostUsername && currentUsername === hostUsername;
 
-const kudosDiv = document.createElement('div');
-kudosDiv.classList.add('kudos-section');
-kudosDiv.style.cssText = "margin-top:20px; text-align:center;";
+// 1. Check if user is in the kudosList for THIS game
+database.ref(`games/${secret}/metadata/kudosList`).once('value').then((snap) => {
+    const list = snap.val() || {};
+    const hasLiked = currentUsername && list[currentUsername];
 
-// SVG Heart: Empty (white/transparent inside) with red border
-const heartSVG = `
-<svg id="kudosHeart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="transparent" stroke="crimson" stroke-width="2" style="transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); overflow: visible;">
-    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
-</svg>`;
+    const kudosDiv = document.createElement('div');
+    kudosDiv.classList.add('kudos-section');
+    kudosDiv.style.cssText = "margin-top:20px; text-align:center; display:none;";
 
-kudosDiv.innerHTML = `
-    <button id="kudosBtn" disabled style="background:none; border:none; color:#bc5252; display:flex; align-items:center; justify-content:center; width:auto; margin:auto; gap:10px; font-family: inherit;">
-        <span id="kudosText">Loading...</span>
-        ${heartSVG}
-    </button>
-`;
-document.querySelector("#game-over-modal .modal-content").appendChild(kudosDiv);
+    const heartSVG = `<svg id="kudosHeart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="${hasLiked ? 'pink' : 'transparent'}" stroke="crimson" stroke-width="2" style="overflow: visible;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>`;
 
-// --- THE FIX: Define and execute the status check immediately ---
-const btn = document.getElementById('kudosBtn');
-const heart = document.getElementById('kudosHeart');
-const textEl = document.getElementById('kudosText');
+    kudosDiv.innerHTML = `
+        <button id="kudosBtn" disabled style="background:none; border:none; color:${hasLiked ? '#43a047' : '#bc5252'}; display:flex; align-items:center; justify-content:center; width:auto; margin:auto; gap:10px; font-family: inherit;">
+            <span id="kudosText">Loading...</span>
+            ${heartSVG}
+        </button>
+    `;
+    document.querySelector("#game-over-modal .modal-content").appendChild(kudosDiv);
 
-if (currentUsername) {
-    database.ref(`users/${currentUsername}/likedGames/${secret}`).once('value').then((snapshot) => {
-        const hasLiked = snapshot.exists();
-        
-        if (isHost) {
-            textEl.textContent = "I Love This Wørtle!";
-            btn.style.cursor = "not-allowed";
-        } else if (hasLiked) {
-            textEl.textContent = "You Loved This Wørtle!";
-            heart.setAttribute('fill', 'pink');
-            btn.style.color = "#43a047"; 
-            btn.style.cursor = "default";
-        } else {
-            textEl.textContent = "I Love This Wørtle!";
-            btn.disabled = false;
-            btn.style.cursor = "pointer";
-            btn.onclick = handleKudosClick;
-        }
-    });
-} else {
-    textEl.textContent = "Log in to give kudos";
-    btn.style.cursor = "default";
+    const btn = document.getElementById('kudosBtn');
+    const textEl = document.getElementById('kudosText');
+
+    if (isHost) {
+        const names = Object.keys(list);
+        textEl.innerHTML = names.length > 0 ? formatKudosNames(names) : "I Love This Wørtle!";
+        btn.style.cursor = "not-allowed";
+    } else if (hasLiked) {
+        textEl.textContent = "You Loved This Wørtle!";
+        btn.style.cursor = "default";
+    } else if (currentUsername) {
+        textEl.textContent = "I Love This Wørtle!";
+        btn.disabled = false;
+        btn.style.cursor = "pointer";
+        btn.onclick = handleKudosClick;
+    } else {
+        textEl.textContent = "Log In To Give Kudos";
+    }
+});
+    overlay.classList.add('show');
 }
 
-    overlay.classList.add('show');
+// Helper function to format the names
+function formatKudosNames(names) {
+    if (names.length === 1) return `${names[0]} Loved This Wørtle`;
+    if (names.length === 2) return `${names[0]} & ${names[1]} Loved This Wørtle`;
+    return `${names[0]}, ${names[1]} & ${names.length - 2} Other(s) Loved This Wørtle`;
 }
 
 async function handleKudosClick() {
     const currentUsername = localStorage.getItem("gerNordleUsername");
+    if (!currentUsername) return;
+
     const gameKudosRef = database.ref(`games/${secret}/metadata/kudos`);
-    const userLikeRef = database.ref(`users/${currentUsername}/likedGames/${secret}`);
+    const gameKudosListRef = database.ref(`games/${secret}/metadata/kudosList/${currentUsername}`);
     
     const btn = document.getElementById('kudosBtn');
     const heart = document.getElementById('kudosHeart');
     const text = document.getElementById('kudosText');
 
     try {
-        await userLikeRef.set({ likedAt: firebase.database.ServerValue.TIMESTAMP });
-        gameKudosRef.transaction((current) => (current || 0) + 1);
+        // Increment the number and add the name to the list simultaneously
+        await Promise.all([
+            gameKudosRef.transaction((current) => (current || 0) + 1),
+            gameKudosListRef.set(true)
+        ]);
 
         btn.disabled = true;
         btn.style.color = "#43a047"; 
-        text.textContent = "You Loved This Wørtle!"; // Updated text
+        text.textContent = "You Loved This Wørtle!";
         heart.setAttribute('fill', 'pink');
     } catch (e) { 
         console.error("Kudos failed", e); 
     }
 }
+
+
 // --- Account Sidebar Logic ---
 const accountBtn = document.getElementById('accountBtn');
 const accountSidebar = document.getElementById('account-sidebar');
