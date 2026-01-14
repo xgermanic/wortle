@@ -24,6 +24,7 @@ const BADGE_DEFINITIONS = {
     master_hintsmith: { name: 'Master Hintsmith 🎯', description: 'Created a game with all 4 hints and a fun fact.' },
     wortle_wanderer: { name: 'Wørtle Wanderer 🗺️', description: 'Played games created by 10 different hosts.' },
     community_pillar: { name: 'Community Pillar 🏛️', description: 'Hosted 25 or more games.' }, // Simplified from original idea
+    star_novelist: { name: 'Star Novelist 📖', description: 'Wrote a fun fact with over 120 words.' },
 
     // New Language & Exploration Badges
     umlaut_enthusiast: { name: 'Umlaut Enthusiast 🇩🇪', description: 'Solved a word containing an umlaut (Ä, Ö, or Ü).' },
