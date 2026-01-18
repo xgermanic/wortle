@@ -875,16 +875,17 @@ h1 > p {
 }
 
 #modal-hints-container {
-  width:auto;
-  margin:0 auto;
-  font-size: 11pt;
-  padding: 10px;
-  border-radius: 8px;
-  max-height: 120px;
-  min-height:45px;
-  overflow: scroll;
-  background-color: var(--hint-panel);
-  color: var(--text-secondary);
+    width: 80%;
+    margin: 0 auto;
+    font-size: 11pt;
+    padding: 10px;
+    border-radius: 8px;
+    max-height: 120px;
+    min-height: 32px;
+    overflow: scroll;
+    background-color: var(--hint-panel);
+    color: var(--text-secondary);
+    border: 1px solid #e4d8bf;
 }
 
 #modal-hints-container h2 {
@@ -895,12 +896,12 @@ h1 > p {
 }
 
 #modal-hints-container p {
-  margin: 2px 0;
-  padding: 2px;
-  font-size: 10pt;
-  font-family:'Courier New', Courier, monospace;
-  background-color: var(--bg-secondary);
-  border: var(--border-style);
+    margin: 1px 0;
+    font-size: 10pt;
+    font-family: georgia;
+    background-color: var(--bg-secondary);
+    border: var(--border-style);
+    color: #8c776e;
 }
 
 #hintButtonsContainer {
@@ -912,7 +913,7 @@ h1 > p {
 }
 
 .word-host-input {
-  font-size: 11pt;
+  font-size: 13pt;
   padding: 7px;
   border-radius: 6px;
   width: 200px;
@@ -948,6 +949,58 @@ h1 > p {
   border-radius: 6px;
   text-align: center;
   transition: background 0.2s ease;
+}
+
+.special-chars-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+/* Hide the actual checkbox completely */
+.char-box-label input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* The visual box */
+.char-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 30px;
+  border: 2px solid var(--border-subtle);
+  border-radius: 4px;
+  background-color: var(--bg-panel);
+  color: var(--text-primary);
+  font-weight: bold;
+  font-size: 12pt;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+/* When checked: Turn background dark and text light */
+.char-box-label input:checked + .char-tile {
+  background-color: var(--text-secondary); /* Uses your midnight blue */
+  color: var(--bg-main);                /* Uses your light ivory/beige */
+  border-color: var(--text-secondary);
+}
+
+/* Disabled state styling (since your HTML has 'disabled') */
+.char-box-label input:disabled + .char-tile {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Optional: Slight hover effect if you ever enable them */
+.char-box-label:hover .char-tile {
+  border-color: var(--accent-color);
 }
 
 #modal-stats-container {
@@ -991,13 +1044,26 @@ h1 > p {
   border-radius: 6px;
   font-size: 11pt;
   width: 300px;
+max-height: 120px;
+overflow: scroll;
   display: block;
-  margin: auto;
   margin: 5px auto;
   text-align: center;
   transition: background 0.2s ease;
   resize: vertical;
   line-height: 1.4;
+}
+#funFactInput a {
+    color: var(--link-color);
+    text-decoration: underline;
+    font-weight: bold;
+    pointer-events: none; /* Prevents the host from accidentally clicking the link while typing */
+}
+
+/* Placeholder fix for contenteditable */
+#funFactInput:empty:before {
+    content: attr(placeholder);
+    color: #999;
 }
 
 .fun-fact-section {
@@ -2220,34 +2286,59 @@ tr td:first-child {
     </span>
   </div>
 
-  <div id="hintInput4Container" class="disabled-container">
+<div id="hintInput4Container" class="disabled-container">
   <p>Special character(s)</p>
-  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Ä" class="specialCharCheckbox is-auto-populated" disabled>
-  <span class="custom-checkmark"></span>Ä</label>
-  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Ö" class="specialCharCheckbox is-auto-populated" disabled>
-  <span class="custom-checkmark"></span>Ö</label>
-  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Ü" class="specialCharCheckbox is-auto-populated" disabled>
-  <span class="custom-checkmark"></span>Ü</label>
-  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="ẞ" class="specialCharCheckbox is-auto-populated" disabled>
-  <span class="custom-checkmark"></span>ẞ</label>
-  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Æ" class="specialCharCheckbox is-auto-populated" disabled>
-  <span class="custom-checkmark"></span>Æ</label>
-  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Ø" class="specialCharCheckbox is-auto-populated" disabled>
-  <span class="custom-checkmark"></span>Ø</label>
-  <label style="display:block; margin-bottom:4px;" class="custom-checkbox-label">
-  <input type="checkbox" value="Å" class="specialCharCheckbox is-auto-populated" disabled>
-  <span class="custom-checkmark"></span>Å</label>
+  <div class="special-chars-wrapper">
+    <label class="char-box-label">
+      <input type="checkbox" value="Ä" class="specialCharCheckbox is-auto-populated" disabled>
+      <span class="char-tile">Ä</span>
+    </label>
+    <label class="char-box-label">
+      <input type="checkbox" value="Ö" class="specialCharCheckbox is-auto-populated" disabled>
+      <span class="char-tile">Ö</span>
+    </label>
+    <label class="char-box-label">
+      <input type="checkbox" value="Ü" class="specialCharCheckbox is-auto-populated" disabled>
+      <span class="char-tile">Ü</span>
+    </label>
+    <label class="char-box-label">
+      <input type="checkbox" value="ẞ" class="specialCharCheckbox is-auto-populated" disabled>
+      <span class="char-tile">ẞ</span>
+    </label>
+    <label class="char-box-label">
+      <input type="checkbox" value="Æ" class="specialCharCheckbox is-auto-populated" disabled>
+      <span class="char-tile">Æ</span>
+    </label>
+    <label class="char-box-label">
+      <input type="checkbox" value="Ø" class="specialCharCheckbox is-auto-populated" disabled>
+      <span class="char-tile">Ø</span>
+    </label>
+    <label class="char-box-label">
+      <input type="checkbox" value="Å" class="specialCharCheckbox is-auto-populated" disabled>
+      <span class="char-tile">Å</span>
+    </label>
+  </div>
 </div>
-    <textarea id="funFactInput" placeholder="Fun fact about the word (to be shown after the game is over)"></textarea>
-        <div id="wordCountDisplay" style="font-size: 0.85rem; color: #666; margin-top: 5px; margin-bottom:10px; text-align: center;">
-            Word count: <span id="currentWordCount">0</span>
+
+    <div style="display: inline-flex;">
+        <p style="margin-bottom: 5px;font-size:11pt;">Fun fact about the word (to be shown after the game is over)</p>
+    </div>
+        <div id="funFactInput" 
+            contenteditable="true" 
+            placeholder="Write something interesting...">
         </div>
+
+    <div style="display: flex; align-items: center; width: 300px; margin: 0 auto 10px auto; border: 1px solid transparent;">
+    <div style="flex: 1; display: flex; justify-content: flex-end; padding-right: 10px; border-right: 1px solid gray;">
+        <button type="button" onclick="addLinkToFact()" style="margin: 0;">
+            🔗 Insert Link
+        </button>
+    </div>
+    <div id="wordCountDisplay" style="flex: 1; display: flex; justify-content: flex-start; padding-left: 10px; font-size: 0.85rem; color: #666;">
+        Word Count: <span id="currentWordCount" style="margin-left: 5px;">0</span>
+    </div>
+</div>
+
     <button onclick="startGame()" style="margin:10px;">Create Game</button>
 </div>
 </div>
@@ -2760,7 +2851,7 @@ function saveSetupState() {
     hint1: document.getElementById('hintInput').value,
     hint2: document.getElementById('hintInput2').value,
     hint3: document.getElementById('hintInput3').value,
-    funFact: document.getElementById('funFactInput').value,
+    funFact: document.getElementById('funFactInput').innerHTML,
     // Save an array of the values of all checked boxes
     specialChars: Array.from(document.querySelectorAll('.specialCharCheckbox:checked')).map(cb => cb.value)
   };
@@ -2778,7 +2869,7 @@ function loadSetupState() {
     document.getElementById('hintInput').value = savedState.hint1 || '';
     document.getElementById('hintInput2').value = savedState.hint2 || '';
     document.getElementById('hintInput3').value = savedState.hint3 || '';
-    document.getElementById('funFactInput').value = savedState.funFact || '';
+    document.getElementById('funFactInput').innerHTML = savedState.funFact || '';
 
     // Re-check all the necessary checkboxes
     if (savedState.specialChars && savedState.specialChars.length > 0) {
@@ -2790,15 +2881,23 @@ function loadSetupState() {
     }
   }
 }
-
 function generateShareURL(word, hint1, hint2, hint3, hint4, funFact) {
   const url = new URL(window.location.origin + window.location.pathname);
+  
+  // Standard encoding for words and simple hints
   url.searchParams.set("w", base64Encode(word));
   if (hint1) url.searchParams.set("h1", base64Encode(hint1));
   if (hint2) url.searchParams.set("h2", base64Encode(hint2));
   if (hint3) url.searchParams.set("h3", base64Encode(hint3));
   if (hint4) url.searchParams.set("h4", base64Encode(hint4));
-  if (funFact) url.searchParams.set("ff", base64Encode(funFact));
+  
+  // For funFact (which now contains HTML <a> tags), 
+  // we encode the URI components first to prevent breakage
+  if (funFact) {
+      const safeFunFact = encodeURIComponent(funFact);
+      url.searchParams.set("ff", base64Encode(safeFunFact));
+  }
+  
   return url.href;
 }
 
@@ -2936,8 +3035,11 @@ async function startGame() {
         return; // Stop the function if any required hints are missing
     }
     const inputHint4 = Array.from(document.querySelectorAll(".specialCharCheckbox:checked")).map(cb => cb.value).join(", ");
-    const inputFunFact = document.getElementById("funFactInput").value.trim();
-
+    const funFactElement = document.getElementById("funFactInput");
+    // Use innerHTML to save the actual <a> links to the database
+    const inputFunFact = funFactElement.innerHTML.trim(); 
+    // Use innerText to get just the words for the badge count
+    const funFactPlainText = funFactElement.innerText.trim();
     secret = inputWord;
     customHint1 = inputHint1;
     customHint2 = inputHint2;
@@ -2957,20 +3059,18 @@ async function startGame() {
 
         const sanitizedUsername = hostUsername.replace(/[.#$[\]]/g, '_');
         // 1. Check for 'Master Hintsmith' badge
-        if (inputHint1 && inputHint2 && inputHint3 && inputHint4 && inputFunFact) {
+        if (inputHint1 && inputHint2 && inputHint3 && inputHint4 && funFactPlainText !== "") {
             awardBadge(hostUsername, 'master_hintsmith');
         }
-
         // --- NEW: Check for 'Star Novelist' badge ---
-        if (inputFunFact) {
-            // Split by whitespace and filter out empty strings to get an accurate word count
-            const wordCount = inputFunFact.trim().split(/\s+/).filter(word => word.length > 0).length;
+        if (funFactPlainText) {
+            // Split the plain text version to get an accurate count
+            const wordCount = funFactPlainText.split(/\s+/).filter(word => word.length > 0).length;
             
             if (wordCount > 120) {
                 awardBadge(hostUsername, 'star_novelist');
             }
         }
-
         // 2. Check for 'Prolific Host' and 'Community Pillar' badges
         const hostedGamesRef = database.ref(`userProfiles/${sanitizedUsername}/hostedGames`);
         const hostedSnapshot = await hostedGamesRef.once('value');
@@ -3466,18 +3566,31 @@ async function endGame(won) {
     hideHintPopup();
 
     // Fetch the definitive fun fact from the database
-    let definitiveFunFact = "";
+let definitiveFunFact = "";
     try {
         const metadataRef = database.ref(`games/${secret}/metadata`);
         const metaSnapshot = await metadataRef.once('value');
         if (metaSnapshot.exists()) {
+            // Firebase data is "clean" HTML, so we take it as-is.
             definitiveFunFact = metaSnapshot.val().funFact || "";
         }
     } catch (error) {
         console.error("Could not fetch metadata for final popup:", error);
+        // Fallback to the local variable
         definitiveFunFact = customFunFact;
     }
 
+    // --- LOGIC CHECK ---
+    // If the game was loaded from a URL (not from the database), 
+    // customFunFact might still be URL-encoded.
+    // Let's make sure it's decoded if it contains URL entities.
+    if (definitiveFunFact.includes('%')) {
+        try {
+            definitiveFunFact = decodeURIComponent(definitiveFunFact).trim();
+        } catch (e) {
+            console.warn("Fun Fact did not require URI decoding.");
+        }
+    }
     const gameResult = {
         isSolved: won,
         history: guessHistory,
@@ -3727,6 +3840,7 @@ function resetHints() {
         }
     });
 }
+
 window.onload = async () => {
     await loadAllWordLists();
     populateConstraintLanguages();
@@ -3824,34 +3938,58 @@ window.onload = async () => {
         ];
         setupInputs.forEach(input => input.addEventListener('input', saveSetupState));
         // --- START: Word Counter Logic for Star Novelist Badge ---
-        const funFactInput = document.getElementById('funFactInput');
-        const wordCountSpan = document.getElementById('currentWordCount');
-        const wordCountDisplay = document.getElementById('wordCountDisplay');
+    const funFactInput = document.getElementById('funFactInput');
+    const wordCountSpan = document.getElementById('currentWordCount');
+    // 1. WORD COUNT LOGIC FOR CONTENTEDITABLE
+    function updateWordCount() {
+        if (!funFactInput || !wordCountSpan) return;
+        
+        // Use innerText for divs instead of .value
+        const text = funFactInput.innerText || "";
+        
+        // Filter out empty strings to get accurate count
+        const words = text.trim().split(/\s+/).filter(word => word.length > 0);
+        const count = words.length;
 
-        if (funFactInput && wordCountSpan) {
-            // 1. Define the counting logic in a reusable function
-            const updateWordCount = () => {
-                const text = funFactInput.value.trim();
-                const words = text ? text.split(/\s+/).filter(word => word.length > 0).length : 0;
-                
-                wordCountSpan.textContent = words;
+        wordCountSpan.textContent = count;
 
-                if (words > 120) {
-                    wordCountDisplay.style.color = "#43a047"; // Wordle green
-                    wordCountDisplay.style.fontWeight = "bold";
-                } else {
-                    wordCountDisplay.style.color = "#666";
-                    wordCountDisplay.style.fontWeight = "normal";
-                }
-            };
+        // Apply styles if over 120 words
+        if (count > 120) {
+            wordCountSpan.style.color = "#28a745"; // A nice green
+            wordCountSpan.style.fontWeight = "bold";
+        } else {
+            // Reset to default if they delete text and go below 120
+            wordCountSpan.style.color = ""; 
+            wordCountSpan.style.fontWeight = "";
+        }
+    }
 
-            // 2. Run it whenever the user types
-            funFactInput.addEventListener('input', updateWordCount);
-            
-            // 3. RUN IT IMMEDIATELY to catch text loaded by loadSetupState()
+    // 2. LISTENERS FOR THE SMOOTH EDITOR
+    if (funFactInput) {
+        // 'input' catches typing, deleting, and link insertions
+        funFactInput.addEventListener('input', updateWordCount);
+
+        // CLEAN PASTE LOGIC
+        // This prevents the host from pasting weird CSS/Fonts from other sites
+        funFactInput.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+            document.execCommand("insertHTML", false, text);
             updateWordCount();
-        }        
-        // --- THIS LINE IS NOW CORRECTED ---
+        });
+        
+        // Initial run to clear any previous game data
+        updateWordCount();
+    }
+    // 3. SPECIAL CHARACTER CHECKBOX SYNC (From previous steps)
+    const specialCheckboxes = document.querySelectorAll('.specialCharCheckbox');
+    specialCheckboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            // Your logic for handling auto-population/manual selection
+        });
+    });
+    
+    // --- THIS LINE IS NOW CORRECTED ---
         document.querySelectorAll('.specialCharCheckbox').forEach(cb => cb.addEventListener('change', saveSetupState));
         viewToShow = 'setup';
 
@@ -4901,31 +5039,34 @@ function setupUsernameInterface(config) {
         usernameSet = false;
     }
 }
-
 function populateModalHints() {
     const hintsContainer = document.getElementById('modal-hints-container');
-    // ✅ This line was changed to only include hints 1, 2, and 3
     const hints = [customHint1, customHint2, customHint3]
         .filter(h => h && h.trim() !== "");
 
-    hintsContainer.innerHTML = ''; // Clear previous content
+    hintsContainer.innerHTML = ''; 
+
+    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
     if (hints.length > 0) {
         const title = document.createElement('h2');
         title.textContent = "Hints for This Word:";
         hintsContainer.appendChild(title);
 
-        // Loop through the hints in pairs
         for (let i = 0; i < hints.length; i += 2) {
-            const hint1 = hints[i];
-            const hint2 = hints[i + 1];
+            const h1 = hints[i];
+            const h2 = hints[i + 1];
 
             const rowElement = document.createElement('p');
             
-            let rowText = hint1;
+            // Logic: Only force UPPERCASE if it is the very first hint (index 0)
+            // Otherwise, use Capitalization
+            let formattedH1 = (i === 0) ? h1.toUpperCase() : capitalize(h1);
+            let rowText = formattedH1;
 
-            if (hint2) {
-                rowText += ` - ${hint2}`;
+            if (h2) {
+                // Hint 2 (and any following) are always Capitalized
+                rowText += ` — ${capitalize(h2)}`;
             }
 
             rowElement.textContent = rowText;
@@ -4933,10 +5074,40 @@ function populateModalHints() {
         }
     }
 }
+function addLinkToFact() {
+    // 1. Get the current text selection
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+
+    // 2. Check if anything is highlighted
+    if (!selectedText) {
+        alert("Please highlight the word or phrase you want to turn into a link first!");
+        return;
+    }
+
+    // 3. If text is highlighted, proceed with the prompt
+    const url = prompt("Paste the full URL here (starting with https://):");
+    
+    if (url && url.trim() !== "") {
+        // Apply the link to the highlighted text
+        document.execCommand("createLink", false, url.trim());
+        
+        // Ensure the link opens in a new tab and matches your theme
+        if (selection.anchorNode) {
+            const link = selection.anchorNode.parentElement;
+            if (link.tagName === 'A') {
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.style.color = "var(--link-color)";
+                link.style.fontWeight = "bold";
+            }
+        }
+    }
+}
 
 // This helper function displays the game-over modal with the correct information.
 async function showGameOverModal(isSolved, guessHistory, colorHistory, hintStatus, funFactText) {
-const overlay = document.getElementById("game-over-overlay");
+    const overlay = document.getElementById("game-over-overlay");
     
     // Set win/loss message
     if (isSolved) {
@@ -4948,67 +5119,81 @@ const overlay = document.getElementById("game-over-overlay");
     // Generate and display the shareable summary
     document.getElementById("modal-summary").textContent = generateResultText(true, guessHistory, colorHistory, isSolved, hintStatus);
 
-    // --- UPDATED LOGIC ---
-    // First, always remove any fun fact from a previous game.
+    // --- FUN FACT LOGIC ---
     const existingFunFact = document.querySelector("#game-over-modal .fun-fact-section");
     if (existingFunFact) existingFunFact.remove();
 
-    // Now, display the new fun fact ONLY if one was provided for THIS game.
     if (funFactText && funFactText.trim() !== "") {
         const funFactDiv = document.createElement('div');
         funFactDiv.classList.add('fun-fact-section');
-        funFactDiv.innerHTML = `<h2>Fun fact about today's Wørtle:</h2><p style="margin:0;">${funFactText}</p>`;
+        
+        // Use innerHTML so the <a> tags from your "Smooth Editor" actually work
+        funFactDiv.innerHTML = `
+            <h2>Fun fact about today's Wørtle:</h2>
+            <p style="margin:0;">${funFactText}</p>
+        `;
+        
+        // Apply theme colors to any links found inside the fun fact
+        const factLinks = funFactDiv.querySelectorAll('a');
+        factLinks.forEach(link => {
+            link.style.color = "var(--link-color)";
+            link.style.fontWeight = "bold";
+            link.target = "_blank"; // Ensure links open in new tab
+            link.rel = "noopener noreferrer";
+        });
+
         document.querySelector("#game-over-modal .modal-content").appendChild(funFactDiv);
     }
 
     populateModalHints();
     bindModalButtons(guessHistory, colorHistory, isSolved, hintStatus);
 
-// --- KUDOS LOGIC (Firebase Account Version) ---
-const existingKudos = document.querySelector(".kudos-section");
-if (existingKudos) existingKudos.remove();
+    // --- KUDOS LOGIC ---
+    const existingKudos = document.querySelector(".kudos-section");
+    if (existingKudos) existingKudos.remove();
 
-const currentUsername = localStorage.getItem("gerNordleUsername");
-const isHost = hostUsername && currentUsername === hostUsername;
+    const currentUsername = localStorage.getItem("gerNordleUsername");
+    const isHost = hostUsername && currentUsername === hostUsername;
 
-// 1. Check if user is in the kudosList for THIS game
-database.ref(`games/${secret}/metadata/kudosList`).once('value').then((snap) => {
-    const list = snap.val() || {};
-    const hasLiked = currentUsername && list[currentUsername];
+    database.ref(`games/${secret}/metadata/kudosList`).once('value').then((snap) => {
+        const list = snap.val() || {};
+        const hasLiked = currentUsername && list[currentUsername];
 
-    const kudosDiv = document.createElement('div');
-    kudosDiv.classList.add('kudos-section');
-    kudosDiv.style.cssText = "margin-top:20px; text-align:center; display:none;";
+        const kudosDiv = document.createElement('div');
+        kudosDiv.classList.add('kudos-section');
+        kudosDiv.style.cssText = "margin-top:20px; text-align:center;";
 
-    const heartSVG = `<svg id="kudosHeart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="${hasLiked ? 'pink' : 'transparent'}" stroke="crimson" stroke-width="2" style="overflow: visible;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>`;
+        const heartSVG = `<svg id="kudosHeart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="${hasLiked ? 'pink' : 'transparent'}" stroke="crimson" stroke-width="2" style="overflow: visible;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>`;
 
-    kudosDiv.innerHTML = `
-        <button id="kudosBtn" disabled style="background:none; border:none; color:${hasLiked ? '#43a047' : '#bc5252'}; display:flex; align-items:center; justify-content:center; width:auto; margin:auto; gap:10px; font-family: inherit;">
-            <span id="kudosText">Loading...</span>
-            ${heartSVG}
-        </button>
-    `;
-    document.querySelector("#game-over-modal .modal-content").appendChild(kudosDiv);
+        kudosDiv.innerHTML = `
+            <button id="kudosBtn" disabled style="background: var(--kudos-bg); font-weight: bold; border-radius: 20px; padding: 0.5em 1.5em; font-size: 8pt; border: 2px solid #f6bfbf; display: flex; align-items: center; justify-content: center; width: auto; margin: auto; gap: 5px; font-family: inherit; cursor: pointer; color:${hasLiked ? '#c1808d' : '#db153d'};">
+                <span id="kudosText">Loading...</span>
+                ${heartSVG}
+            </button>
+        `;
+        document.querySelector("#game-over-modal .modal-content").appendChild(kudosDiv);
 
-    const btn = document.getElementById('kudosBtn');
-    const textEl = document.getElementById('kudosText');
+        const btn = document.getElementById('kudosBtn');
+        const textEl = document.getElementById('kudosText');
 
-    if (isHost) {
-        const names = Object.keys(list);
-        textEl.innerHTML = names.length > 0 ? formatKudosNames(names) : "I Love This Wørtle!";
-        btn.style.cursor = "not-allowed";
-    } else if (hasLiked) {
-        textEl.textContent = "You Loved This Wørtle!";
-        btn.style.cursor = "default";
-    } else if (currentUsername) {
-        textEl.textContent = "I Love This Wørtle!";
-        btn.disabled = false;
-        btn.style.cursor = "pointer";
-        btn.onclick = handleKudosClick;
-    } else {
-        textEl.textContent = "Log In To Give Kudos";
-    }
-});
+        if (isHost) {
+            const names = Object.keys(list);
+            textEl.innerHTML = names.length > 0 ? formatKudosNames(names) : "Love This Wørtle";
+            btn.style.cursor = "not-allowed"; // Hosts shouldn't get a 'pointer' cursor if they can't click
+        } else if (hasLiked) {
+            textEl.textContent = "You Loved This Wørtle!";
+            btn.style.cursor = "not-allowed";
+        } else if (currentUsername) {
+            textEl.textContent = "Love This Wørtle";
+            btn.disabled = false;
+            btn.style.cursor = "pointer";
+            btn.onclick = handleKudosClick;
+        } else {
+            textEl.textContent = "Please Log In";
+        }
+    });
+
+    // Finally, show the overlay
     overlay.classList.add('show');
 }
 
@@ -5038,7 +5223,8 @@ async function handleKudosClick() {
         ]);
 
         btn.disabled = true;
-        btn.style.color = "#43a047"; 
+        btn.style.color = "#d48493"; 
+        btn.style.cursor = "not-allowed";
         text.textContent = "You Loved This Wørtle!";
         heart.setAttribute('fill', 'pink');
     } catch (e) { 
