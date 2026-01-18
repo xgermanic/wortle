@@ -1,7 +1,7 @@
 :root {
   --bg-main: #DEE8CE;
   --bg-panel: #FFF8E8;
-  --hint-panel: #f7f7e9;
+  --hint-panel: #f5f5e8;
   --bg-keyboard: #cccccc;
   --text-primary: #5D4037;
   --text-secondary: #5D4037;
@@ -13,6 +13,7 @@
   --absent-bg: #B0A99A;
   --shadow: rgba(93, 64, 55, 0.1);
   --accent-color: #F08B51;
+  --link-color: #F08B51;
   --scanline-color: rgba(192, 198, 12, 0.04);
   --shape-color-1: #84a98c;
   --shape-color-2: #e56b6f;
@@ -21,7 +22,8 @@
   --shape-color-5: #9b5de5;
   --game-word: #9cc46c;
   --button: #84a98c;
-  --button-bg: #fff3eb;
+  --button-bg: #fbe9dd;
+  --kudos-bg: #ffebe2;
 }
 
 body {
@@ -144,7 +146,6 @@ h1 {
   background: var(--button-bg);
   color: var(--text-primary);
   border: 2px solid rgb(231, 177, 177);
-  box-shadow: 0 2px 2px rgba(0,0,0,0.1);
 }
 
 .host-input::placeholder, .word-host-input::placeholder, #funFactInput::placeholder {
