@@ -10,6 +10,8 @@
   --border-subtle: #052737;
   --present-bg: #011219;
   --absent-bg: #474849;
+  --link-color: #398abd;
+  --shadow: rgba(93, 64, 55, 0.1);
   --scanline-color: rgba(0, 231, 193, 0.01);
   --shape-color-1: #035d3f;
   --shape-color-2: #8d1134;
@@ -18,6 +20,7 @@
   --shape-color-5: #5000b1;
   --game-word: #6f42f6;
   --button: #0d395b;
+  --kudos-bg: #e9d7d7;
 }
 
 body {
