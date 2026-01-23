@@ -187,8 +187,9 @@
 
 /* The popup window itself */
 .language-popup {
-    width:300px;
+    width:440px;
     max-height: 500px;
+    overflow: initial;
     background-color: var(--bg-panel);
     border-top:20px solid var(--present-bg);
     border-radius:10px;
@@ -245,11 +246,9 @@
   transition: background-color 0.2s;
 }
 .scoreboard-content-container {
-  max-height: 400px;
+  max-height: 230px;
   overflow:scroll;
 }
-/* REPLACE your old #account-sidebar-header and #account-sidebar-flag rules with these */
-/* REPLACE your old #account-sidebar-title and #account-sidebar-flag rules with these */
 
 /* This container is still just for alignment */
 #account-sidebar-header {
@@ -2397,7 +2396,8 @@ tr td:first-child {
 </div>
 
 <div id="share-modal" class="share-popup">
-  <div class="modal-content">
+  <div class="modal-content" style="overflow:initial;">
+    <button class="close-btn" onclick="closeShareModalAndRefresh()" style="top:-28px;">&times;</button>
     <p style="font-weight:600;margin-bottom:5px;font-size: 12pt;width:auto;font-family:monospace;">Share with others:</p>
     <textarea id="share-message-box" readonly></textarea>
     <div class="button-group">
@@ -2881,24 +2881,11 @@ function loadSetupState() {
     }
   }
 }
-function generateShareURL(word, hint1, hint2, hint3, hint4, funFact) {
-  const url = new URL(window.location.origin + window.location.pathname);
-  
-  // Standard encoding for words and simple hints
-  url.searchParams.set("w", base64Encode(word));
-  if (hint1) url.searchParams.set("h1", base64Encode(hint1));
-  if (hint2) url.searchParams.set("h2", base64Encode(hint2));
-  if (hint3) url.searchParams.set("h3", base64Encode(hint3));
-  if (hint4) url.searchParams.set("h4", base64Encode(hint4));
-  
-  // For funFact (which now contains HTML <a> tags), 
-  // we encode the URI components first to prevent breakage
-  if (funFact) {
-      const safeFunFact = encodeURIComponent(funFact);
-      url.searchParams.set("ff", base64Encode(safeFunFact));
-  }
-  
-  return url.href;
+function generateShareURL(word) {
+    const url = new URL(window.location.origin + window.location.pathname);
+    // We only need the word (Base64 encoded) to find the game in the database
+    url.searchParams.set("w", base64Encode(word));
+    return url.href;
 }
 
 async function updateStats(username, won, guesses) {
@@ -3004,26 +2991,52 @@ async function startGame() {
     }
 
         // --- START: MODIFIED LOGIC TO GET GAME NUMBER ---
-    let newGameNumber;
+let newGameNumber;
     try {
+        const poolRef = database.ref('metadata/availableNumbers');
         const counterRef = database.ref('metadata/totalGames');
-        const transactionResult = await counterRef.transaction(currentCount => {
-            // If the counter doesn't exist, start it at 1. Otherwise, increment it.
-            return (currentCount || 0) + 1;
-        });
 
-        if (!transactionResult.committed) {
-            throw new Error("Failed to get a new game number from the database.");
+        console.log("Checking for recycled numbers in pool...");
+        const poolSnap = await poolRef.once('value');
+        
+        if (poolSnap.exists()) {
+            const available = poolSnap.val();
+            // Object.keys(available) gives us the random Firebase IDs (like -Njk...)
+            const keys = Object.keys(available);
+            
+            // We want to find the entry that contains the SMALLEST game number
+            // Example: { "-ID1": 3, "-ID2": 1 } -> We want 1
+            let smallestKey = keys[0];
+            let smallestNum = available[keys[0]];
+
+            for (let key of keys) {
+                if (available[key] < smallestNum) {
+                    smallestNum = available[key];
+                    smallestKey = key;
+                }
+            }
+
+            newGameNumber = smallestNum;
+            console.log("Recycling game number:", newGameNumber);
+
+            // Remove this specific ID from the pool
+            await poolRef.child(smallestKey).remove();
+        } else {
+            console.log("Pool is empty. Incrementing totalGames instead.");
+            const transactionResult = await counterRef.transaction(currentCount => {
+                return (currentCount || 0) + 1;
+            });
+            newGameNumber = transactionResult.snapshot.val();
         }
-        newGameNumber = transactionResult.snapshot.val();
-        gameNumber = newGameNumber; // Set the global variable for the current session
+        
+        gameNumber = newGameNumber; 
 
     } catch (error) {
         console.error("Could not generate game number:", error);
         showToast("Error creating game. Please try again.", "error");
         return;
     }
-
+    // --- END: MODIFIED LOGIC ---
     const setupDiv = document.getElementById("setup");
     const headerSetup = document.getElementById("header-setup");
     const inputWord = germanFriendlyUpperCase(document.getElementById("secretInput").value.trim());
@@ -3114,7 +3127,7 @@ async function startGame() {
     
     localStorage.removeItem('wurtleSetupState');
 
-    const longUrl = generateShareURL(secret, customHint1, customHint2, customHint3, customHint4, customFunFact);
+    const longUrl = generateShareURL(secret);
     const shareModal = document.getElementById("share-modal");
     const shareMessageBox = document.getElementById("share-message-box");
     const copyBtn = document.getElementById("copy-url-btn");
@@ -3125,22 +3138,34 @@ async function startGame() {
     startBtn.disabled = true;
     shareModal.classList.add("show");
     setupDiv.inert = true;
-
+    
     try {
+        // 1. Generate your clean database-first URL
+        const longUrl = generateShareURL(secret);
+        
+        // 2. Attempt to shorten it via your Firebase Cloud Function
         const shortenUrlFunction = firebase.functions().httpsCallable('shortenUrl');
         const result = await shortenUrlFunction({ url: longUrl });
         const shortUrl = result.data.shortUrl;
-        
+
+        // 3. Success: Display and save the TinyURL
         shareMessageBox.value = shortUrl;
         await metadataRef.update({ shortUrl: shortUrl });
+
     } catch (error) {
-        console.error("Could not shorten URL via Cloud Function:", error);
-        shareMessageBox.value = longUrl; // Fallback to the long URL
+        console.error("Shortening failed, using long URL instead:", error);
+        
+        // FALLBACK: If the API fails, use the clean URL we generated in step 1
+        const fallbackUrl = generateShareURL(secret);
+        shareMessageBox.value = fallbackUrl;
+        await metadataRef.update({ shortUrl: fallbackUrl });
+        
     } finally {
+        // Always re-enable buttons regardless of success or failure
         copyBtn.disabled = false;
         startBtn.disabled = false;
     }
-
+    
     copyBtn.onclick = () => {
         shareMessageBox.select();
         navigator.clipboard.writeText(shareMessageBox.value).then(() => {
@@ -3172,6 +3197,14 @@ async function startGame() {
         // This will initialize the game state and ensure the header has the correct content.
         checkUserStatus();
     };
+}
+
+function closeShareModalAndRefresh() {
+    const shareModal = document.getElementById('share-modal');
+    shareModal.classList.remove('show');
+    
+    // Refresh the page to reset the game state
+    location.reload();
 }
 
 async function checkUserStatus() {
@@ -3565,33 +3598,29 @@ async function submitGuess() {
 async function endGame(won) {
     hideHintPopup();
 
-    // Fetch the definitive fun fact from the database
-let definitiveFunFact = "";
+    // 1. Start with the local variable we fetched during window.onload
+    let definitiveFunFact = customFunFact || "";
+
+    // 2. Try to refresh it from the database one last time (just in case of updates)
     try {
         const metadataRef = database.ref(`games/${secret}/metadata`);
         const metaSnapshot = await metadataRef.once('value');
         if (metaSnapshot.exists()) {
-            // Firebase data is "clean" HTML, so we take it as-is.
-            definitiveFunFact = metaSnapshot.val().funFact || "";
+            definitiveFunFact = metaSnapshot.val().funFact || definitiveFunFact;
         }
     } catch (error) {
-        console.error("Could not fetch metadata for final popup:", error);
-        // Fallback to the local variable
-        definitiveFunFact = customFunFact;
+        console.error("Using local fallback for Fun Fact:", error);
     }
 
-    // --- LOGIC CHECK ---
-    // If the game was loaded from a URL (not from the database), 
-    // customFunFact might still be URL-encoded.
-    // Let's make sure it's decoded if it contains URL entities.
+    // 3. Keep your existing decoding logic (as a safety net for old links)
     if (definitiveFunFact.includes('%')) {
         try {
             definitiveFunFact = decodeURIComponent(definitiveFunFact).trim();
         } catch (e) {
-            console.warn("Fun Fact did not require URI decoding.");
+            console.warn("Fun Fact decoding not required.");
         }
     }
-    const gameResult = {
+        const gameResult = {
         isSolved: won,
         history: guessHistory,
         colors: colorHistory,
@@ -3886,28 +3915,41 @@ window.onload = async () => {
         secret = getSecretFromURL();
     }
     // --- Step 2: NOW, based on whether we have a secret, render the correct page ---
-    if (secret) {
-        // This block now runs for BOTH daily and custom games.
+if (secret) {
+    const gameRef = database.ref('games/' + secret);
+    
+    try {
+        const snapshot = await gameRef.once('value');
         
-        // For custom games, we need to fetch metadata. For daily games, we skip this.
-        if (!isDaily) {
-            const gameRef = database.ref('games/' + secret);
-            const snapshot = await gameRef.once('value');
-            if (!snapshot.exists()) {
-                messageEl.innerHTML = `The game you are looking for does not exist or has been deleted.<br><br><a href="/wortle" style="text-decoration: underline;">Create a new game</a>`;
-                loader.style.display = 'none';
-                mainContent.classList.add('loaded');
-                return; // Stop if the custom game doesn't exist
-            }
+        if (snapshot.exists()) {
             const metadata = snapshot.val().metadata;
             if (metadata) {
-                gameNumber = metadata.gameNumber;
-                hostUsername = metadata.host;
+                // Populate globals from DATABASE
+                customHint1 = metadata.hint1 || "";
+                customHint2 = metadata.hint2 || "";
+                customHint3 = metadata.hint3 || "";
+                customHint4 = metadata.hint4 || "";
+                customFunFact = metadata.funFact || "";
+                gameNumber = metadata.gameNumber || null;
+                hostUsername = metadata.host || "Unknown";
             }
+            
+            // Only set these if the game actually exists!
+            checkUserStatus(); 
+            viewToShow = 'game';
+        } else {
+            // Error handling: snapshot didn't exist
+            messageEl.innerHTML = "The game you are looking for does not exist or has been deleted.<br><br> <a href='/wortle'>Create a new one?</a>";
+            loader.style.display = 'none';
+            mainContent.classList.add('loaded'); // Ensure main content shows the error
+            return;
         }
-        
-        checkUserStatus(); // This will load the board for play
-        viewToShow = 'game';
+    } catch (error) {
+        console.error("Firebase fetch failed:", error);
+        messageEl.textContent = "Connection error. Please refresh.";
+        loader.style.display = 'none';
+        return;
+    }
 
     } else {
         // This logic only runs if it's not a daily game and no custom game is in the URL
@@ -4161,7 +4203,7 @@ function renderPlayedGames(snapshot) {
                 const gameData = customGames[idx];
                 const gameLink = document.createElement('a');
                 gameLink.className = 'game-list-item';
-                gameLink.href = generateShareURL(meta.word, meta.hint1, meta.hint2, meta.hint3, meta.hint4, meta.funFact);
+                gameLink.href = generateShareURL(meta.word);
                 
                 const wordSpan = document.createElement('span');
                 let wordText = (gameData.status === 'won' || gameData.status === 'lost') ? meta.word : '?????';
@@ -5179,10 +5221,13 @@ async function showGameOverModal(isSolved, guessHistory, colorHistory, hintStatu
         if (isHost) {
             const names = Object.keys(list);
             textEl.innerHTML = names.length > 0 ? formatKudosNames(names) : "Love This Wørtle";
-            btn.style.cursor = "not-allowed"; // Hosts shouldn't get a 'pointer' cursor if they can't click
+            btn.style.cursor = "default"; 
         } else if (hasLiked) {
-            textEl.textContent = "You Loved This Wørtle!";
-            btn.style.cursor = "not-allowed";
+            // NEW: Show the formatted list even for regular users who already liked it
+            const names = Object.keys(list);
+            textEl.innerHTML = formatKudosNames(names);
+            btn.style.cursor = "default";
+            btn.disabled = true; // Ensure it stays disabled
         } else if (currentUsername) {
             textEl.textContent = "Love This Wørtle";
             btn.disabled = false;
@@ -5210,28 +5255,42 @@ async function handleKudosClick() {
 
     const gameKudosRef = database.ref(`games/${secret}/metadata/kudos`);
     const gameKudosListRef = database.ref(`games/${secret}/metadata/kudosList/${currentUsername}`);
+    const fullListRef = database.ref(`games/${secret}/metadata/kudosList`); // Ref to get all names
     
     const btn = document.getElementById('kudosBtn');
     const heart = document.getElementById('kudosHeart');
     const text = document.getElementById('kudosText');
 
     try {
-        // Increment the number and add the name to the list simultaneously
+        // 1. Perform the updates
         await Promise.all([
             gameKudosRef.transaction((current) => (current || 0) + 1),
             gameKudosListRef.set(true)
         ]);
 
+        // 2. Fetch the updated list to show the "Host Style" names
+        const snap = await fullListRef.once('value');
+        const list = snap.val() || {};
+        const names = Object.keys(list);
+
+        // 3. Update UI to match the Host view
         btn.disabled = true;
-        btn.style.color = "#d48493"; 
-        btn.style.cursor = "not-allowed";
-        text.textContent = "You Loved This Wørtle!";
+        btn.style.color = "#c1808d"; 
+        btn.style.cursor = "default";
+        
+        // Use your helper function to show the list of names
+        text.innerHTML = formatKudosNames(names);
+        
         heart.setAttribute('fill', 'pink');
+        
+        // Optional: Add a small "pop" animation to the heart
+        heart.style.transform = "scale(1.3)";
+        setTimeout(() => heart.style.transform = "scale(1)", 200);
+
     } catch (e) { 
         console.error("Kudos failed", e); 
     }
 }
-
 
 // --- Account Sidebar Logic ---
 const accountBtn = document.getElementById('accountBtn');
@@ -5277,6 +5336,7 @@ function renderHostedGames(snapshot) {
         metaSnapshots.forEach((metaSnap, idx) => {
             if (metaSnap.exists()) {
                 const meta = metaSnap.val();
+                const kudosCount = meta.kudosList ? Object.keys(meta.kudosList).length : 0;
                 const listItem = document.createElement('div');
                 listItem.className = 'game-list-item';
                 const gameLink = document.createElement('a');
@@ -5295,7 +5355,7 @@ function renderHostedGames(snapshot) {
                 scoreboardBtn.title = 'View Scoreboard';
                 scoreboardBtn.onclick = (event) => {
                     event.stopPropagation(); 
-                    showGameScoreboard(meta.word);
+                    showGameScoreboard(meta.word, meta, kudosCount);
                 };
 
                 const copyBtn = document.createElement('button');
@@ -5836,15 +5896,17 @@ async function deleteGame(wordToDelete) {
         const gameSnapshot = await database.ref('games/' + wordToDelete).once('value');
         const gameData = gameSnapshot.val();
 
-        const allPlayerNames = new Set();
+        // --- NEW: RECYCLE GAME NUMBER LOGIC ---
+        if (gameData && gameData.metadata && gameData.metadata.gameNumber) {
+            const recycledNumber = gameData.metadata.gameNumber;
+            // Push the number into the available pool for future use
+            await database.ref('metadata/availableNumbers').push(recycledNumber);
+        }
+        // --- END RECYCLE LOGIC ---
 
-        // --- FIX START ---
-        // Unconditionally add the host to the list of players to be cleaned up.
-        // This ensures the game is removed from the host's "playedGames" list
-        // even if data is inconsistent.
+        const allPlayerNames = new Set();
         allPlayerNames.add(sanitizedHostUsername);
 
-        // Now, find all OTHER players from the central game record.
         if (gameData) {
             Object.keys(gameData).forEach(key => {
                 if (key !== 'metadata' && key !== 'players') {
@@ -5857,7 +5919,6 @@ async function deleteGame(wordToDelete) {
                 });
             }
         }
-        // --- FIX END ---
 
         const updates = {};
         updates[`/games/${wordToDelete}`] = null;
@@ -5869,7 +5930,6 @@ async function deleteGame(wordToDelete) {
 
         await database.ref().update(updates);
 
-        // This check is needed because we might not have gameData if the record was already partially deleted.
         if (gameData) {
             const statPromises = [];
             allPlayerNames.forEach(sanitizedPlayerName => {
@@ -5891,7 +5951,6 @@ async function deleteGame(wordToDelete) {
                                 currentStats.totalGuesses = (currentStats.totalGuesses || 0) - guessesInGame;
                                 if (currentStats.totalGuesses < 0) currentStats.totalGuesses = 0;
                                 
-                                // ✅ ADD THIS BLOCK TO UPDATE THE GUESS DISTRIBUTION
                                 const guessCountKey = String(guessesInGame);
                                 if (
                                     currentStats.guessDistribution &&
@@ -6348,15 +6407,53 @@ function switchLanguage() {
   saveSetupState();
 }
 
-// ADD THESE NEW FUNCTIONS TO YOUR MAIN SCRIPT
-
-function showGameScoreboard(word) {
+function showGameScoreboard(word, meta, kudosCount) {
     isModalOpen = true;
-    document.getElementById('game-scoreboard-overlay').classList.add('show');
-    document.getElementById('game-scoreboard-popup').classList.add('show');
-    
+    const overlay = document.getElementById('game-scoreboard-overlay');
+    const popup = document.getElementById('game-scoreboard-popup');
     const title = document.getElementById('game-scoreboard-title');
-    title.innerHTML = `Scoreboard for <span style="color:var(--accent-color);">${word}</span>`;
+    
+    overlay.classList.add('show');
+    popup.classList.add('show');
+    
+    title.innerHTML = `Scoreboard for <span style="color:var(--accent-color);">${word.toUpperCase()}</span>`;
+
+    let infoSection = document.getElementById('game-info-summary');
+    if (!infoSection) {
+        infoSection = document.createElement('div');
+        infoSection.id = 'game-info-summary';
+        title.parentNode.insertBefore(infoSection, title.nextSibling);
+    }
+
+    // Prepare the formatted lines
+    const h2Formatted = meta.hint2 
+        ? meta.hint2.charAt(0).toUpperCase() + meta.hint2.slice(1) 
+        : '';
+
+    // Line 1: HINT1 (Uppercase) - Hint2 (Capitalized)
+    const line1 = `${(meta.hint1 || '').toUpperCase()} - ${h2Formatted}`;
+    const line2 = meta.hint3 || '';
+
+    infoSection.innerHTML = `
+        <div style="background-color: var(--scoreboard-panel); color:var(--text-primary);border-radius: 8px; padding: 15px; margin: 10px 0 20px 0;font-size: 9pt; border: 1px solid var(--border-subtle);font-family: monospace;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px;">
+                <span style="color: #db153d;">${kudosCount || 0} Love(s)</span>
+                <span style="color: var(--accent-color);letter-spacing: 2px;">#${meta.gameNumber || 'N/A'}</span>
+            </div>
+            
+            <div style="margin-bottom: 8px;">
+                <div style="font-weight: bold;">${line1}</div>
+                <div style="margin-top: 2px;">${line2}</div>
+            </div>
+
+            ${meta.funFact ? `
+                <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-subtle); font-style: italic; font-size: 8.5pt;max-height: 80px;overflow:scroll;">
+                    ${meta.funFact}
+                </div>
+            ` : ''}
+        </div>
+    `;
 
     populateGameScoreboard(word);
 }
