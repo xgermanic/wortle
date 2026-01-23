@@ -2178,6 +2178,16 @@ tr td:first-child {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* This targets all links inside your Fun Fact summary and player inputs */
+#game-info-summary a, 
+.fun-fact-line a,
+#funFactInput a {
+    color: var(--link-color, #db153d) !important; /* Use your theme color */
+    font-weight: bold !important;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
   </style>
   
 </head>
@@ -5140,8 +5150,6 @@ function addLinkToFact() {
             if (link.tagName === 'A') {
                 link.target = "_blank";
                 link.rel = "noopener noreferrer";
-                link.style.color = "var(--link-color)";
-                link.style.fontWeight = "bold";
             }
         }
     }
