@@ -61,7 +61,7 @@
     top: 50%;
     right: 23%; /* Position it just outside the container */
     transform: translateY(-50%);
-    background-color: #888;
+    background-color: var(--button);
     color: white;
     width: 18px;
     height: 18px;
@@ -94,7 +94,11 @@
     font-weight: normal;
     line-height: 1.4;
   }
-
+  @media screen and (max-width: 510px) {
+    .tooltip-trigger {
+    display: none;
+  }
+}
   /* Creates the small arrow pointing down from the tooltip */
   .tooltip-trigger .tooltip-text::after {
     content: "";
@@ -873,15 +877,11 @@ h1 > p {
   margin: 10px 0 0 0;
 }
 
-#modal-hints-container {
-    width: 80%;
+#modal-hints-container {    
+    width: 90%;
     margin: 0 auto;
-    font-size: 11pt;
-    padding: 10px;
+    padding: 6px;
     border-radius: 8px;
-    max-height: 120px;
-    min-height: 32px;
-    overflow: scroll;
     background-color: var(--hint-panel);
     color: var(--text-secondary);
     border: 1px solid #e4d8bf;
@@ -890,16 +890,14 @@ h1 > p {
 #modal-hints-container h2 {
   margin-top: 0;
   margin-bottom: 10px;
-  font-size: 12pt;
   display: none;
 }
 
 #modal-hints-container p {
     margin: 1px 0;
-    font-size: 10pt;
+    font-size: 9pt;
     font-family: georgia;
     background-color: var(--bg-secondary);
-    border: var(--border-style);
     color: #8c776e;
 }
 
@@ -1042,7 +1040,7 @@ h1 > p {
   font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
   border-radius: 6px;
   font-size: 11pt;
-  width: 300px;
+  max-width: 300px;
 max-height: 120px;
 overflow: scroll;
   display: block;
@@ -2337,7 +2335,7 @@ tr td:first-child {
             placeholder="Write something interesting...">
         </div>
 
-    <div style="display: flex; align-items: center; width: 300px; margin: 0 auto 10px auto; border: 1px solid transparent;">
+    <div style="display: flex; align-items: center; max-width: 300px; margin: 0 auto 10px auto; border: 1px solid transparent;">
     <div style="flex: 1; display: flex; justify-content: flex-end; padding-right: 10px; border-right: 1px solid gray;">
         <button type="button" onclick="addLinkToFact()" style="margin: 0;">
             🔗 Insert Link
@@ -4634,13 +4632,20 @@ async function generateRandomWord() {
 
     // --- FILTERING LOGIC ---
     let allWordsArray = [...allWordsSet].map(w => w.toUpperCase());
+    let removedCount = 0; // Initialize counter
 
     const eligibleWords = allWordsArray.filter(word => {
-        // Language constraint
+        // 1. CHARACTER VALIDATION (STRICT WHITELIST)
+        const allowedRegex = /^[A-ZÄÖÜẞÆØÅ]+$/;
+        if (!allowedRegex.test(word)) {
+            removedCount++; // Increment every time a word like "FINÉR" is found
+            return false;
+        }
+
+        // Language constraint...
         if (randomWordConstraints.language !== 'all') {
             if (!findWordLanguages(word.toLowerCase()).includes(randomWordConstraints.language)) return false;
         }
-
         // ADD THIS BLOCK BACK: Special characters constraint
         const specialCount = countSpecialChars(word);
         if (randomWordConstraints.specialChars === '1' && specialCount !== 1) return false;
@@ -4677,6 +4682,7 @@ async function generateRandomWord() {
 
         return true;
     });
+    console.log(`Bouncer: Removed ${removedCount} invalid words. ${eligibleWords.length} words remaining.`);
 
     if (eligibleWords.length === 0) {
         showToast("No words found with these constraints.", "error");
@@ -5216,7 +5222,7 @@ async function showGameOverModal(isSolved, guessHistory, colorHistory, hintStatu
         const heartSVG = `<svg id="kudosHeart" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="${hasLiked ? 'pink' : 'transparent'}" stroke="crimson" stroke-width="2" style="overflow: visible;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>`;
 
         kudosDiv.innerHTML = `
-            <button id="kudosBtn" disabled style="background: var(--kudos-bg); font-weight: bold; border-radius: 20px; padding: 0.5em 1.5em; font-size: 8pt; border: 2px solid #f6bfbf; display: flex; align-items: center; justify-content: center; width: auto; margin: auto; gap: 5px; font-family: inherit; cursor: pointer; color:${hasLiked ? '#c1808d' : '#db153d'};">
+            <button id="kudosBtn" disabled style="background: var(--kudos-bg); font-weight: bold; border-radius: 20px; padding: 0.5em 1.5em; font-size: 8pt; border: 2px solid #f6bfbf; display: flex; align-items: center; justify-content: center; width: auto; margin: auto; gap: 5px; font-family: inherit; cursor: pointer; color:${hasLiked ? '#db153d' : '#db153d'};">
                 <span id="kudosText">Loading...</span>
                 ${heartSVG}
             </button>
@@ -5250,48 +5256,80 @@ async function showGameOverModal(isSolved, guessHistory, colorHistory, hintStatu
     overlay.classList.add('show');
 }
 
-// Helper function to format the names
-function formatKudosNames(names) {
-    if (names.length === 1) return `${names[0]} Loved This Wørtle`;
-    if (names.length === 2) return `${names[0]} & ${names[1]} Loved This Wørtle`;
-    return `${names[0]}, ${names[1]} & ${names.length - 2} Other(s) Loved This Wørtle`;
+function formatKudosNames(names) {const currentUsername = localStorage.getItem("gerNordleUsername"); 
+    if (!names || names.length === 0) return "";
+    if (!currentUsername) return names[0] + " Loved This Wørtle"; // Fallback
+
+    // 1. Convert everything to Uppercase for the comparison check
+    const myNameUpper = currentUsername.toUpperCase();
+    
+    // 2. Find the index using a case-insensitive check
+    let displayNames = [...names];
+    const userIndex = displayNames.findIndex(name => name.toUpperCase() === myNameUpper);
+
+    if (userIndex !== -1) {
+        displayNames.splice(userIndex, 1);
+        displayNames.unshift("You");
+    }
+
+    // 3. Formatting based on the length of the list
+    if (displayNames.length === 1) {
+        return `${displayNames[0]} Loved This Wørtle`;
+    }
+    
+    if (displayNames.length === 2) {
+        // Standardizes "You and Anna..." or "Anna and Ben..."
+        return `${displayNames[0]} & ${displayNames[1]} Loved This Wørtle`;
+    }
+
+    // 4. Handle "You, Anna and 1 Other(s)"
+    const othersCount = displayNames.length - 2;
+    return `${displayNames[0]}, ${displayNames[1]} & ${othersCount} Other(s) Loved This Wørtle`;
 }
 
 async function handleKudosClick() {
-    const currentUsername = localStorage.getItem("gerNordleUsername");
+    let currentUsername = localStorage.getItem("gerNordleUsername");
     if (!currentUsername) return;
 
+    // Normalize currentUsername to UPPERCASE to match your DB strategy
+    const myNameUpper = currentUsername.toUpperCase();
+
+    // Use the normalized name for the database path
     const gameKudosRef = database.ref(`games/${secret}/metadata/kudos`);
-    const gameKudosListRef = database.ref(`games/${secret}/metadata/kudosList/${currentUsername}`);
-    const fullListRef = database.ref(`games/${secret}/metadata/kudosList`); // Ref to get all names
+    const gameKudosListRef = database.ref(`games/${secret}/metadata/kudosList/${myNameUpper}`);
+    const fullListRef = database.ref(`games/${secret}/metadata/kudosList`); 
     
     const btn = document.getElementById('kudosBtn');
     const heart = document.getElementById('kudosHeart');
     const text = document.getElementById('kudosText');
 
     try {
-        // 1. Perform the updates
         await Promise.all([
             gameKudosRef.transaction((current) => (current || 0) + 1),
             gameKudosListRef.set(true)
         ]);
 
-        // 2. Fetch the updated list to show the "Host Style" names
         const snap = await fullListRef.once('value');
         const list = snap.val() || {};
-        const names = Object.keys(list);
+        let names = Object.keys(list);
 
-        // 3. Update UI to match the Host view
+        // CASE-INSENSITIVE CHECK:
+        // Check if any name in the DB list matches your name (ignoring case)
+        const isAlreadyInList = names.some(name => name.toUpperCase() === myNameUpper);
+
+        if (!isAlreadyInList) {
+            names.push(myNameUpper);
+        }
+
         btn.disabled = true;
-        btn.style.color = "#c1808d"; 
+        btn.style.color = "#db153d"; 
         btn.style.cursor = "default";
         
-        // Use your helper function to show the list of names
+        // Ensure formatKudosNames also uses myNameUpper for its "You" check
         text.innerHTML = formatKudosNames(names);
         
         heart.setAttribute('fill', 'pink');
         
-        // Optional: Add a small "pop" animation to the heart
         heart.style.transform = "scale(1.3)";
         setTimeout(() => heart.style.transform = "scale(1)", 200);
 
@@ -6450,13 +6488,13 @@ function showGameScoreboard(word, meta, kudosCount) {
                 <span style="color: var(--accent-color);letter-spacing: 2px;">#${meta.gameNumber || 'N/A'}</span>
             </div>
             
-            <div style="margin-bottom: 8px;">
+            <div>
                 <div style="font-weight: bold;">${line1}</div>
                 <div style="margin-top: 2px;">${line2}</div>
             </div>
 
             ${meta.funFact ? `
-                <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-subtle); font-style: italic; font-size: 8.5pt;max-height: 80px;overflow:scroll;">
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border-subtle); font-style: italic; font-size: 8.5pt;max-height: 80px;overflow:scroll;">
                     ${meta.funFact}
                 </div>
             ` : ''}
