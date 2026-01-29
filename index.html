@@ -895,9 +895,8 @@ h1 > p {
 
 #modal-hints-container p {
     margin: 1px 0;
-    font-size: 9pt;
+    font-size: 10pt;
     font-family: georgia;
-    background-color: var(--bg-secondary);
     color: #8c776e;
 }
 
@@ -5099,12 +5098,17 @@ function setupUsernameInterface(config) {
 }
 function populateModalHints() {
     const hintsContainer = document.getElementById('modal-hints-container');
-    const hints = [customHint1, customHint2, customHint3]
-        .filter(h => h && h.trim() !== "");
+    
+    // We keep the raw hints in an array to check their identity later
+    const allHints = [customHint1, customHint2, customHint3];
+    const hints = allHints.filter(h => h && h.trim() !== "");
 
     hintsContainer.innerHTML = ''; 
 
-    const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    const capitalize = (str) => {
+        if (!str || str.startsWith('_')) return str;
+        return str.replace(/[a-zæøåäöüß]/i, (match) => match.toUpperCase());
+    };
 
     if (hints.length > 0) {
         const title = document.createElement('h2');
@@ -5117,14 +5121,25 @@ function populateModalHints() {
 
             const rowElement = document.createElement('p');
             
-            // Logic: Only force UPPERCASE if it is the very first hint (index 0)
-            // Otherwise, use Capitalization
-            let formattedH1 = (i === 0) ? h1.toUpperCase() : capitalize(h1);
+            // Format H1: 
+            // 1. If it's customHint3, no formatting.
+            // 2. If it's index 0, UPPERCASE.
+            // 3. Otherwise, Capitalize.
+            let formattedH1;
+            if (h1 === customHint3) {
+                formattedH1 = h1; 
+            } else {
+                formattedH1 = (i === 0) ? h1.toUpperCase() : capitalize(h1);
+            }
+
             let rowText = formattedH1;
 
             if (h2) {
-                // Hint 2 (and any following) are always Capitalized
-                rowText += ` — ${capitalize(h2)}`;
+                // Format H2:
+                // 1. If it's customHint3, no formatting.
+                // 2. Otherwise, Capitalize.
+                let formattedH2 = (h2 === customHint3) ? h2 : capitalize(h2);
+                rowText += ` — ${formattedH2}`;
             }
 
             rowElement.textContent = rowText;
@@ -5284,7 +5299,9 @@ function formatKudosNames(names) {const currentUsername = localStorage.getItem("
 
     // 4. Handle "You, Anna and 1 Other(s)"
     const othersCount = displayNames.length - 2;
-    return `${displayNames[0]}, ${displayNames[1]} & ${othersCount} Other(s) Loved This Wørtle`;
+    const label = othersCount === 1 ? "Other" : "Others";
+    
+    return `${displayNames[0]}, ${displayNames[1]} & ${othersCount} ${label} Loved This Wørtle`;
 }
 
 async function handleKudosClick() {
