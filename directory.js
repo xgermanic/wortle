@@ -20,8 +20,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function getFlagEmoji(countryCode) { const codePoints = countryCode.toUpperCase().split('').map(char => 127397 + char.charCodeAt()); return String.fromCodePoint(...codePoints); }
 
     // Helper functions for URLs...
-    function base64Encode(str) { return btoa(unescape(encodeURIComponent(str))); }
-    function generateShareURL(word, hint1, hint2, hint3, hint4, funFact) { const url = new URL("/wortle/", window.location.origin); url.searchParams.set("w", base64Encode(word)); if (hint1) url.searchParams.set("h1", base64Encode(hint1)); if (hint2) url.searchParams.set("h2", base64Encode(hint2)); if (hint3) url.searchParams.set("h3", base64Encode(hint3)); if (hint4) url.searchParams.set("h4", base64Encode(hint4)); if (funFact) url.searchParams.set("ff", base64Encode(funFact)); return url.href; }
+    function base64Encode(str) { 
+        return btoa(unescape(encodeURIComponent(str))); 
+    }
+
+    function generateShareURL(word) {
+        // This points to your main game page (/wortle/)
+        const url = new URL("/wortle/", window.location.origin);
+        
+        // We only attach the encoded word. 
+        // The game page will use this to fetch hints/facts from Firebase.
+        url.searchParams.set("w", base64Encode(word));
+        
+        return url.href;
+    }
 
     // --- UPDATED: Get references to ALL UI elements ---
     const gameListContainer = document.getElementById('game-list');
@@ -40,17 +52,26 @@ document.addEventListener('DOMContentLoaded', () => {
         gameListContainer.innerHTML = '';
 
         try {
-            const username = localStorage.getItem("gerNordleUsername");
-            const sanitizedUsername = username ? username.replace(/[.#$[\]]/g, '_') : null;
+        const username = localStorage.getItem("gerNordleUsername");
+        const sanitizedUsername = username ? username.replace(/[.#$[\]]/g, '_') : null;
+        
+        playedGamesSet.clear();
+        if (sanitizedUsername) {
+            const playedGamesRef = database.ref(`userProfiles/${sanitizedUsername}/playedGames`);
+            const snapshot = await playedGamesRef.once('value');
             
-            playedGamesSet.clear();
-            if (sanitizedUsername) {
-                const playedGamesRef = database.ref(`userProfiles/${sanitizedUsername}/playedGames`);
-                const snapshot = await playedGamesRef.once('value');
-                if (snapshot.exists()) {
-                    playedGamesSet = new Set(Object.keys(snapshot.val()));
-                }
+            if (snapshot.exists()) {
+                const games = snapshot.val();
+                // ✅ FIX: Only add to the "Revealed" set if the game is actually finished
+                Object.entries(games).forEach(([word, data]) => {
+                    // Check if 'status' is 'won' or 'lost', OR if 'guesses' > 0 
+                    // Adjust this condition based on exactly how you save a "finished" game
+                    if (data.status === 'won' || data.status === 'lost') {
+                        playedGamesSet.add(word);
+                    }
+                });
             }
+        }
 
             const gamesRef = database.ref('games');
             const snapshot = await gamesRef.once('value');
@@ -200,7 +221,7 @@ function applyFilters() {
             }
 
             card.className = `game-card ${hasPlayed ? 'played' : 'unplayed'}`;
-            card.href = generateShareURL(game.word, game.hint1, game.hint2, game.hint3, game.hint4, game.funFact);
+            card.href = generateShareURL(game.word);
             
             // --- UPDATED: New card layout with header and footer ---
             card.innerHTML = `
