@@ -5869,24 +5869,19 @@ function renderHostedGames(snapshot) {
         }
     }
 
-    // 2. RESET LOGIC: Fresh start when sidebar opens
-    if (hostedGamesLimit === 20) {
-        hostedGamesList.innerHTML = '';
-    }
-
     // 3. EARLY RETURN: Handle players with no games
     if (!snapshot.exists()) {
-        if (titleElement) titleElement.textContent = 'Hosted Games (0)';
-        hostedGamesList.innerHTML = '<p style="padding: 10px;">You have not created any games.</p>';
-        if (loadMoreContainer) loadMoreContainer.style.display = 'none';
-        
-        if (resolveHostedGames) {
-            resolveHostedGames();
-            resolveHostedGames = null;
+            if (titleElement) titleElement.textContent = 'Hosted Games (0)';
+            hostedGamesList.innerHTML = ''; // Clear any leftover items
+            hostedGamesList.insertAdjacentHTML('beforeend', '<p style="padding: 10px;">You have not created any games.</p>');
+            if (loadMoreContainer) loadMoreContainer.style.display = 'none';
+            
+            if (resolveHostedGames) {
+                resolveHostedGames();
+                resolveHostedGames = null;
+            }
+            return; 
         }
-        return; 
-    }
-
     // 4. PROCESS DATA
     const gamesObject = snapshot.val();
     const allGames = [];
@@ -5895,6 +5890,15 @@ function renderHostedGames(snapshot) {
     }
     
     allGames.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+
+    const currentOnScreen = hostedGamesList.querySelectorAll('[data-word]').length;
+    const expectedCount = Math.min(allGames.length, hostedGamesLimit);
+
+    // If we are at the start OR the UI has more items than the DB (deletion)
+    if (hostedGamesLimit === 20 || currentOnScreen > expectedCount) {
+        hostedGamesList.innerHTML = '';
+    }
+
     if (titleElement) titleElement.textContent = `Hosted Games (${allGames.length})`;
 
     // 5. SLICE
@@ -6509,10 +6513,20 @@ async function saveCompletedGameData(won) {
         throw error;
     }
 }
-
 async function deleteGame(wordToDelete) {
     if (!confirm(`Are you sure you want to permanently delete the game "${wordToDelete}"? This will remove it from every player's history and stats.`)) {
         return;
+    }
+
+    // --- STEP 0: IMMEDIATE UI REMOVAL ---
+    // We find the element in the sidebar and remove it right now.
+    // This provides instant feedback even if the network is slow.
+    const listItem = document.querySelector(`[data-word="${wordToDelete}"]`);
+    if (listItem) {
+        listItem.style.transition = "all 0.3s ease";
+        listItem.style.opacity = "0";
+        listItem.style.transform = "translateX(20px)";
+        setTimeout(() => listItem.remove(), 300);
     }
 
     const hostUsername = localStorage.getItem("gerNordleUsername");
@@ -6523,22 +6537,20 @@ async function deleteGame(wordToDelete) {
     const sanitizedHostUsername = hostUsername.replace(/[.#$[\]]/g, '_');
 
     try {
-        // 1. Fetch data first so we have it for the background tasks
         const gameSnapshot = await database.ref('games/' + wordToDelete).once('value');
         const gameData = gameSnapshot.val();
 
         if (!gameData) {
             console.error("Game data not found.");
+            // If it's already gone from DB, ensure UI is still clean
+            if (listItem) listItem.remove();
             return;
         }
 
-        // 2. DISAPPEAR THE GAME IMMEDIATELY
-        // We do this first so your .on('value') listeners in the sidebar trigger right away
         const updates = {};
         updates[`/games/${wordToDelete}`] = null;
         updates[`/userProfiles/${sanitizedHostUsername}/hostedGames/${wordToDelete}`] = null;
 
-        // Collect all player names to remove the game from their 'playedGames' too
         const allPlayerNames = new Set();
         allPlayerNames.add(sanitizedHostUsername);
 
@@ -6558,18 +6570,25 @@ async function deleteGame(wordToDelete) {
             });
         }
 
-        // Execute deletion - Sidebar will update NOW
         await database.ref().update(updates);
         console.log("Game deleted from database. Sidebar should update.");
 
-        // 3. RECYCLE THE GAME NUMBER (Background task)
+        // --- STEP 1: FORCE TITLE REFRESH ---
+        // Manually decrement the count in the sidebar header so it looks correct immediately
+        const titleElement = document.getElementById('hosted-games-title');
+        if (titleElement) {
+            const currentCount = parseInt(titleElement.textContent.match(/\d+/) || 0);
+            titleElement.textContent = `Hosted Games (${Math.max(0, currentCount - 1)})`;
+        }
+
+        // 3. RECYCLE THE GAME NUMBER
         if (gameData.metadata && gameData.metadata.gameNumber) {
             const recycledNumber = gameData.metadata.gameNumber;
             await database.ref('metadata/availableNumbers').push(recycledNumber);
             console.log("Game number " + recycledNumber + " returned to pool.");
         }
 
-        // 4. UPDATE STATS TRANSACTIONS (Background task)
+        // 4. UPDATE STATS TRANSACTIONS
         const statPromises = [];
         allPlayerNames.forEach(sanitizedPlayerName => {
             const scoreData = gameData[sanitizedPlayerName];
@@ -6601,7 +6620,6 @@ async function deleteGame(wordToDelete) {
             await Promise.all(statPromises);
         }
 
-        // 5. Final check: if user deleted the game they were currently looking at
         if (typeof secret !== 'undefined' && wordToDelete === secret) {
             window.location.reload();
         }
@@ -6609,8 +6627,14 @@ async function deleteGame(wordToDelete) {
     } catch (error) {
         console.error("Comprehensive deletion failed:", error);
         alert("An error occurred while trying to delete the game.");
+        // If it failed, show the item again
+        if (listItem) {
+            listItem.style.opacity = "1";
+            listItem.style.transform = "translateX(0)";
+        }
     }
 }
+
 // This function handles closing the popup when the user starts typing a guess.
 function handleTypingToClose(event) {
     // Check if the key pressed is a valid letter for the game.
