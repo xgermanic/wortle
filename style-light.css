@@ -8,6 +8,7 @@
   --text-secondary: #5D4037;
   --text-on-color: #FFF8E8;
   --border-subtle: #C5D0B7;
+  --border-light: #e4d8bf;
   --border-strong: #f9da28;
   --correct-bg: #8cbb53;
   --present-bg: #F08B51;
@@ -23,7 +24,7 @@
   --shape-color-5: #9b5de5;
   --game-word: #9cc46c;
   --button: #84a98c;
-  --button-bg: #fbe9dd;
+  --button-bg: #ffeee9;
   --kudos-bg: #ffebe2;
 }
 
@@ -206,12 +207,12 @@ h1 {
   outline: 2px solid var(--present-bg);
 }
 
-.close-btn {
+.close-btn, .close-popup {
   background: transparent;
   color: #d8753c;
 }
 
-.close-btn:hover {
+.close-btn:hover, .close-popup:hover {
   color: var(--text-primary);
 }
 
@@ -372,7 +373,7 @@ tr:nth-child(even) {
   color: var(--absent-bg);
 }
 
-.badge {
+.badge, #bug-report-btn {
   background-color: var(--present-bg);
   color: var(--text-on-color);
   box-shadow: 0 2px 4px var(--shadow);
