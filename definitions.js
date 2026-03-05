@@ -44,4 +44,13 @@ const BADGE_DEFINITIONS = {
     // Holiday & Time-Based
     festive_guesser: { name: 'Festive Guesser 🎄', description: 'Solved a game during the last two weeks of December.' },
     spooky_solver: { name: 'Spooky Solver 🎃', description: 'Solved a game during the last week of October.' },
+    
+    green_thumb: { 
+        name: 'Green Thumb 🍀', 
+        description: 'Solved a game without ever seeing a yellow tile.' 
+    },
+    shapeshifter: { 
+        name: 'Shapeshifter 🦎', 
+        description: 'Guessed a valid anagram of the secret word before solving it.' 
+    },
 };
